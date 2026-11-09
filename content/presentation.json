@@ -1,0 +1,92 @@
+{
+  "core_vanguard": {
+    "asset": "10",
+    "name": "CORE 先锋",
+    "lore": "正面扛住第一波信号。",
+    "rarity": "hero"
+  },
+  "stickc_operator": {
+    "asset": "11",
+    "name": "STICKC 操作员",
+    "lore": "简单、可靠，守住后排。",
+    "rarity": "ordinary"
+  },
+  "stickv_observer": {
+    "asset": "12",
+    "name": "STICKV 观察者",
+    "lore": "看见对手留下的破绽。",
+    "rarity": "ordinary"
+  },
+  "unit_support": {
+    "asset": "13",
+    "name": "UNIT 支援者",
+    "lore": "让身边的伙伴多一点能量。",
+    "rarity": "ordinary"
+  },
+  "module_link": {
+    "asset": "14",
+    "name": "MODULE 联结者",
+    "lore": "两排接通，力量就会发生。",
+    "rarity": "ordinary"
+  },
+  "base_guard": {
+    "asset": "15",
+    "name": "BASE 守卫",
+    "lore": "坚实底座，承受一次冲击。",
+    "rarity": "ordinary"
+  },
+  "bala_striker": {
+    "asset": "16",
+    "name": "BALA 突击者",
+    "lore": "保持平衡，打断对手。",
+    "rarity": "ordinary"
+  },
+  "hat_relay": {
+    "asset": "17",
+    "name": "HAT 中继者",
+    "lore": "把信号送到队友手中。",
+    "rarity": "ordinary"
+  },
+  "atom_scout": {
+    "asset": "18",
+    "name": "ATOM 侦察兵",
+    "lore": "小个子，也有可靠的战力。",
+    "rarity": "ordinary"
+  },
+  "stickc_plus": {
+    "asset": "19",
+    "name": "STICKC PLUS",
+    "lore": "灵活入场，自带一次护盾。",
+    "rarity": "ordinary"
+  },
+  "core2_anchor": {
+    "asset": "20",
+    "name": "CORE2 定锚者",
+    "lore": "保持稳定，不接受战力修改。",
+    "rarity": "hero"
+  },
+  "coreink_link": {
+    "asset": "21",
+    "name": "CORE INK 墨客",
+    "lore": "在另一排留下回应。",
+    "rarity": "hero"
+  },
+  "paper_archive": {
+    "asset": "22",
+    "name": "M5PAPER 典藏者",
+    "lore": "记录战场，也守住自己的数值。",
+    "rarity": "hero"
+  },
+  "signal_boost": {
+    "asset": null,
+    "name": "信号增幅",
+    "lore": "把最后两点，放在恰好的地方。",
+    "rarity": "tactic"
+  },
+  "signal_jam": {
+    "asset": null,
+    "name": "信号干扰",
+    "lore": "一点干扰，有时足以扭转一局。",
+    "rarity": "tactic"
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "encoding": "PCG-C14N-1",
+  "valid": [
+    {
+      "value": {
+        "z": 1,
+        "a": "卡牌🎮",
+        "line": "a\nb",
+        "quote": "\"\\/"
+      },
+      "canonical_utf8_hex": "7b2261223a22e58da1e7898cf09f8eae222c226c696e65223a22615c6e62222c2271756f7465223a225c225c5c2f222c227a223a317d",
+      "canonical_text": "{\"a\":\"卡牌🎮\",\"line\":\"a\\nb\",\"quote\":\"\\\"\\\\/\",\"z\":1}",
+      "sha256": "6b0f4939cbec2c4e608bc1109ce652926c957a02cee775810ba780c25070210c"
+    },
+    {
+      "value": {
+        "n": null,
+        "ok": true,
+        "safe": 9007199254740991,
+        "neg": -1,
+        "arr": [
+          "é",
+          "é"
+        ]
+      },
+      "canonical_utf8_hex": "7b22617272223a5b22c3a9222c2265cc81225d2c226e223a6e756c6c2c226e6567223a2d312c226f6b223a747275652c2273616665223a393030373139393235343734303939317d",
+      "canonical_text": "{\"arr\":[\"é\",\"é\"],\"n\":null,\"neg\":-1,\"ok\":true,\"safe\":9007199254740991}",
+      "sha256": "cf43cbf6b0108fc67ade3bc87e4645ba0c0ab305a308ac5a468e2e1d91a18d83"
+    },
+    {
+      "value": {
+        "a": 0,
+        "b": false,
+        "control": "\b\t\n\f\r\u0001"
+      },
+      "canonical_utf8_hex": "7b2261223a302c2262223a66616c73652c22636f6e74726f6c223a225c625c745c6e5c665c725c7530303031227d",
+      "canonical_text": "{\"a\":0,\"b\":false,\"control\":\"\\b\\t\\n\\f\\r\\u0001\"}",
+      "sha256": "f45550fcffbe90ef06e81f2ee8f17ae3607ce7cae9f6b1a160462a80ce3ae403"
+    }
+  ],
+  "invalid_hex": [
+    "7b2261223a312c2261223a327d",
+    "7b2261223a312e307d",
+    "7b2261223a3165307d",
+    "7b2261223a2d307d",
+    "7b2261223a393030373139393235343734303939327d",
+    "7b2261223a225c7564383030227d",
+    "7b202261223a317d",
+    "efbbbf7b7d",
+    "7b2261223a22ff227d"
+  ]
+}

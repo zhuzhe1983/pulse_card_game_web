@@ -1,0 +1,9 @@
+{
+  "content_pack_id": "m5.web.assets.v1",
+  "ruleset_id": "pcg.core.v1",
+  "content_hash": "e12a690d772fbd3554a1cd114c8a59df836cc4e94982c5a64c8ab7bd43eb51cc",
+  "canonical_encoding": "PCG-C14N-1",
+  "web_protocol": "pcg.web.v1",
+  "client_version": "1.0.0",
+  "source_asset_commit": "091bba9113d4efb34231abf4b8b4bf77d3cfea04"
+}

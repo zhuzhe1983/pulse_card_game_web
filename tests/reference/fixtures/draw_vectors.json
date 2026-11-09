@@ -1,0 +1,158 @@
+{
+  "format": "pcg.draw.vectors.v1",
+  "utc_ms": 1794103200000,
+  "game_day": 20765,
+  "player_id": "10000000-0000-4000-8000-000000000001",
+  "device_id": "20000000-0000-4000-8000-000000000001",
+  "initial_snapshot": {
+    "save_schema_version": 1,
+    "snapshot_id": "40000000-0000-4000-8000-000000000000",
+    "parent_snapshot_id": null,
+    "history_tail": [],
+    "player_id": "10000000-0000-4000-8000-000000000001",
+    "writer_device_id": "20000000-0000-4000-8000-000000000001",
+    "save_seq": 0,
+    "modified_at_ms": 1794103200000,
+    "game_calendar_offset_min": 480,
+    "nickname": "小栈",
+    "collection": [],
+    "decks": [],
+    "wallet": {
+      "shards": 0
+    },
+    "day_ledger": {
+      "day_id": 0,
+      "claims": []
+    },
+    "clock": {
+      "high_water_utc_ms": 0,
+      "high_water_day_id": 0,
+      "last_source": "unknown"
+    },
+    "extensions": {}
+  },
+  "vectors": [
+    {
+      "hero": {
+        "hero_schema_version": 1,
+        "hero_card_id": "issued:30000000-0000-4000-8000-000000000002",
+        "mode": "blind_box",
+        "fixed_template_id": null,
+        "pool_id": "m5.roles.v1"
+      },
+      "new_snapshot_id": "40000000-0000-4000-8000-000000000001",
+      "observed_utc_ms": 1794103200000,
+      "clock_source": "network",
+      "input_snapshot": {
+        "save_schema_version": 1,
+        "snapshot_id": "40000000-0000-4000-8000-000000000000",
+        "parent_snapshot_id": null,
+        "history_tail": [],
+        "player_id": "10000000-0000-4000-8000-000000000001",
+        "writer_device_id": "20000000-0000-4000-8000-000000000001",
+        "save_seq": 0,
+        "modified_at_ms": 1794103200000,
+        "game_calendar_offset_min": 480,
+        "nickname": "小栈",
+        "collection": [],
+        "decks": [],
+        "wallet": {
+          "shards": 0
+        },
+        "day_ledger": {
+          "day_id": 0,
+          "claims": []
+        },
+        "clock": {
+          "high_water_utc_ms": 0,
+          "high_water_day_id": 0,
+          "last_source": "unknown"
+        },
+        "extensions": {}
+      },
+      "expected_reward": {
+        "template_id": "echo_booster",
+        "is_duplicate": false,
+        "shards_delta": 0,
+        "claim_id": "c573786cf207b8e28d328ac2dc9f2cbaca60c1151710cdb417b7c4eb09accf8e",
+        "day_id": 20765
+      },
+      "expected_snapshot_hash": "099a4be22c0fcf1b13be7c5c41d1c0f91079fcdb1c832fec31a6e92ccc196116"
+    },
+    {
+      "hero": {
+        "hero_schema_version": 1,
+        "hero_card_id": "issued:30000000-0000-4000-8000-000000000001",
+        "mode": "fixed",
+        "fixed_template_id": "paper_archive",
+        "pool_id": null
+      },
+      "new_snapshot_id": "40000000-0000-4000-8000-000000000002",
+      "observed_utc_ms": 1794103201000,
+      "clock_source": "network",
+      "input_snapshot": {
+        "save_schema_version": 1,
+        "snapshot_id": "40000000-0000-4000-8000-000000000001",
+        "parent_snapshot_id": "40000000-0000-4000-8000-000000000000",
+        "history_tail": [
+          "40000000-0000-4000-8000-000000000000"
+        ],
+        "player_id": "10000000-0000-4000-8000-000000000001",
+        "writer_device_id": "20000000-0000-4000-8000-000000000001",
+        "save_seq": 1,
+        "modified_at_ms": 1794103200001,
+        "game_calendar_offset_min": 480,
+        "nickname": "小栈",
+        "collection": [
+          {
+            "template_id": "echo_booster",
+            "obtained_at_ms": 1794103200000,
+            "draw_count": 1,
+            "mastery": 0,
+            "skin_id": "base",
+            "unlocked_skins": [
+              "base"
+            ],
+            "nickname": ""
+          }
+        ],
+        "decks": [],
+        "wallet": {
+          "shards": 0
+        },
+        "day_ledger": {
+          "day_id": 20765,
+          "claims": [
+            {
+              "hero_card_id": "issued:30000000-0000-4000-8000-000000000002",
+              "template_id": "echo_booster",
+              "claim_id": "c573786cf207b8e28d328ac2dc9f2cbaca60c1151710cdb417b7c4eb09accf8e",
+              "claimed_at_ms": 1794103200000,
+              "pool_id": "m5.roles.v1",
+              "pool_hash": "8180eebdab6f9992a8589d4b47e48db3ac8b24e7da23651c10e64c3bd1cfc4ff"
+            }
+          ]
+        },
+        "clock": {
+          "high_water_utc_ms": 1794103200000,
+          "high_water_day_id": 20765,
+          "last_source": "network"
+        },
+        "extensions": {}
+      },
+      "expected_reward": {
+        "template_id": "paper_archive",
+        "is_duplicate": false,
+        "shards_delta": 0,
+        "claim_id": "1dca0394aa9bf10639de68e27f36132560149dc6b30e964f5c2ccc3596d7a39f",
+        "day_id": 20765
+      },
+      "expected_snapshot_hash": "0addf40facdf4e3cb5cc31f01fbf8710397fb433134d7f383a4fdd34a356e711"
+    }
+  ],
+  "uid_vector": {
+    "technology": "nfc-a",
+    "uid_hex": "04A1B2C3D4E5F6",
+    "hero_card_id": "uid:dbcfdef8d72fc07e788fd5d8fb43cb536af64611ec4004ac6e13e2d788360060"
+  }
+}
