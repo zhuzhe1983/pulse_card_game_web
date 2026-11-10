@@ -78,6 +78,12 @@ ui_beep_t ui_model_apply(ui_model_t *m, int nfc_ok, int usb_open,
         put(line1, "READ ERR");
         put(line2, uid && uid[0] ? uid : "");
         put(line3, "try again");
+    } else if (!strcmp(k, "boot")) {
+        char rst[22];
+        snprintf(rst, sizeof rst, "RST %s", uid && uid[0] ? uid : "?");
+        put(line1, "READY");
+        put(line2, usb_open ? "PC open" : "USB wait");
+        put(line3, rst);
     } else if (usb_open) {
         put(line1, "READY");
         put(line2, "PC open");

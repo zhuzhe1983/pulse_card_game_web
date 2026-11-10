@@ -173,6 +173,70 @@ int pcg_ntag_plan_write(const uint8_t *mem, size_t len, int base_page,
     return 0;
 }
 
+static void hex_encode(const uint8_t *src, size_t n, char *dst, size_t dst_len, int *truncated)
+{
+    static const char hex[] = "0123456789ABCDEF";
+    size_t i, limit;
+    if (truncated) *truncated = 0;
+    if (!dst || dst_len == 0) return;
+    limit = (dst_len - 1) / 2;
+    if (n > limit) {
+        n = limit;
+        if (truncated) *truncated = 1;
+    }
+    for (i = 0; i < n; i++) {
+        dst[i * 2] = hex[src[i] >> 4];
+        dst[i * 2 + 1] = hex[src[i] & 0x0F];
+    }
+    dst[n * 2] = 0;
+}
+
+void pcg_ntag_facts(const uint8_t *mem, size_t len, int base_page,
+                    const uint8_t *lock2, const uint8_t *dyn3,
+                    pcg_tag_facts_t *out, char *json, size_t json_len)
+{
+    int cc_at, ndef_at, cap = 0;
+    uint8_t msg[240];
+    size_t mlen;
+    memset(out, 0, sizeof *out);
+    out->capacity = -1;
+    out->writable = -1;
+    snprintf(out->type_name, sizeof out->type_name, "unknown");
+    snprintf(out->lock, sizeof out->lock, "unknown");
+    out->kind = pcg_ntag_classify(mem, len, base_page, json, json_len);
+    cc_at = page_off(base_page, 3);
+    ndef_at = page_off(base_page, 4);
+    if (mem && cc_at >= 0 && (size_t)cc_at + 4 <= len) {
+        const uint8_t *cc = mem + cc_at;
+        hex_encode(cc, 4, out->cc_hex, sizeof out->cc_hex, NULL);
+        if (cc_ok(cc, &cap)) {
+            out->capacity = cap;
+            if (cc[2] == 0x12) snprintf(out->type_name, sizeof out->type_name, "NTAG213");
+            else if (cc[2] == PCG_NTAG_CC_215) snprintf(out->type_name, sizeof out->type_name, "NTAG215");
+            else if (cc[2] == 0x6F) snprintf(out->type_name, sizeof out->type_name, "NTAG216");
+            if ((cc[3] & 0x0F) == 0) {
+                out->writable = 1;
+                snprintf(out->lock, sizeof out->lock, "open");
+            } else {
+                out->writable = 0;
+                snprintf(out->lock, sizeof out->lock, "cc");
+            }
+        }
+    }
+    if (lock2 && (lock2[0] || lock2[1])) {
+        out->writable = 0;
+        snprintf(out->lock, sizeof out->lock, "static");
+    }
+    if (dyn3 && (dyn3[0] || dyn3[1] || dyn3[2])) {
+        out->writable = 0;
+        snprintf(out->lock, sizeof out->lock, "dynamic");
+    }
+    if (mem && ndef_at >= 0 && (size_t)ndef_at < len) {
+        mlen = pcg_ndef_extract(mem + ndef_at, len - (size_t)ndef_at, msg, sizeof msg);
+        if (mlen) hex_encode(msg, mlen, out->ndef_hex, sizeof out->ndef_hex, &out->ndef_hex_truncated);
+    }
+}
+
 int pcg_ntag_dirty_pages(const uint8_t *before, const uint8_t *after, size_t len,
                          int base_page, uint8_t *pages, int max_pages)
 {

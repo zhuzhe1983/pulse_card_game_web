@@ -26,6 +26,23 @@ typedef enum {
 
 const char *pcg_ndef_kind_name(pcg_ndef_kind_t kind);
 
+typedef struct {
+    pcg_ndef_kind_t kind;
+    char type_name[12];     /* NTAG213 / NTAG215 / NTAG216 / unknown */
+    char cc_hex[9];         /* 8 hex chars, or empty */
+    int capacity;           /* NDEF byte budget from CC, or -1 */
+    int writable;           /* 1 open, 0 locked, -1 unknown */
+    char lock[12];          /* open, cc, static, dynamic, unknown */
+    char ndef_hex[481];     /* extracted message, truncated */
+    int ndef_hex_truncated;
+} pcg_tag_facts_t;
+
+/* lock2 is the two static-lock bytes from page 2, or NULL.
+ * dyn3 is the dynamic-lock bytes, or NULL when that page was not read. */
+void pcg_ntag_facts(const uint8_t *mem, size_t len, int base_page,
+                    const uint8_t *lock2, const uint8_t *dyn3,
+                    pcg_tag_facts_t *out, char *json, size_t json_len);
+
 /* mem[0] is page `base_page`. base_page is 0 (whole tag), 3 (from CC) or 4. */
 pcg_ndef_kind_t pcg_ntag_classify(const uint8_t *mem, size_t len, int base_page,
                                   char *json, size_t json_len);

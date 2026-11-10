@@ -2,6 +2,7 @@
 #include <string.h>
 #include "gc9a01_seq.h"
 #include "nfc_track.h"
+#include "session_gate.h"
 #include "ui_model.h"
 #include "ntag_layout.h"
 #include "pcg_ndef.h"
@@ -87,6 +88,33 @@ int main(void)
     memcpy(huge, "{\"game\":\"pcg\",\"v\":1,\"name\":\"", 28);
     huge[399] = 0;
     CHECK(pcg_ntag_plan_write(mem, sizeof mem, 3, huge, 1, "04AA", "04AA", out, err, sizeof err) != 0, "oversized payload is refused");
+
+    session_gate_t sg;
+    session_gate_reset(&sg);
+    CHECK(session_gate_on_new(&sg, "04AA") == SG_NONE, "card seen before hello is not announced");
+    CHECK(session_gate_on_held(&sg) == SG_NONE, "holding the card does not announce");
+    CHECK(session_gate_on_hello(&sg) == SG_CARD, "hello reports the card already on the reader");
+    CHECK(session_gate_on_hello(&sg) == SG_NONE, "another hello does not fake a new tap");
+    CHECK(session_gate_on_gone(&sg) == SG_REMOVED, "announced card removal is one event");
+    CHECK(session_gate_on_gone(&sg) == SG_NONE, "removal is not repeated");
+    CHECK(session_gate_on_new(&sg, "04AA") == SG_CARD, "a real new presentation after removal is announced");
+
+    {
+        uint8_t tag[32];
+        pcg_tag_facts_t facts;
+        uint8_t open_lock[2] = {0, 0};
+        uint8_t static_lock[2] = {0xFF, 0};
+        memset(tag, 0, sizeof tag);
+        put_cc(tag, 0, PCG_NTAG_CC_215);
+        pcg_ntag_facts(tag, sizeof tag, 3, open_lock, NULL, &facts, NULL, 0);
+        CHECK(facts.kind == PCG_NDEF_BLANK, "facts see a blank NTAG215");
+        CHECK(strcmp(facts.type_name, "NTAG215") == 0, "CC 0x3E is NTAG215");
+        CHECK(facts.capacity == 496, "NTAG215 NDEF budget is 496");
+        CHECK(facts.writable == 1 && strcmp(facts.lock, "open") == 0, "open CC and clear static lock are writable");
+        CHECK(strcmp(facts.cc_hex, "E1103E00") == 0, "CC bytes are recoverable");
+        pcg_ntag_facts(tag, sizeof tag, 3, static_lock, NULL, &facts, NULL, 0);
+        CHECK(facts.writable == 0 && strcmp(facts.lock, "static") == 0, "static lock is reported and not cleared");
+    }
 
     if (failures) { printf("\n%d failure(s)\n", failures); return 1; }
     printf("\nall dial logic tests passed\n");
