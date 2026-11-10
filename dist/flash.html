@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PULSE · M5Dial 烧录器</title>
+<style>
+  :root{--bg:#0d1117;--panel:#161b22;--border:#30363d;--fg:#e6edf3;--muted:#8b949e;--accent:#58a6ff;--ok:#3fb950;--warn:#d29922;--err:#f85149}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+       display:flex;min-height:100vh;align-items:center;justify-content:center;padding:16px}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:12px;max-width:680px;width:100%;padding:24px}
+  h1{font-size:20px;margin:0 0 4px} p{color:var(--muted);margin:6px 0}
+  .tag{display:inline-block;background:#1f6feb22;color:var(--accent);border:1px solid #1f6feb55;border-radius:20px;
+       font-size:11px;padding:2px 10px;margin:6px 0 14px}
+  .row{display:flex;gap:10px;align-items:center;margin:14px 0;flex-wrap:wrap}
+  button{background:#238636;color:#fff;border:0;border-radius:6px;padding:10px 16px;font-size:14px;cursor:pointer}
+  button:disabled{background:#2ea04355;color:#8b949e;cursor:not-allowed}
+  button.secondary{background:#21262d;color:var(--fg);border:1px solid var(--border)}
+  .firmware{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+  select,input[type=file]{padding:8px;background:#0d1117;border:1px solid var(--border);border-radius:6px;color:var(--fg)}
+  .log{background:#0d1117;border:1px solid var(--border);border-radius:8px;padding:12px;height:220px;overflow:auto;
+       font-family:ui-monospace,Menlo,monospace;font-size:12px;white-space:pre-wrap;word-break:break-all}
+  .log .ok{color:var(--ok)} .log .warn{color:var(--warn)} .log .err{color:var(--err)} .log .info{color:var(--accent)}
+  .bar{height:8px;background:#0d1117;border-radius:6px;overflow:hidden;border:1px solid var(--border)}
+  .bar>div{height:100%;width:0;background:var(--accent);transition:width .15s}
+  .status{color:var(--muted);font-size:13px;min-height:20px}
+  .note{font-size:12px;color:var(--muted);border-top:1px solid var(--border);margin-top:16px;padding-top:10px}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>PULSE · M5Dial 固件烧录器</h1>
+  <span class="tag">m5dial_nfc_bridge · pcg.reader.v1 · 需 Chrome/Edge + Web Serial</span>
+  <p>把 M5Dial 通过 USB-C 连到电脑，在下方选择串口并烧录。固件会在屏幕上显示指示灯状态，并通过 USB 串口对话 <b>pcg.reader.v1</b>。</p>
+
+  <div class="row">
+    <button id="btn-connect" class="secondary">连接设备</button>
+    <span class="status" id="conn-status">未连接</span>
+  </div>
+
+  <div class="row firmware">
+    <label for="firm">固件：</label>
+    <span id="firm-name">m5dial_nfc_bridge_merged.bin</span>
+    （<span id="firm-size">-</span>）
+  </div>
+
+  <div class="row">
+    <button id="btn-flash">烧录固件</button>
+    <button id="btn-erase" class="secondary">擦除 Flash</button>
+  </div>
+
+  <div class="bar"><div id="bar"></div></div>
+  <div class="row"><span class="status" id="prog">就绪</span></div>
+
+  <div class="log" id="log"></div>
+
+  <div class="note">
+    首次使用需要 Chrome/Edge 并通过 <b>localhost</b> 或 <b>HTTPS</b> 打开本页（Web Serial 要求安全上下文）。<br>
+    若 M5Dial 没出现在列表，重新插拔 USB 或按住复位，然后点“连接设备”。
+  </div>
+</div>
+
+<script type="module">
+import { ESPLoader, ESPWebSerialPort } from
+  'https://cdn.jsdelivr.net/npm/esptool-js@0.9.7/bundle.min.js';
+
+const $ = id => document.getElementById(id);
+const logEl = $('log');
+function log(msg, cls='info'){
+  const d = document.createElement('div');
+  d.className = cls;
+  d.textContent = '> ' + msg;
+  logEl.appendChild(d);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+const setConn = t => $('conn-status').textContent = t;
+const setProg = (t,p) => { $('prog').textContent = t; $('bar').style.width = (p!=null?p:0)+'%'; };
+
+let transport = null;
+let firmwareUrl = null;
+const flashSizeMB = 32;
+
+const btnConnect = $('btn-connect');
+const btnFlash = $('btn-flash');
+const btnErase = $('btn-erase');
+
+async function connect() {
+  const rawPort = await navigator.serial.requestPort();
+  transport = new ESPWebSerialPort(rawPort, { baudrate: 460800, debug: log });
+  await transport.connect();
+  setConn('已连接串口，读取芯片…');
+  const loader = new ESPLoader(transport, 115200, { debug: log });
+  await loader.main();
+  const chip = await loader.chip;
+  log('芯片：' + chip, 'ok');
+  return loader;
+}
+
+btnConnect.addEventListener('click', async () => {
+  try {
+    const loader = await connect();
+    transport = loader ? loader.transport : null;
+    setConn('已连接：可烧录');
+  } catch (e) {
+    log('连接失败：' + e.message, 'err');
+    setConn('连接失败');
+  }
+});
+
+btnFlash.addEventListener('click', async () => {
+  if (!transport) { log('请先连接设备', 'warn'); return; }
+  if (!firmwareUrl) { log('固件文件未就绪', 'warn'); return; }
+  setProg('准备烧录…', 0);
+  try {
+    const loader = await connect();
+    await loader.setFlashSize(flashSizeMB);
+    const resp = await fetch(firmwareUrl);
+    const buf = await resp.arrayBuffer();
+    const data = new Uint8Array(buf);
+    await loader.writeFlash({
+        fileArray: [{ data, address: 0x0 }],
+        eraseAll: false, flashMode: 'dio', flashFreq: '80m',
+        progressCallback: (c,t)=>setProg('已写 ' + Math.floor(c/t*100) + '%', c/t*100) });
+    setProg('完成', 100);
+    log('烧录完成 ✓' + ` (${data.length} bytes)`, 'ok');
+    setConn('完成，设备即将重启');
+    await transport.close?.();
+  } catch(e){
+    log('烧录失败：' + e.message, 'err');
+    setConn('烧录失败');
+  }
+});
+
+btnErase.addEventListener('click', async () => {
+  if (!transport) { log('请先连接设备','warn'); return; }
+  setProg('擦除…',0);
+  try {
+    const esptool = await connect();
+    await esptool.eraseFlash();
+    setProg('擦除完成',100); log('Flash 已擦除 ✓','ok');
+  } catch(e){ log('擦除失败：'+e.message,'err'); }
+});
+
+// default firmware = merged DIO bin next to this page
+const defaultUrl = new URL('firmware/m5dial_nfc_bridge_merged_dio.bin', document.baseURI).href;
+firmwareUrl = defaultUrl;
+$('firm-name').textContent = 'm5dial_nfc_bridge_merged_dio.bin';
+fetch(defaultUrl).then(r=>r.arrayBuffer())
+  .then(b=> $('firm-size').textContent = (b.byteLength/1024).toFixed(1)+' KB')
+  .catch(()=> log('找不到固件文件（firmware/…）','warn'));
+
+log('准备就绪。点击“连接设备”，然后“烧录固件”。','info');
+</script>
+</body>
+</html>

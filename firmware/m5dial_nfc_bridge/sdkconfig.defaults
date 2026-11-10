@@ -1,0 +1,23 @@
+# Target: M5Dial (ESP32-S3)
+CONFIG_IDF_TARGET_ESP32S3=y
+
+# TinyUSB: expose the M5Dial as a USB CDC (serial) device so the web app's
+# Web Serial path can talk pcg.reader.v1.
+CONFIG_TINYUSB_CDC_ENABLED=y
+
+# M5Dial has 32 MB flash + 8 MB octal PSRAM. The PSRAM shares the flash SPI
+# bus, and the ROM/bootloader must be told the octal PSRAM exists or flash
+# access fails. These must match the factory hardware.
+CONFIG_ESPTOOLPY_FLASHSIZE_32MB=y
+CONFIG_ESPTOOLPY_FLASHMODE_QIO=y
+CONFIG_ESPTOOLPY_FLASHFREQ_80M=y
+CONFIG_SPIRAM=y
+CONFIG_SPIRAM_MODE_OCT=y
+CONFIG_SPIRAM_SPEED_80M=y
+
+# NFC reader I2C (M5Dial internal bus: SCL=G12, SDA=G11)
+CONFIG_I2C_NUM0_SDA_GPIO=11
+CONFIG_I2C_NUM0_SCL_GPIO=12
+
+# Native console on UART0; TinyUSB owns the USB for CDC data.
+CONFIG_ESP_CONSOLE_UART_DEFAULT=y

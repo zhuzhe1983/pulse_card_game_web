@@ -5,6 +5,7 @@
 | 方式 | 能读什么 | 能写什么 | 使用条件 |
 |---|---|---|---|
 | 键盘 UID 读卡器 | NFC-A 卡的十六进制 UID | 不支持 | 将扫描结果输入页面的 UID 输入框；读卡器设为十六进制输出 |
+| M5Dial·USB NFC 桥 | NFC-A/NTAG215 的 UID 与 PULSE 身份 NDEF | **只读**（本版不开写卡） | `firmware/m5dial_nfc_bridge` 固件 + Web Serial；网页“串口”按钮直接连接 |
 | WebUSB PCG bridge | UID，可选 PULSE NDEF 描述 | 桥同时声明读写能力时，写入并读回核对玩家身份 | 固件实现下述 `pcg.reader.v1`；vendor-specific 接口，bulk IN/OUT |
 | Web Serial PCG bridge | 与 WebUSB 相同 | 取决于桥声明的能力 | 串口固件实现同一 JSON 行协议；默认 115200 baud |
 | Android Web NFC | NDEF 标签内的 PULSE 身份；浏览器返回 UID 时也读取 UID | 小型玩家身份 NDEF | 支持 Web NFC 的 Android Chrome、设备带 NFC、网页处于前台 |

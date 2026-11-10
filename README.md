@@ -90,6 +90,7 @@ NTAG215 的 504 字节用户读写区适合保存玩家 UUID、卡面、版本�
 | 设备/连接方式 | 本版支持 | 说明 |
 |---|---|---|
 | USB/蓝牙键盘式 UID 读卡器 | 读取 UID | 点击卡号框再刷卡并回车；需输出十六进制原始字节顺序 |
+| **M5Dial USB NFC 桥** | **Web Serial 读 UID + PULSE 身份 NDEF** | ESP-IDF 固件把 M5Dial 变成 USB 刷卡器；配网页烧录器 `dist/flash.html`。详见 `firmware/m5dial_nfc_bridge` |
 | PCG vendor USB 协议桥 | WebUSB 读卡；可选 NDEF 读写 | 需要实现 `pcg.reader.v1` 固件，并提供 class `0xFF` bulk IN/OUT |
 | ESP32 + PN532 串口桥 | Web Serial 读卡 | 附带 UID 只读 Arduino 例程；固件尚未编译/实机验证，需核对芯片、引脚及库版本 |
 | Android 手机内置 NFC | 读取 NDEF、写入玩家身份 | 需要支持 Web NFC 的浏览器、NDEF 标签和安全上下文 |
@@ -143,7 +144,7 @@ node tests/network-game.test.cjs
 | `content/pack.json`、`content/presentation.json` | 数值与卡包；显示名称、素材编号及文案 |
 | `asset/card/`、`asset/char/` | 用户提供的 22 张完整卡图与 22 张角色图 |
 | `docs/` | 规则接口、网页配置、联网和读卡协议 |
-| `firmware/` | PN532 桥固件示例 |
+| `firmware/` | M5Dial NFC·USB 桥（WS1850R/MFRC522，ESP-IDF）与 PN532 桥固件 |
 
 素材来自用户提供的 [pulse_card_game_prompt/asset](https://github.com/zhuzhe1983/pulse_card_game_prompt/tree/main/asset)，本包保留原图。涉及公开发布或素材再分发时，遵循原素材权利人的授权范围。
 
