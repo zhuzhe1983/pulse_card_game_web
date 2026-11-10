@@ -49,4 +49,9 @@ bool rc522_select(pcg_tag_id_t *out, uint32_t max_ms);
  */
 size_t rc522_read_memory(uint8_t *out, size_t out_len, uint32_t addr);
 
+/* Program one 4-byte NTAG page with the Ultralight WRITE (0xA2) command.
+ * Pages 0-2 (UID and static lock) and pages above 129 (dynamic lock / config)
+ * are refused. Returns 0 on ACK. */
+int rc522_write_page(uint8_t page, const uint8_t data[4]);
+
 #endif /* PCG_RC522_H */

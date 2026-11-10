@@ -15,6 +15,7 @@
 #include "pcg_proto.h"
 #include "usb_cdc.h"
 #include "display_gc9a01.h"
+#include "buzzer.h"
 
 static const char *TAG = "pcg_m5dial";
 
@@ -32,17 +33,20 @@ void app_main(void)
         nvs_flash_init();
     }
 
-    display_init();
+    buzzer_init();
+    if (display_init() != 0)
+        ESP_LOGE(TAG, "display init failed");
 
     pcg_rc522_conf_t rc = { .sda = SDA_GPIO, .scl = SCL_GPIO, .freq = 400000 };
     bool nfc_ok = rc522_init(&rc);
     ESP_LOGI(TAG, "NFC init %s", nfc_ok ? "ok" : "failed");
+    display_note_nfc(nfc_ok);
 
-    /* Capabilities = uid + ndef_read. This build reads a tag's PULSE identity
-     * NDEF but does not rewrite tags, so ndef_write is NOT advertised and the
-     * web page keeps its "写卡" button off — an honest read-only bridge. */
+    /* uid + ndef_read + ndef_write. Writes still require overwrite:true from
+     * the host, and the page planner refuses UID, lock and unformatted tags.
+     * A read-only host that never sends write keeps the previous behavior. */
     pcg_proto_t proto;
-    pcg_proto_init(&proto, "PULSE M5Dial NFC bridge", 1 | 2, NULL, NULL, NULL);
+    pcg_proto_init(&proto, "PULSE M5Dial NFC bridge", 1 | 2 | 4, NULL, NULL, NULL);
     pcg_proto_set_ready(&proto, nfc_ok);
 
     usb_cdc_start(&proto);

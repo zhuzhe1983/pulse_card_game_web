@@ -21,6 +21,21 @@ idf.py set-target esp32s3
 idf.py build
 ```
 
+## 屏幕、蜂鸣器和连接状态
+
+官方引脚（[Dial](https://docs.m5stack.com/en/core/Dial) PinMap，以及 M5Unified 的 `board_M5Dial`）：
+
+- GC9A01：RS/DC=G4，MOSI=G5，SCK=G6，CS=G7，RST=G8，BL=G9
+- 蜂鸣器：G3，方波，空闲不响；新卡一声，读失败两声
+- FT3267 触摸在同一条 I2C（0x38，INT=G14）。本读卡器不用触摸
+- WS1850S：SDA=G11，SCL=G12，地址 0x28
+
+顶栏圆点在代码里默认是灰的（`#a1a8a1`）。只有 `hello` 握手成功后的 `connected` / `reading` 才加上 `on`，变成绿色（`#4d9673`）。浏览器选择器里的「已配对」不是这个状态。
+
+USB-Serial-JTAG 在这份配置里关掉，避免主机打开 CDC 时用 DTR 把芯片复位。网页用 115200 打开，不用 1200。
+
+这次云端构建没有上板，也没有写过任何实体卡。
+
 ## 硬件与 Flash
 
 原版 M5Dial（[Stamp-S3](https://docs.m5stack.com/en/core/Dial)）和 M5Dial v1.1（[Stamp-S3A](https://docs.m5stack.com/en/core/Dial_v1.1)）都是 **ESP32-S3FN8：8MB Quad Flash**。两份官方规格都没有列出 PSRAM，本固件不启用 PSRAM，也不假定板上有 8MB Octal PSRAM。

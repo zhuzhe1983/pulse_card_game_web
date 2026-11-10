@@ -15,6 +15,9 @@ fi
 cd "$FW"
 python3 tests/check_flash_config.py --skip-bin
 
+# sdkconfig.defaults is the source of truth. An old sdkconfig would keep
+# USB-Serial-JTAG enabled and ignore the new defaults.
+rm -f sdkconfig sdkconfig.old
 idf.py set-target esp32s3
 idf.py build
 

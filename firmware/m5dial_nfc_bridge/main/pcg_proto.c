@@ -67,14 +67,15 @@ void pcg_proto_on_card(pcg_proto_t *p, const pcg_card_t *card)
     if (!p->session || !p->nfc_ready) return;
     char line[PCG_PROTO_LINE_MAX + 128];
     const char *uid = (card && card->uid[0]) ? card->uid : "";
+    const char *kind = (card && card->ndef_kind[0]) ? card->ndef_kind : "unknown";
     if (card && card->has_descriptor && card->descriptor[0]) {
         snprintf(line, sizeof line,
-                 "{\"type\":\"card\",\"uid\":\"%s\",\"tech\":\"nfc-a\",\"descriptor\":%s}",
-                 uid, card->descriptor);
+                 "{\"type\":\"card\",\"uid\":\"%s\",\"tech\":\"nfc-a\",\"descriptor\":%s,\"ndef\":\"%s\"}",
+                 uid, card->descriptor, kind);
     } else {
         snprintf(line, sizeof line,
-                 "{\"type\":\"card\",\"uid\":\"%s\",\"tech\":\"nfc-a\",\"descriptor\":null}",
-                 uid);
+                 "{\"type\":\"card\",\"uid\":\"%s\",\"tech\":\"nfc-a\",\"descriptor\":null,\"ndef\":\"%s\"}",
+                 uid, kind);
     }
     p->send(p, line);
     if (card && card->uid[0]) {

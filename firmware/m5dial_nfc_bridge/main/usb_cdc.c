@@ -6,11 +6,14 @@
  * app opens it via Web Serial and exchanges pcg.reader.v1 JSON lines.
  */
 #include "usb_cdc.h"
+#include "display_gc9a01.h"
 #include "esp_log.h"
+#include "esp_mac.h"
 #include "freertos/FreeRTOS.h"
 #include "tinyusb.h"
 #include "tusb_cdc_acm.h"
 #include "sdkconfig.h"
+#include <stdio.h>
 #include <string.h>
 
 static const char *TAG = "usbcdc";
@@ -41,6 +44,16 @@ void tinyusb_cdc_rx_callback(int itf, cdcacm_event_t *event)
     }
 }
 
+static void on_line_state(int itf, cdcacm_event_t *event)
+{
+    (void)itf;
+    /* Opening the port asserts DTR. That is not a reset. USB-Serial-JTAG is
+     * left disabled in sdkconfig so this edge cannot reboot the chip. */
+    int open = event && event->line_state_changed_data.dtr;
+    display_note_usb(open);
+    ESP_LOGI(TAG, "CDC DTR %s", open ? "open" : "closed");
+}
+
 static void cdc_send(pcg_proto_t *proto, const char *line)
 {
     (void)proto;
@@ -54,9 +67,27 @@ int usb_cdc_start(pcg_proto_t *proto)
 {
     g = proto;
 
+    uint8_t mac[6];
+    static char serial[13];
+    static const char lang[] = { 0x09, 0x04 };
+    const char *strings[5];
+    if (esp_read_mac(mac, ESP_MAC_WIFI_STA) != ESP_OK) {
+        snprintf(serial, sizeof serial, "123456");
+    } else {
+        snprintf(serial, sizeof serial, "%02X%02X%02X%02X%02X%02X",
+                 mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+    }
+    strings[0] = lang;
+    strings[1] = "PULSE";
+    strings[2] = "PULSE M5Dial NFC";
+    strings[3] = serial;
+    strings[4] = "PULSE M5Dial NFC";
+    ESP_LOGI(TAG, "USB serial %s vid 303A pid 4001", serial);
+
     const tinyusb_config_t tusb_cfg = {
         .device_descriptor = NULL,
-        .string_descriptor = NULL,
+        .string_descriptor = strings,
+        .string_descriptor_count = 5,
         .external_phy = false,
         .configuration_descriptor = NULL,
     };
@@ -69,7 +100,7 @@ int usb_cdc_start(pcg_proto_t *proto)
         .rx_unread_buf_sz = 64,
         .callback_rx = &tinyusb_cdc_rx_callback,
         .callback_rx_wanted_char = NULL,
-        .callback_line_state_changed = NULL,
+        .callback_line_state_changed = on_line_state,
         .callback_line_coding_changed = NULL,
     };
     if (tusb_cdc_acm_init(&acm_cfg) != ESP_OK)

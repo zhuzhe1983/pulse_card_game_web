@@ -26,5 +26,15 @@ CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
 # NFC reader I2C pins are set in main.c (SDA=GPIO11, SCL=GPIO12). There is no
 # IDF Kconfig symbol for those pins; do not invent one here.
 
-# Native console on UART0; TinyUSB owns the USB for CDC data.
+# Native console on UART0. USB-Serial-JTAG must stay off: it shares the
+# USB pins with TinyUSB, and a host opening the CDC port (DTR / baud) otherwise
+# resets the chip. That looked like the screen flashing on and then going dark.
 CONFIG_ESP_CONSOLE_UART_DEFAULT=y
+CONFIG_ESP_CONSOLE_SECONDARY_NONE=y
+CONFIG_USJ_ENABLE_USB_SERIAL_JTAG=n
+
+# Fallback strings. The running firmware replaces the serial with the MAC.
+CONFIG_TINYUSB_DESC_MANUFACTURER_STRING="PULSE"
+CONFIG_TINYUSB_DESC_PRODUCT_STRING="PULSE M5Dial NFC"
+CONFIG_TINYUSB_DESC_CDC_STRING="PULSE M5Dial NFC"
+CONFIG_TINYUSB_DESC_SERIAL_STRING="123456"

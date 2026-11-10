@@ -58,6 +58,8 @@ def require_defaults(path: Path) -> None:
         "CONFIG_ESPTOOLPY_FLASHFREQ_80M": "y",
         "CONFIG_SPIRAM": "n",
         "CONFIG_PARTITION_TABLE_CUSTOM": "y",
+        "CONFIG_ESP_CONSOLE_SECONDARY_NONE": "y",
+        "CONFIG_USJ_ENABLE_USB_SERIAL_JTAG": "n",
     }
     for key, value in expect.items():
         if cfg.get(key) != value:
@@ -71,6 +73,10 @@ def require_defaults(path: Path) -> None:
                 fail(f"{path.name} enables {key}")
         if key.startswith("CONFIG_SPIRAM") and value == "y":
             fail(f"{path.name} enables {key}")
+        if key == "CONFIG_USJ_ENABLE_USB_SERIAL_JTAG" and value == "y":
+            fail(f"{path.name} enables USB-Serial-JTAG beside TinyUSB")
+        if key == "CONFIG_ESP_CONSOLE_SECONDARY_USB_SERIAL_JTAG" and value == "y":
+            fail(f"{path.name} enables the USB-Serial-JTAG console")
     filename = cfg.get("CONFIG_PARTITION_TABLE_CUSTOM_FILENAME", "")
     if "partitions.csv" not in filename:
         fail(f"{path.name} partition filename is {filename!r}")
@@ -228,9 +234,12 @@ def require_sdkconfig(path: Path) -> None:
         "CONFIG_ESPTOOLPY_FLASHFREQ_80M",
         "CONFIG_PARTITION_TABLE_CUSTOM",
         "CONFIG_IDF_TARGET_ESP32S3",
+        "CONFIG_ESP_CONSOLE_SECONDARY_NONE",
     ):
         if cfg.get(key) != "y":
             fail(f"{path} {key}={cfg.get(key)!r}")
+    if "CONFIG_USJ_ENABLE_USB_SERIAL_JTAG=y" in text or "CONFIG_ESP_CONSOLE_SECONDARY_USB_SERIAL_JTAG=y" in text:
+        fail(f"{path} still enables USB-Serial-JTAG next to TinyUSB")
     if "CONFIG_SPIRAM=y" in text or "CONFIG_SPIRAM_MODE_OCT=y" in text:
         fail(f"{path} enables PSRAM")
     if "# CONFIG_SPIRAM is not set" not in text and cfg.get("CONFIG_SPIRAM") not in (None, "n"):

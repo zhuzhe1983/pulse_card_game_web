@@ -18,6 +18,7 @@ set(_m5dial_need
     "CONFIG_ESPTOOLPY_FLASHMODE_DIO=y"
     "CONFIG_ESPTOOLPY_FLASHFREQ_80M=y"
     "CONFIG_PARTITION_TABLE_CUSTOM=y"
+    "CONFIG_ESP_CONSOLE_SECONDARY_NONE=y"
 )
 foreach(_item IN LISTS _m5dial_need)
     string(FIND "${_sdk_txt}" "${_item}" _pos)
@@ -39,6 +40,8 @@ set(_m5dial_forbid
     "CONFIG_ESPTOOLPY_FLASHMODE_DOUT=y"
     "CONFIG_SPIRAM=y"
     "CONFIG_SPIRAM_MODE_OCT=y"
+    "CONFIG_USJ_ENABLE_USB_SERIAL_JTAG=y"
+    "CONFIG_ESP_CONSOLE_SECONDARY_USB_SERIAL_JTAG=y"
 )
 foreach(_item IN LISTS _m5dial_forbid)
     string(FIND "${_sdk_txt}" "${_item}" _pos)

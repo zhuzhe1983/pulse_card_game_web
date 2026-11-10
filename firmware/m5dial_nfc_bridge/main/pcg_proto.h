@@ -22,6 +22,8 @@ typedef struct {
     char uid[24];            /* uppercase hex, NUL-terminated */
     bool has_descriptor;     /* true when descriptor follows */
     char descriptor[PCG_NDEF_MAX];
+    /* blank, unformatted, pulse, foreign, unsupported, error, or empty. */
+    char ndef_kind[16];
 } pcg_card_t;
 
 /* Result of one host-initiated write request. */
