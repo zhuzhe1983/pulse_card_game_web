@@ -103,7 +103,11 @@
   }
 
   function simPool() {
-    return C.simCatalog(roster.cards, Object.keys(artbook));
+    const book = C.simCatalog(roster.cards, Object.keys(artbook));
+    services.cards.filter(card => card.template_id === 'uiflow_blocks' || card.template_id === 'ezdata_note' || card.template_id === 'aiflow_say').forEach(card => {
+      book.included.push(card);
+    });
+    return book;
   }
 
   function freshSeed() {
@@ -346,9 +350,9 @@
   }
   const painted = {
     bu_ji: 'scene/cards/art-supply-432x576.webp',
-    uiflow_blocks: 'scene/cards/art-uiflow-432x576.webp',
-    ezdata_note: 'scene/cards/art-ezdata-432x576.webp',
-    aiflow_say: 'scene/cards/art-aiflow-432x576.webp',
+    uiflow_blocks: 'scene/cards/art-uiflow-service.jpg',
+    ezdata_note: 'scene/cards/art-ezdata-service.jpg',
+    aiflow_say: 'scene/cards/art-aiflow-service.jpg',
     burner_seize: 'scene/cards/art-seize-432x576.webp'
   };
   function picture(card, kind) {
@@ -384,7 +388,9 @@
       const star = C.starOf(card);
       const nums = card.kind === 'main'
         ? `<span class="patk">${card.attack}</span><span class="php">${card.durability}</span>`
-        : '';
+        : card.kind === 'attachment'
+          ? `<span class="bonus-face">+${card.attack_bonus || 0}</span>`
+          : '';
       const coin = id === tokenId || id === batteryId ? ' coin' : '';
       const body = `<span class="cost">${card.cost}</span>${star ? `<span class="star">${star}星</span>` : ''}<span class="art">${picture(card, 'board')}</span><span class="cname">${esc(card.name)}</span>${nums}<span class="detail">${esc(blurb(card))}</span>`;
       const fan = ` style="--i:${index};--n:${count}"`;
@@ -412,16 +418,23 @@
     return blockFrom(C.probe(game, () => game.support(game.seat)));
   }
   function strikeParts(seat, unit) {
-    const printed = C.attackOf(cards, unit);
-    if (printed <= 0) return { damage: 0, printed, boosted: false, title: '攻击栏为 0，这次伤害是 0' };
-    const bits = [`攻击栏 ${printed}`];
-    if (game.upper_links[seat].length) bits.push('来自上位的爱 +1');
-    if (game.aiflow_armed[seat]) bits.push('说人话 +2');
-    const form = game.formationState(seat);
-    if (form.percent) bits.push(form.chain_run ? `领队 ${form.percent}%（连续链节 ${form.chain_run} 段）` : `领队 ${form.percent}%`);
-    const damage = game.strikePreview(seat, printed);
-    if (damage !== printed) bits.push('向上取整');
-    return { damage, printed, boosted: damage !== printed, title: `${bits.join('，')}，伤害 ${damage}` };
+    const card = cards[unit.card_id];
+    const profile = game.profile(seat, unit, false);
+    const title = profile.parts.map(part => {
+      const bits = [part[0]];
+      if (part[1]) bits.push((part[1] > 0 ? '+' : '') + part[1] + '攻');
+      if (part[2]) bits.push((part[2] > 0 ? '+' : '') + part[2] + '耐');
+      return bits.join(' ');
+    }).join('，');
+    return {
+      damage: profile.attack,
+      printed: card.attack,
+      printedDurability: card.durability,
+      attackTone: profile.attack > card.attack ? 'green' : profile.attack < card.attack ? 'red' : '',
+      durabilityTone: unit.durability > card.durability ? 'green' : unit.durability < card.durability ? 'red' : '',
+      boosted: profile.attack !== card.attack,
+      title
+    };
   }
   function unitMenu(unit) {
     const card = cards[unit.card_id];
@@ -493,9 +506,8 @@
     }
     return `<button type="button" class="minion${selected ? ' selected' : ''}${hot ? ' hot' : ''}${canAttack ? ' can-attack' : ''}${arrive ? ' arrive' : ''}${lunge ? ' lunge' : ''}${hit ? ' hit' : ''}${nag ? ' nag' : ''}${C.hasGuard(cards, unit) ? ' guard' : ''}${unit.sick ? ' sick' : ''}${unit.attacked ? ' spent' : ''}" ${sceneAttr('unit_frame')} data-action="select-unit" data-board-seat="${seat}" data-slot="${slot}" data-seat="${seat}" data-iid="${esc(unit.iid)}" data-card="${esc(unit.card_id)}" data-sick="${unit.sick}" data-attacked="${unit.attacked}" data-guard="${C.hasGuard(cards, unit)}" data-attack="${blow.printed}" data-strike="${blow.damage}" data-nag="${nag ? '1' : '0'}" data-durability="${unit.durability}">
       <span class="portrait">${picture(card, 'board')}</span>
-      <span class="atk${blow.boosted ? ' boosted' : ''}" title="${esc(blow.title)}">${blow.damage}</span>
-      ${blow.boosted ? `<span class="atk-src">${esc(blow.title)}</span>` : ''}
-      <span class="hp">${unit.durability}</span>
+      <span class="atk tone-${blow.attackTone || 'normal'}" title="${esc(blow.title)}">${blow.damage}</span>
+      <span class="hp tone-${blow.durabilityTone || 'normal'}" title="${esc(blow.title)}">${unit.durability}</span>
       <span class="mname">${esc(card.name)}</span>
       ${ribbons ? `<span class="ribbon">${esc(ribbons)}</span>` : ''}
     </button>`;
@@ -507,7 +519,7 @@
   }
   function formationLine(seat) {
     const state = game.formationState(seat);
-    const head = state.leader ? `领队${state.percent}%` : '无领队';
+    const head = state.leader ? '同系相邻 +1/+1' : '没有同系邻居';
     const extra = [];
     if (game.upper_links[seat].length) extra.push('上位+1');
     if (game.aiflow_armed[seat]) extra.push('说人话');
@@ -536,7 +548,7 @@
   function lane(seat) {
     const row = game.boards[seat];
     const card = selectedCard();
-    const inserting = seat === game.seat && card && ((card.kind === 'main' && directPlay(card)) || card.chain_piece);
+    const inserting = seat === game.seat && card && card.kind === 'main' && directPlay(card);
     const bits = [];
     row.forEach((unit, slot) => {
       if (inserting) bits.push(insertMark(slot));
@@ -545,7 +557,16 @@
         bits.push(html);
         return;
       }
-      bits.push(`<div class="unit-wrap" data-wrap="${esc(unit.iid)}">${html}</div>`);
+      const chips = (unit.attachment_meta || []).length || unit.attachments.length
+        ? `<div class="row2">${unit.attachments.map((id, index) => {
+          const meta = (unit.attachment_meta || [])[index] || {};
+          const bonus = cards[id].attack_bonus || 0;
+          return `<button type="button" class="chip${meta.ready === false ? ' cold' : ''}" data-action="select-unit" data-iid="${esc(meta.iid || '')}" data-host="${esc(unit.iid)}" data-seat="${seat}" data-card="${esc(id)}">+${bonus}</button>`;
+        }).join('')}<i class="wire"></i></div>`
+        : '<div class="row2"></div>';
+      const column = seat === 0 ? `${html}${chips}` : `${chips}${html}`;
+      const detail = strikeParts(seat, unit).title;
+      bits.push(`<div class="unit-col" data-wrap="${esc(unit.iid)}">${column}<span class="breakdown">${esc(detail)}</span></div>`);
     });
     if (inserting) bits.push(insertMark(row.length));
     return bits.join('');
@@ -841,7 +862,7 @@
       <div class="slots foe" style="--n:${Math.max(1, game.units(other).length)}">${lane(other)}</div>
       <div class="midline">
         <h3 id="turn-label" data-seat="${game.seat}">${esc(turnText)}</h3>
-        <p class="formation" data-formation="${game.formationState(active).percent}">${esc(formationLine(active))}</p>
+        <p class="formation" data-formation="${game.formationState(active).leader_attack}">${esc(formationLine(active))}</p>
         ${strikeHint()}
         <p id="coach">${esc(coach())}</p>
         ${ui.notice ? `<p class="table-notice" data-notice="1">${esc(ui.notice)}</p>` : ''}
@@ -1604,7 +1625,7 @@
       result = source ? C.probe(game, () => game.knob(seat, source.iid, hit.key.slice(5))) : result;
     }
     if (result.ok) return null;
-    return { key: hit.key, text: shortReject(result.code, kind) };
+    return { key: hit.key, text: result.message || shortReject(result.code, kind) };
   }
 
   function hostNear(index, marks) {
@@ -1665,15 +1686,22 @@
     return false;
   }
 
-  function showPeek(cardId) {
+  function showPeek(cardId, iid) {
     const card = cards[cardId];
     if (!card) return;
     document.querySelectorAll('.peek').forEach(node => node.remove());
+    let detail = blurb(card);
+    if (iid && game) {
+      try {
+        const found = game.find(iid);
+        detail = strikeParts(found[0], found[2]).title;
+      } catch (error) { /* 手牌长按只看卡面 */ }
+    }
     const peek = document.createElement('div');
     peek.className = 'peek';
-    peek.textContent = `${card.name} · ${blurb(card)} · 只查看，不出牌`;
+    peek.textContent = `${card.name} · ${detail} · 只查看，不出牌`;
     document.body.appendChild(peek);
-    setTimeout(() => peek.remove(), 900);
+    setTimeout(() => peek.remove(), 1200);
   }
 
   function moveGhost(x, y) {
@@ -1812,7 +1840,7 @@
       dead: false,
       kind: hand ? 'hand' : knob ? 'knob' : 'unit',
       handIndex: hand ? Number(hand.dataset.handIndex) : null,
-      cardId: hand ? hand.dataset.card : '',
+      cardId: hand ? hand.dataset.card : (unit ? unit.dataset.card : ''),
       iid: unit ? unit.dataset.iid : '',
       seat: unit ? unit.dataset.seat : '',
       origin: { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
@@ -1821,7 +1849,7 @@
     inspectTimer = setTimeout(() => {
       if (!gesture || gesture.dragging || gesture.id !== event.pointerId) return;
       gesture.inspect = true;
-      if (gesture.cardId) showPeek(gesture.cardId);
+      if (gesture.cardId) showPeek(gesture.cardId, gesture.iid);
     }, 400);
   }, true);
 

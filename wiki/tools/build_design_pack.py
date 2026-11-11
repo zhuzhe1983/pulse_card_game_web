@@ -11,7 +11,7 @@ import argparse
 import json
 from pathlib import Path
 
-SOURCE_COMMIT = "0309ed8334491c3f1693a42ad068be82f5bb46a7"
+SOURCE_COMMIT = "9171f2594608b5e43b1aef66ed04feb21c902cf6"
 FORBIDDEN = ("/workspace/", "/Users/", "/home/", "file://")
 PLAYTEST_IDS = ("xiao_yin", "hou_ke", "dian_zhen", "qiao_jian", "xuan_niu")
 PLAYTEST_KEYS = (

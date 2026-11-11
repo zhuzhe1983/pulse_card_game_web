@@ -1,12 +1,12 @@
 /* pcg.clash.v0 table rules.
- * Bound to prompt commit 0309ed8334491c3f1693a42ad068be82f5bb46a7.
+ * Bound to prompt commit 9171f2594608b5e43b1aef66ed04feb21c902cf6.
  * Card numbers come from the playtest JSON. Combat reads kind, cost, attack,
  * durability, guard, bonuses and the closed effect list only.
  * star, family and version are stored when a pack supplies them and are not read here. */
 (function (root) {
   'use strict';
   const RULESET = 'pcg.clash.v0';
-  const SOURCE_COMMIT = '0309ed8334491c3f1693a42ad068be82f5bb46a7';
+  const SOURCE_COMMIT = '9171f2594608b5e43b1aef66ed04feb21c902cf6';
   const IMPLEMENTED_EFFECTS = Object.freeze(['support', 'knob', 'mend', 'damage', 'heal_base', 'supply', 'play_draw', 'play_damage', 'draw_one', 'retrieve_grave', 'arm_aiflow', 'seize']);
   const IMPLEMENTED = new Set(IMPLEMENTED_EFFECTS);
   const REASON_TEXT = Object.freeze({
@@ -22,6 +22,13 @@
     no_stamp_on_board: '场上没有小印',
     already_has_attachment: '这台已经有配件',
     already_has_guard: '这台已经有护卫',
+    wrong_host: '这张配件没有合法宿主',
+    hat_slot_full: '这台 Stick 的帽子口已经占用',
+    module_slot_full: '这台 Core 的模块口已经占用',
+    base_slot_full: 'Atom 的底座口已经占用',
+    unit_slot_full: 'Atom 的 Unit 口已满',
+    chain_slot_full: '这台主控的 Chain 口已经占用',
+    need_to_chain: 'Atom 要先装上接上串，才能接 Chain',
     bad_index: '插入位置不对',
     game_over: '终局已锁定'
   });
@@ -111,9 +118,41 @@
     };
   }
 
+  function lineKey(card) {
+    return (card && (card['ser' + 'ies_key'] || card.cost_line)) || 'other';
+  }
+
+  function attachmentBonus(cards, unit) {
+    const metas = unit.attachment_meta || [];
+    let total = 0;
+    let adjacency = 0;
+    const details = [];
+    let previous = null;
+    let previousLive = false;
+    const ids = unit.attachments || [];
+    for (let index = 0; index < ids.length; index += 1) {
+      const meta = metas[index] || { ready: true, severed: false };
+      if (meta.severed) break;
+      if (meta.ready === false) {
+        previous = null;
+        previousLive = false;
+        continue;
+      }
+      const card = cards[ids[index]];
+      const bonus = card.attack_bonus || 0;
+      total += bonus;
+      if (bonus) details.push([card.name || ids[index], bonus]);
+      const mount = card.mount_class;
+      if (previousLive && mount && mount === previous) adjacency += 1;
+      previous = mount;
+      previousLive = true;
+    }
+    return { total, adjacency, details };
+  }
+
   function attackOf(cards, unit) {
-    const bonus = unit.attachments.reduce((sum, id) => sum + cards[id].attack_bonus, 0);
-    return cards[unit.card_id].attack + bonus + unit.temp_attack;
+    const bonus = attachmentBonus(cards, unit);
+    return cards[unit.card_id].attack + bonus.total + bonus.adjacency + (unit.temp_attack || 0);
   }
 
   function hasGuard(cards, unit) {
@@ -205,37 +244,123 @@
     }
 
     formationState(seat) {
-      const line = this.boards[seat];
-      if (!line.length || line[0].link || this.cards[line[0].card_id].kind !== 'main') {
-        return { leader: false, chain_run: 0, percent: 0 };
-      }
-      let run = 0;
-      for (const entry of line.slice(1)) {
-        if (entry.link && this.isChain(entry.card_id)) run += 1;
-        else break;
-      }
-      return { leader: true, chain_run: run, percent: 10 + 5 * run };
+      const row = this.units(seat);
+      if (!row.length) return { leader: false, leader_attack: 0 };
+      return { leader: true, leader_attack: 0 };
     }
 
-    strikePreview(seat, attackValue) {
-      if (attackValue <= 0) return 0;
-      let boosted = attackValue;
-      if (this.upper_links[seat].length) boosted += 1;
-      if (this.aiflow_armed[seat]) boosted += 2;
-      const percent = this.formationState(seat).percent;
-      return Math.floor((boosted * (100 + percent) + 99) / 100);
+    lineNeighbors(seat, unit) {
+      const row = this.units(seat);
+      const index = row.findIndex(item => item.iid === unit.iid);
+      if (index < 0) return [0, 0];
+      const key = lineKey(this.cards[unit.card_id]);
+      const left = index > 0 && lineKey(this.cards[row[index - 1].card_id]) === key ? 1 : 0;
+      const right = index + 1 < row.length && lineKey(this.cards[row[index + 1].card_id]) === key ? 1 : 0;
+      return [left, right];
     }
 
-    strikeDamage(seat, attackValue) {
-      if (attackValue <= 0) return 0;
-      let boosted = attackValue;
-      if (this.upper_links[seat].length) boosted += 1;
-      if (this.aiflow_armed[seat]) {
-        boosted += 2;
-        this.aiflow_armed[seat] = false;
+    applySeries(seat) {
+      for (const unit of this.units(seat)) {
+        const [left, right] = this.lineNeighbors(seat, unit);
+        const bonus = left + right;
+        const old = unit.line_durability || 0;
+        unit.line_durability = bonus;
+        unit.durability = unit.durability + bonus - old;
       }
-      const percent = this.formationState(seat).percent;
-      return Math.floor((boosted * (100 + percent) + 99) / 100);
+    }
+
+    profile(seat, unit, consumeAiflow) {
+      const card = this.cards[unit.card_id];
+      const bonus = attachmentBonus(this.cards, unit);
+      const parts = [['基础', card.attack, card.durability]];
+      bonus.details.forEach(item => parts.push([item[0], item[1], 0]));
+      if (bonus.adjacency) parts.push(['同类相连', bonus.adjacency, 0]);
+      if (unit.temp_attack) parts.push(['本回合临时', unit.temp_attack, 0]);
+      const raw = card.attack + bonus.total + bonus.adjacency + (unit.temp_attack || 0);
+      let attack = 0;
+      if (raw > 0) {
+        attack = raw;
+        const [left, right] = this.lineNeighbors(seat, unit);
+        if (left) {
+          attack += 1;
+          parts.push(['左邻同系', 1, 1]);
+        }
+        if (right) {
+          attack += 1;
+          parts.push(['右邻同系', 1, 1]);
+        }
+        if (this.upper_links[seat].some(item => item.target === unit.iid)) {
+          attack += 1;
+          parts.push(['来自上位的爱', 1, 0]);
+        }
+        if (this.aiflow_armed[seat]) {
+          attack += 2;
+          parts.push(['说人话', 2, 0]);
+          if (consumeAiflow) this.aiflow_armed[seat] = false;
+        }
+      }
+      const wound = card.durability + (unit.line_durability || 0) - unit.durability;
+      if (wound > 0) parts.push(['受伤', 0, -wound]);
+      return { attack, parts };
+    }
+
+    strikePreview(seat, unitOrValue) {
+      if (typeof unitOrValue === 'number') {
+        if (unitOrValue <= 0) return 0;
+        return unitOrValue;
+      }
+      return this.profile(seat, unitOrValue, false).attack;
+    }
+
+    strikeDamage(seat, unitOrValue) {
+      if (typeof unitOrValue === 'number') {
+        if (unitOrValue <= 0) return 0;
+        return unitOrValue;
+      }
+      return this.profile(seat, unitOrValue, true).attack;
+    }
+
+    attachmentRejection(host, card) {
+      const family = this.cards[host.card_id].host_family || 'other';
+      const mount = card.mount_class;
+      const mounted = host.attachments.map(id => this.cards[id]);
+      if (mount === 'hat') {
+        if (family !== 'stick') return ['wrong_host', 'Hat 只能装在 Stick 上'];
+        if (mounted.some(item => item.mount_class === 'hat')) return ['hat_slot_full', '这台 Stick 的帽子口已经占用'];
+      } else if (mount === 'module') {
+        if (family !== 'core') return ['wrong_host', 'Module 只能装在 Core 上'];
+        if (mounted.some(item => item.mount_class === 'module')) return ['module_slot_full', '这台 Core 的模块口已经占用'];
+      } else if (mount === 'base') {
+        if (family !== 'atom') return ['wrong_host', 'Base 只能装在 Atom 上'];
+        if (mounted.some(item => item.mount_class === 'base')) return ['base_slot_full', 'Atom 的底座口已经占用'];
+      } else if (mount === 'unit') {
+        if (family !== 'atom') return ['wrong_host', 'Unit 只能装在 Atom 上'];
+        const cap = mounted.some(item => item.atom_bus === 'to_unit') ? 2 : 1;
+        const units = mounted.filter(item => item.mount_class === 'unit').length;
+        if (units >= cap) return ['unit_slot_full', 'Atom 的 Unit 口已满'];
+      } else if (mount === 'chain') {
+        if (family === 'atom') {
+          if (!mounted.some(item => item.atom_bus === 'to_chain')) return ['need_to_chain', 'Atom 要先装上接上串，才能接 Chain'];
+        } else if (mounted.some(item => item.mount_class === 'chain')) {
+          return ['chain_slot_full', '这台主控的 Chain 口已经占用'];
+        }
+      } else if (card.kind === 'attachment') {
+        return ['wrong_host', '这张配件没有合法宿主'];
+      }
+      if (card.grants_guard && hasGuard(this.cards, host)) return ['already_has_guard', '这台主控已经有护卫'];
+      return null;
+    }
+
+    findAttachment(iid) {
+      for (const seat of [0, 1]) {
+        for (const unit of this.units(seat)) {
+          const metas = unit.attachment_meta || [];
+          for (let index = 0; index < metas.length; index += 1) {
+            if (metas[index] && metas[index].iid === iid) return [seat, unit, index];
+          }
+        }
+      }
+      return null;
     }
 
     effectiveMax(seat) {
@@ -362,8 +487,9 @@
       for (const unit of this.units(seat)) {
         unit.sick = false;
         unit.attacked = false;
+        (unit.attachment_meta || []).forEach(meta => { meta.ready = true; });
       }
-      this.event(`座位${seat}场上原有单位解除新入场限制`);
+      this.event(`座位${seat}场上原有单位解除新入场限制，第二排配件开始提供加成`);
       this.max_supply[seat] = Math.min(this.rules.maxSupply, this.max_supply[seat] + 1);
       this.supply[seat] = this.effectiveMax(seat);
       this.phase = 'main';
@@ -414,6 +540,8 @@
         attacked: false,
         temp_attack: 0,
         attachments: [],
+        attachment_meta: [],
+        line_durability: 0,
         ability_lock: false
       };
       this._nextId += 1;
@@ -428,7 +556,8 @@
       const unit = this.makeUnit(seat, cardId, sick, durability);
       row.splice(index, 0, unit);
       this.reindex(seat);
-      this.event(`座位${seat}${this.cards[cardId].name}进入位置${index}，${sick ? '本回合不能攻击' : '本回合可以攻击'}`);
+      this.applySeries(seat);
+      this.event(`座位${seat}${this.cards[cardId].name}进入位置${unit.slot}，${sick ? '本回合不能攻击' : '本回合可以攻击'}`);
       return unit;
     }
 
@@ -460,15 +589,15 @@
           if (found[0] === seat) throw new ClashError('入场伤害只能指定敌方单位', 'bad_target');
         }
       } else if (card.kind === 'attachment') {
-        if (card.chain_piece && index != null && (!Number.isInteger(index) || index < 0 || index > this.boards[seat].length)) {
-          throw new ClashError('插入位置越界', 'bad_index');
-        }
         if (target == null) throw new ClashError('配件必须指定己方主控', 'bad_target');
         const found = this.find(this.resolveIid(seat, target));
         if (found[0] !== seat) throw new ClashError('配件只能装在己方主控上', 'bad_target');
         host = found[2];
-        if (host.attachments.length >= 1) throw new ClashError('这台主控已经有配件', 'already_has_attachment');
-        if (card.grants_guard && hasGuard(this.cards, host)) throw new ClashError('这台主控已经有护卫', 'already_has_guard');
+        if (index != null && (!Number.isInteger(index) || index < 0 || index > host.attachments.length)) {
+          throw new ClashError('插入位置越界', 'bad_index');
+        }
+        const rejection = this.attachmentRejection(host, card);
+        if (rejection) throw new ClashError(rejection[1], rejection[0]);
       } else if (card.kind === 'spell') {
         this.prepareSpell(seat, card, target, mode);
       } else {
@@ -486,9 +615,13 @@
           this.event(`入场打击，${this.cards[foe.card_id].name}耐久变为${foe.durability}`);
         }
       } else if (card.kind === 'attachment') {
-        host.attachments.push(cardId);
-        this.event(`${card.name}装到${this.cards[host.card_id].name}上`);
-        if (card.chain_piece) this.placeLink(seat, cardId, host.iid, index);
+        const meta = { iid: `a${this._nextId}`, ready: false, severed: false };
+        this._nextId += 1;
+        if (!host.attachment_meta) host.attachment_meta = [];
+        const slot = index == null ? host.attachments.length : index;
+        host.attachments.splice(slot, 0, cardId);
+        host.attachment_meta.splice(slot, 0, meta);
+        this.event(`${card.name}放到${this.cards[host.card_id].name}的第二排，本回合还没有加成`);
       } else {
         this.castSpell(seat, card, target, mode);
         this.graves[seat].push(cardId);
@@ -548,7 +681,7 @@
         const host = found[2];
         if (found[0] !== seat) throw new ClashError('补给只能指定己方单位', 'bad_target');
         if (mode === 'heal') {
-          const cap = this.cards[host.card_id].durability;
+          const cap = this.cards[host.card_id].durability + (host.line_durability || 0);
           host.durability = Math.min(cap, host.durability + card.amount);
           this.event(`${this.cards[host.card_id].name}耐久变为${host.durability}`);
         } else if (mode === 'temp') {
@@ -696,10 +829,31 @@
       if (target === 'base') {
         if (guards.length && !bypassGuard(this.cards, attacker)) throw new ClashError('对方有护卫时只能攻击护卫', 'guard_blocks');
         attacker.attacked = true;
-        const damage = this.strikeDamage(seat, attackOf(this.cards, attacker));
+        const damage = this.strikeDamage(seat, attacker);
         this.bases[1 - seat] = Math.max(0, this.bases[1 - seat] - damage);
         this.event(`${this.cards[attacker.card_id].name}攻击基地，对方基地变为${this.bases[1 - seat]}`);
         this.check_bases();
+        return;
+      }
+      const accessory = typeof target === 'string' && /^a\d+$/.test(target) ? this.findAttachment(target) : null;
+      if (accessory) {
+        const accSeat = accessory[0];
+        const host = accessory[1];
+        const accIndex = accessory[2];
+        if (accSeat === seat) throw new ClashError('不能攻击己方配件', 'bad_target');
+        attacker.attacked = true;
+        const chipDamage = this.strikeDamage(seat, attacker);
+        const chipId = host.attachments[accIndex];
+        if (chipDamage <= 0) {
+          this.event(`攻击没有打掉${this.cards[chipId].name}`);
+          return;
+        }
+        host.attachments.splice(accIndex, 1);
+        host.attachment_meta.splice(accIndex, 1);
+        host.attachment_meta.slice(accIndex).forEach(meta => { meta.severed = true; });
+        this.graves[accSeat].push(chipId);
+        this.event(`${this.cards[chipId].name}被打离第二排，后面的加成断开`);
+        this.check_deaths();
         return;
       }
       const defFound = this.find(this.resolveIid(1 - seat, target));
@@ -710,8 +864,8 @@
         throw new ClashError('对方有护卫时只能攻击护卫', 'guard_blocks');
       }
       attacker.attacked = true;
-      const atkDamage = this.strikeDamage(seat, attackOf(this.cards, attacker));
-      const defDamage = this.strikeDamage(1 - seat, attackOf(this.cards, defender));
+      const atkDamage = this.strikeDamage(seat, attacker);
+      const defDamage = this.strikeDamage(1 - seat, defender);
       attacker.durability = Math.max(0, attacker.durability - defDamage);
       defender.durability = Math.max(0, defender.durability - atkDamage);
       this.event(`${this.cards[attacker.card_id].name}与${this.cards[defender.card_id].name}同时结算，耐久变为${attacker.durability}和${defender.durability}`);
@@ -719,12 +873,14 @@
     }
 
     check_deaths() {
+      for (const seat of [0, 1]) this.applySeries(seat);
       const dead = [];
       for (const seat of [0, 1]) {
         for (const unit of this.boards[seat]) {
           if (!unit.link && unit.durability <= 0) dead.push(unit);
         }
       }
+      if (!dead.length) return;
       for (const unit of dead) {
         const seat = unit.seat;
         if (!this.boards[seat].includes(unit)) continue;
@@ -738,9 +894,10 @@
         this.event(`${this.cards[unit.card_id].name}进入座位${seat}墓地`);
       }
       for (const seat of [0, 1]) {
-        this.boards[seat] = this.boards[seat].filter(unit => unit.durability > 0);
+        this.boards[seat] = this.boards[seat].filter(unit => unit.link || unit.durability > 0);
         this.reindex(seat);
       }
+      this.check_deaths();
     }
 
     check_bases() {
@@ -775,22 +932,39 @@
     }
 
     view() {
-      const show = unit => {
+      const tone = (current, printed) => current > printed ? 'green' : current < printed ? 'red' : 'normal';
+      const show = (seat, unit) => {
         if (!unit) return null;
-        const shown = {
+        if (unit.link) {
+          return { iid: unit.iid, card_id: unit.card_id, link: true, host_iid: unit.host_iid, durability: unit.durability, sick: !!unit.sick, guard: false, attachments: [] };
+        }
+        const card = this.cards[unit.card_id];
+        const profile = this.profile(seat, unit, false);
+        const metas = unit.attachment_meta || [];
+        const row2 = unit.attachments.map((cardId, index) => {
+          const meta = metas[index] || { ready: true, severed: false };
+          return {
+            iid: meta.iid,
+            card_id: cardId,
+            bonus: this.cards[cardId].attack_bonus || 0,
+            ready: meta.ready !== false,
+            severed: !!meta.severed,
+            face: 'bonus'
+          };
+        });
+        return {
           iid: unit.iid,
           card_id: unit.card_id,
           durability: unit.durability,
-          attack: attackOf(this.cards, unit),
+          attack: profile.attack,
+          attack_tone: tone(profile.attack, card.attack),
+          durability_tone: tone(unit.durability, card.durability),
+          breakdown: profile.parts.map(part => ({ source: part[0], attack: part[1], durability: part[2] })),
           sick: unit.sick,
           guard: hasGuard(this.cards, unit),
-          attachments: unit.attachments.slice()
+          attachments: unit.attachments.slice(),
+          row2
         };
-        if (unit.link) {
-          shown.link = true;
-          shown.host_iid = unit.host_iid;
-        }
-        return shown;
       };
       return {
         bases: this.bases.slice(),
@@ -798,7 +972,7 @@
         max_supply: this.max_supply.slice(),
         hands: this.hands.map(hand => hand.slice()),
         decks: this.decks.map(deck => deck.length),
-        boards: this.boards.map(row => row.map(show)),
+        boards: this.boards.map((row, seat) => row.map(unit => show(seat, unit))),
         graves: this.graves.map(grave => grave.slice()),
         winner: this.winner,
         seat: this.seat,
@@ -826,6 +1000,12 @@
       sick: !!unit.sick,
       attacked: !!unit.attacked,
       guard: hasGuard(game.cards, unit),
+      host_family: game.cards[unit.card_id].host_family || 'other',
+      mounts: unit.attachments.map(id => ({
+        mount_class: game.cards[id].mount_class,
+        atom_bus: game.cards[id].atom_bus,
+        grants_guard: !!game.cards[id].grants_guard
+      })),
       attached: unit.attachments.length > 0,
       effect: game.cards[unit.card_id].effect || null,
       amount: game.cards[unit.card_id].amount || 0,
@@ -839,7 +1019,8 @@
         return {
           id, cost: card.cost, kind: card.kind, effect: card.effect || null,
           amount: card.amount || 0, grants_guard: !!card.grants_guard,
-          attack: card.attack || 0, durability: card.durability || 0
+          attack: card.attack || 0, durability: card.durability || 0,
+          mount_class: card.mount_class || null, atom_bus: card.atom_bus || null
         };
       }),
       own: game.units(seat).map(show),
@@ -879,8 +1060,26 @@
     if (coin && !blocked('play:' + coin.id)) return { type: 'play', card: coin.id, target: null, key: 'play:' + coin.id };
     const heal = view.hand.find(card => card.effect === 'heal_base' && card.cost <= view.supply);
     if (heal && view.baseSelf < 20 && !blocked('play:' + heal.id)) return { type: 'play', card: heal.id, target: null, key: 'play:' + heal.id };
-    const part = view.hand.find(card => card.kind === 'attachment' && card.cost <= view.supply);
-    const host = part && view.own.find(unit => !unit.attached && !(part.grants_guard && unit.guard));
+    const mountFits = (card, unit) => {
+      const family = unit.host_family || 'other';
+      const mounted = unit.mounts || [];
+      const mount = card.mount_class;
+      if (mount === 'hat') return family === 'stick' && !mounted.some(item => item.mount_class === 'hat');
+      if (mount === 'module') return family === 'core' && !mounted.some(item => item.mount_class === 'module');
+      if (mount === 'base') return family === 'atom' && !mounted.some(item => item.mount_class === 'base');
+      if (mount === 'unit') {
+        if (family !== 'atom') return false;
+        const cap = mounted.some(item => item.atom_bus === 'to_unit') ? 2 : 1;
+        return mounted.filter(item => item.mount_class === 'unit').length < cap;
+      }
+      if (mount === 'chain') {
+        if (family === 'atom') return mounted.some(item => item.atom_bus === 'to_chain');
+        return !mounted.some(item => item.mount_class === 'chain');
+      }
+      return false;
+    };
+    const part = view.hand.find(card => card.kind === 'attachment' && card.cost <= view.supply && view.own.some(unit => mountFits(card, unit) && !(card.grants_guard && unit.guard)));
+    const host = part && view.own.find(unit => mountFits(part, unit) && !(part.grants_guard && unit.guard));
     if (part && host) {
       const key = 'play:' + part.id + ':' + host.iid;
       if (!blocked(key)) return { type: 'play', card: part.id, target: host.iid, key };
@@ -1015,31 +1214,67 @@
     };
   }
 
-  function assembleSim(pool, rng, wantHigh, wantMid) {
-    const used = {};
-    const low = pool.filter(card => card.kind === 'main' && card.cost <= 2);
-    const mid = pool.filter(card => card.cost >= 3 && card.cost <= 5);
-    const high = pool.filter(card => card.cost >= 6);
-    const parts = pool.filter(card => card.kind === 'attachment');
-    const mains = pool.filter(card => card.kind === 'main');
-    let picked = [];
-    picked = picked.concat(takeLimited(rng, low, 5, used));
-    picked = picked.concat(takeLimited(rng, mid, wantMid, used));
-    picked = picked.concat(takeLimited(rng, high, wantHigh, used));
-    picked = picked.concat(takeLimited(rng, parts, 5, used));
-    const haveMains = picked.filter(card => card.kind === 'main').length;
-    if (haveMains < 10) picked = picked.concat(takeLimited(rng, mains, 10 - haveMains, used));
-    const rest = [];
+  function hostFamilyOf(card) {
+    const mount = card.mount_class;
+    if (mount === 'hat') return 'stick';
+    if (mount === 'module') return 'core';
+    if (mount === 'base' || mount === 'unit') return 'atom';
+    if (mount === 'chain') return 'any';
+    return null;
+  }
+
+  function deckHasHost(ids, byId, family) {
+    const mains = ids.map(id => byId[id]).filter(card => card && card.kind === 'main');
+    if (family === 'any') return mains.length > 0;
+    return mains.some(card => card.host_family === family);
+  }
+
+  function takeHosted(rng, parts, count, used, ids, byId) {
+    const chosen = [];
+    const pool = shuffle(parts.filter(card => (used[card.template_id] || 0) < copyLimit(card)), rng);
     pool.forEach(card => {
-      const room = copyLimit(card) - (used[card.template_id] || 0);
-      for (let n = 0; n < room; n += 1) rest.push(card);
-    });
-    shuffle(rest, rng).forEach(card => {
-      if (picked.length >= 30) return;
-      if ((used[card.template_id] || 0) >= copyLimit(card)) return;
+      if (chosen.length >= count) return;
+      const family = hostFamilyOf(card);
+      const draft = ids.concat(chosen.map(item => item.template_id));
+      if (!family || !deckHasHost(draft, byId, family)) return;
       used[card.template_id] = (used[card.template_id] || 0) + 1;
-      picked.push(card);
+      chosen.push(card);
     });
+    return chosen;
+  }
+
+  function assembleSim(pool, rng) {
+    const byId = {};
+    pool.forEach(card => { byId[card.template_id] = card; });
+    const used = {};
+    const buckets = {
+      low: pool.filter(card => card.kind === 'main' && card.cost <= 2),
+      mid: pool.filter(card => card.kind === 'main' && card.cost >= 3 && card.cost <= 5),
+      high: pool.filter(card => card.kind === 'main' && card.cost >= 6),
+      main: pool.filter(card => card.kind === 'main'),
+      part: pool.filter(card => card.kind === 'attachment')
+    };
+    let picked = [];
+    picked = picked.concat(takeLimited(rng, buckets.low, 5, used));
+    picked = picked.concat(takeLimited(rng, buckets.mid, 5, used));
+    picked = picked.concat(takeLimited(rng, buckets.high, 3, used));
+    const haveMains = picked.filter(card => card.kind === 'main').length;
+    if (haveMains < 21) picked = picked.concat(takeLimited(rng, buckets.main, 21 - haveMains, used));
+    ['uiflow_blocks', 'ezdata_note', 'aiflow_say'].forEach(id => {
+      if (byId[id] && !(used[id] > 0)) {
+        used[id] = 1;
+        picked.push(byId[id]);
+      }
+    });
+    const ids = () => picked.map(card => card.template_id);
+    picked = picked.concat(takeHosted(rng, buckets.part, 4, used, ids(), byId));
+    while (picked.length < 30) {
+      let added = takeLimited(rng, buckets.main, 1, used);
+      const partsNow = picked.filter(card => card.kind === 'attachment').length;
+      if (!added.length && partsNow < 6) added = takeHosted(rng, buckets.part, 1, used, ids(), byId);
+      if (!added.length) break;
+      picked = picked.concat(added);
+    }
     return picked.slice(0, 30);
   }
 
@@ -1067,25 +1302,10 @@
 
   function buildSimDeck(pool, rng) {
     const notes = [];
-    let wantHigh = 3;
-    let wantMid = 5;
-    let picked = assembleSim(pool, rng, wantHigh, wantMid);
-    let shape = deckShape(picked);
-    if (picked.length !== 30 || shape.high < 3) {
-      wantHigh = 1;
-      notes.push('放宽高费');
-      picked = assembleSim(pool, rng, wantHigh, wantMid);
-      shape = deckShape(picked);
-    }
-    if (picked.length !== 30 || shape.mid < 5) {
-      wantMid = 2;
-      notes.push('减少中费');
-      picked = assembleSim(pool, rng, wantHigh, wantMid);
-      shape = deckShape(picked);
-    }
-    if (picked.length !== 30 || shape.lowMains < 1) notes.push('牌池不足');
+    let picked = assembleSim(pool, rng);
+    if (picked.length !== 30) notes.push('牌池不足');
     const ordered = openingWindow(picked);
-    shape = deckShape(ordered);
+    const shape = deckShape(ordered);
     if (shape.topCheap < 2) notes.push('牌池不足');
     return { ids: ordered.map(card => card.template_id), notes, shape };
   }

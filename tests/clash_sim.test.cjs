@@ -49,11 +49,22 @@ function chainTop(card) {
 check('many seeds deal two 30-card decks and replay', () => {
   const seeds = [1, 2, 7, 42, 99, 123456, 0x7ba58fb3, 999983];
   const seen = new Set();
+  const servicesIn = services.cards.filter(card => card.template_id === 'uiflow_blocks' || card.template_id === 'ezdata_note' || card.template_id === 'aiflow_say');
+  const pool = catalog.included.concat(servicesIn);
   const byId = Object.create(null);
-  catalog.included.forEach(card => { byId[card.template_id] = card; });
+  pool.forEach(card => { byId[card.template_id] = card; });
+  const serviceIds = ['uiflow_blocks', 'ezdata_note', 'aiflow_say'];
+  function hostOk(deck, card) {
+    const mains = deck.map(id => byId[id]).filter(item => item && item.kind === 'main');
+    if (card.mount_class === 'hat') return mains.some(item => item.host_family === 'stick');
+    if (card.mount_class === 'module') return mains.some(item => item.host_family === 'core');
+    if (card.mount_class === 'base' || card.mount_class === 'unit') return mains.some(item => item.host_family === 'atom');
+    if (card.mount_class === 'chain') return mains.length > 0;
+    return true;
+  }
   seeds.forEach(seed => {
-    const once = C.buildSimDecks(catalog.included, seed);
-    const twice = C.buildSimDecks(catalog.included, seed);
+    const once = C.buildSimDecks(pool, seed);
+    const twice = C.buildSimDecks(pool, seed);
     assert.deepEqual(twice.decks, once.decks);
     assert.equal(once.notes.includes('牌池不足'), false, JSON.stringify(once.notes));
     seen.add(JSON.stringify(once.decks));
@@ -70,9 +81,13 @@ check('many seeds deal two 30-card decks and replay', () => {
         if (chainTop(card)) assert.ok(counts[id] <= 1);
       });
       const cards = deck.map(id => byId[id]);
-      assert.ok(cards.filter(card => card.kind === 'main').length >= 10);
-      assert.ok(cards.filter(card => card.kind === 'attachment').length >= 5);
-      assert.ok(cards.filter(card => card.kind === 'main' && card.cost <= 2).length >= 5);
+      const mains = cards.filter(card => card.kind === 'main');
+      const parts = cards.filter(card => card.kind === 'attachment');
+      assert.ok(mains.length >= 21);
+      assert.ok(parts.length >= 4 && parts.length <= 6);
+      serviceIds.forEach(id => assert.equal(counts[id], 1, id));
+      parts.forEach(card => assert.equal(hostOk(deck, card), true, card.template_id));
+      assert.ok(mains.filter(card => card.cost <= 2).length >= 5);
       assert.ok(cards.filter(card => card.cost >= 3 && card.cost <= 5).length >= 5);
       assert.ok(cards.filter(card => card.cost >= 6).length >= 3);
       assert.ok(cards.slice(0, 4).filter(card => card.cost <= 2).length >= 2);
@@ -86,11 +101,13 @@ check('many seeds deal two 30-card decks and replay', () => {
 check('a 30-card deck deals 3 and 4, burns at 10, fatigues the core, and the spare battery is legal for the opponent', () => {
   const loaded = C.loadPack(playtest, caps);
   roster.cards.forEach(card => { loaded.cards[card.template_id] = card; });
+  services.cards.forEach(card => { loaded.cards[card.template_id] = card; });
   loaded.cards.bei_yong_dian_chi = {
     template_id: 'bei_yong_dian_chi', name: '备用电池', kind: 'spell', cost: 0, attack: 0, durability: 0,
     attack_bonus: 0, grants_guard: false, bypass_guard: false, guard: false, effect: 'supply', amount: 1
   };
-  const built = C.buildSimDecks(catalog.included, 42);
+  const servicesIn = services.cards.filter(card => card.template_id === 'uiflow_blocks' || card.template_id === 'ezdata_note' || card.template_id === 'aiflow_say');
+  const built = C.buildSimDecks(catalog.included.concat(servicesIn), 42);
   const simRules = Object.assign({}, loaded.rules, { handLimit: 10 });
   const game = new C.Game(loaded.cards, built.decks[0], built.decks[1], simRules, 'bei_yong_dian_chi', loaded.capabilities);
   game.start_turn();

@@ -70,9 +70,19 @@
               "card_id": "xiao_yin",
               "durability": 2,
               "attack": 2,
+              "attack_tone": "normal",
+              "durability_tone": "normal",
+              "breakdown": [
+                {
+                  "source": "基础",
+                  "attack": 2,
+                  "durability": 2
+                }
+              ],
               "sick": true,
               "guard": false,
-              "attachments": []
+              "attachments": [],
+              "row2": []
             }
           ],
           []
@@ -142,9 +152,19 @@
               "card_id": "xiao_yin",
               "durability": 2,
               "attack": 2,
+              "attack_tone": "normal",
+              "durability_tone": "normal",
+              "breakdown": [
+                {
+                  "source": "基础",
+                  "attack": 2,
+                  "durability": 2
+                }
+              ],
               "sick": true,
               "guard": false,
-              "attachments": []
+              "attachments": [],
+              "row2": []
             }
           ],
           [
@@ -153,9 +173,19 @@
               "card_id": "dian_zhen",
               "durability": 4,
               "attack": 1,
+              "attack_tone": "normal",
+              "durability_tone": "normal",
+              "breakdown": [
+                {
+                  "source": "基础",
+                  "attack": 1,
+                  "durability": 4
+                }
+              ],
               "sick": true,
               "guard": true,
-              "attachments": []
+              "attachments": [],
+              "row2": []
             }
           ]
         ]
@@ -202,25 +232,63 @@
           3
         ],
         "graves": [
-          [
-            "xiao_yin"
-          ],
+          [],
           [
             "jie_yi_ge_dian"
           ]
         ],
         "winner": null,
         "boards": [
-          [],
+          [
+            {
+              "iid": "u1",
+              "card_id": "xiao_yin",
+              "durability": 1,
+              "attack": 2,
+              "attack_tone": "normal",
+              "durability_tone": "red",
+              "breakdown": [
+                {
+                  "source": "基础",
+                  "attack": 2,
+                  "durability": 2
+                },
+                {
+                  "source": "受伤",
+                  "attack": 0,
+                  "durability": -1
+                }
+              ],
+              "sick": false,
+              "guard": false,
+              "attachments": [],
+              "row2": []
+            }
+          ],
           [
             {
               "iid": "u2",
               "card_id": "dian_zhen",
-              "durability": 1,
+              "durability": 2,
               "attack": 1,
+              "attack_tone": "normal",
+              "durability_tone": "red",
+              "breakdown": [
+                {
+                  "source": "基础",
+                  "attack": 1,
+                  "durability": 4
+                },
+                {
+                  "source": "受伤",
+                  "attack": 0,
+                  "durability": -2
+                }
+              ],
               "sick": true,
               "guard": true,
-              "attachments": []
+              "attachments": [],
+              "row2": []
             }
           ]
         ]
@@ -254,7 +322,7 @@
       "seat": 1,
       "expect": {
         "bases": [
-          18,
+          19,
           20
         ],
         "supply": [
@@ -283,34 +351,82 @@
           2
         ],
         "graves": [
-          [
-            "xiao_yin"
-          ],
+          [],
           [
             "jie_yi_ge_dian"
           ]
         ],
         "winner": null,
         "boards": [
-          [],
+          [
+            {
+              "iid": "u1",
+              "card_id": "xiao_yin",
+              "durability": 1,
+              "attack": 2,
+              "attack_tone": "normal",
+              "durability_tone": "red",
+              "breakdown": [
+                {
+                  "source": "基础",
+                  "attack": 2,
+                  "durability": 2
+                },
+                {
+                  "source": "受伤",
+                  "attack": 0,
+                  "durability": -1
+                }
+              ],
+              "sick": false,
+              "guard": false,
+              "attachments": [],
+              "row2": []
+            }
+          ],
           [
             {
               "iid": "u2",
               "card_id": "dian_zhen",
-              "durability": 1,
+              "durability": 2,
               "attack": 1,
+              "attack_tone": "normal",
+              "durability_tone": "red",
+              "breakdown": [
+                {
+                  "source": "基础",
+                  "attack": 1,
+                  "durability": 4
+                },
+                {
+                  "source": "受伤",
+                  "attack": 0,
+                  "durability": -2
+                }
+              ],
               "sick": false,
               "guard": true,
-              "attachments": []
+              "attachments": [],
+              "row2": []
             },
             {
               "iid": "u3",
               "card_id": "xiao_yin",
               "durability": 2,
               "attack": 2,
+              "attack_tone": "normal",
+              "durability_tone": "normal",
+              "breakdown": [
+                {
+                  "source": "基础",
+                  "attack": 2,
+                  "durability": 2
+                }
+              ],
               "sick": true,
               "guard": false,
-              "attachments": []
+              "attachments": [],
+              "row2": []
             }
           ]
         ]
@@ -332,7 +448,7 @@
       "seat": 0,
       "expect": {
         "bases": [
-          18,
+          19,
           20
         ],
         "supply": [
@@ -361,9 +477,7 @@
           2
         ],
         "graves": [
-          [
-            "xiao_yin"
-          ],
+          [],
           [
             "jie_yi_ge_dian"
           ]
@@ -372,33 +486,92 @@
         "boards": [
           [
             {
+              "iid": "u1",
+              "card_id": "xiao_yin",
+              "durability": 1,
+              "attack": 2,
+              "attack_tone": "normal",
+              "durability_tone": "red",
+              "breakdown": [
+                {
+                  "source": "基础",
+                  "attack": 2,
+                  "durability": 2
+                },
+                {
+                  "source": "受伤",
+                  "attack": 0,
+                  "durability": -1
+                }
+              ],
+              "sick": false,
+              "guard": false,
+              "attachments": [],
+              "row2": []
+            },
+            {
               "iid": "u4",
               "card_id": "art_h024",
               "durability": 2,
               "attack": 3,
+              "attack_tone": "normal",
+              "durability_tone": "normal",
+              "breakdown": [
+                {
+                  "source": "基础",
+                  "attack": 3,
+                  "durability": 2
+                }
+              ],
               "sick": true,
               "guard": false,
-              "attachments": []
+              "attachments": [],
+              "row2": []
             }
           ],
           [
             {
               "iid": "u2",
               "card_id": "dian_zhen",
-              "durability": 1,
+              "durability": 2,
               "attack": 1,
+              "attack_tone": "normal",
+              "durability_tone": "red",
+              "breakdown": [
+                {
+                  "source": "基础",
+                  "attack": 1,
+                  "durability": 4
+                },
+                {
+                  "source": "受伤",
+                  "attack": 0,
+                  "durability": -2
+                }
+              ],
               "sick": false,
               "guard": true,
-              "attachments": []
+              "attachments": [],
+              "row2": []
             },
             {
               "iid": "u3",
               "card_id": "xiao_yin",
               "durability": 2,
               "attack": 2,
+              "attack_tone": "normal",
+              "durability_tone": "normal",
+              "breakdown": [
+                {
+                  "source": "基础",
+                  "attack": 2,
+                  "durability": 2
+                }
+              ],
               "sick": true,
               "guard": false,
-              "attachments": []
+              "attachments": [],
+              "row2": []
             }
           ]
         ]

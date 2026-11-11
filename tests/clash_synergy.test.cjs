@@ -51,19 +51,13 @@ function check(name, fn) {
   console.log('ok', name);
 }
 
-check('two 1/2 leaders each strike for 2 once', () => {
+check('two equal stamps trade once', () => {
   const { game } = arena();
   const mine = game.spawn(0, 'xiao_yin', null, null, false);
   const foe = game.spawn(1, 'xiao_yin', null, null, false);
-  assert.equal(game.formationState(0).percent, 10);
-  assert.equal(game.formationState(1).percent, 10);
-  assert.equal(game.upper_links[0].length, 0);
-  assert.equal(game.upper_links[1].length, 0);
-  assert.equal(game.aiflow_armed[0], false);
-  assert.equal(game.aiflow_armed[1], false);
-  assert.equal(C.attackOf(game.cards, mine), 2);
-  assert.equal(game.strikePreview(0, 1), 2);
-  assert.equal(game.strikePreview(0, 2), 3);
+  assert.equal(game.formationState(0).leader_attack, 0);
+  assert.equal(game.strikePreview(0, mine), 2);
+  assert.equal(game.strikePreview(1, foe), 2);
   const before = game.log.length;
   game.attack(0, mine.iid, foe.iid);
   const lines = game.log.slice(before).filter(line => String(line).includes('同时结算'));
@@ -75,16 +69,15 @@ check('two 1/2 leaders each strike for 2 once', () => {
   const left = thick.spawn(0, 'xiao_yin', null, 5, false);
   const right = thick.spawn(1, 'xiao_yin', null, 5, false);
   thick.attack(0, left.iid, right.iid);
-  assert.equal(left.durability, 2);
-  assert.equal(right.durability, 2);
+  assert.equal(left.durability, 3);
+  assert.equal(right.durability, 3);
 });
 
-check('leader percent and low attack ceil', () => {
+check('stamp hits base for its printed attack', () => {
   const { game } = arena();
   game.spawn(0, 'xiao_yin', null, null, false);
-  assert.equal(game.formationState(0).percent, 10);
   game.attack(0, 'xiao_yin', 'base');
-  assert.equal(game.bases[1], 17);
+  assert.equal(game.bases[1], 18);
 });
 
 check('zero attack stays zero', () => {
@@ -94,41 +87,37 @@ check('zero attack stays zero', () => {
   assert.equal(game.bases[1], 20);
 });
 
-check('chain run breaks and recalculates', () => {
+check('chain sits on the host and breaks when the host dies', () => {
   const { game, chainId } = arena();
-  game.spawn(0, 'qiao_jian', null, null, false);
-  game.spawn(0, 'xiao_yin', null, null, false);
+  const host = game.spawn(0, 'qiao_jian', null, null, false);
+  const other = game.spawn(0, 'xiao_yin', null, null, false);
   game.hands[0] = [chainId, 'lian_jie', chainId];
-  game.play(0, chainId, 'qiao_jian', null, 1);
-  assert.deepEqual(game.formationState(0), { leader: true, chain_run: 1, percent: 15 });
+  game.play(0, chainId, 'qiao_jian');
+  assert.deepEqual(host.attachments, [chainId]);
+  assert.equal(game.boards[0].some(unit => unit.link), false);
+  rejects('chain_slot_full', () => game.play(0, chainId, 'qiao_jian'));
   game.play(0, 'lian_jie', 'xiao_yin');
-  assert.equal(game.formationState(0).percent, 15);
+  assert.deepEqual(other.attachments, ['lian_jie']);
   const before = fingerprint(game);
   rejects('bad_index', () => game.play(0, chainId, 'qiao_jian', null, 99));
   assert.equal(fingerprint(game), before);
-  const link = game.boards[0].find(unit => unit.link && unit.card_id === chainId);
-  game.boards[0].splice(game.boards[0].indexOf(link), 1);
-  game.boards[0].splice(0, 0, link);
-  game.reindex(0);
-  assert.equal(game.formationState(0).percent, 0);
-  const host = game.units(0).find(unit => unit.card_id === 'qiao_jian');
   host.durability = 0;
   game.check_deaths();
-  assert.deepEqual(game.units(0).map(unit => unit.card_id), ['xiao_yin']);
+  assert.equal(game.units(0).some(unit => unit.card_id === 'qiao_jian'), false);
   assert.equal(game.graves[0].filter(id => id === chainId).length, 1);
-  assert.equal(game.boards[0].some(unit => unit.link && unit.card_id === 'lian_jie'), true);
+  assert.deepEqual(other.attachments, ['lian_jie']);
 });
 
 check('three links and counter uses defender formation', () => {
   const { game, chainId } = arena();
   game.spawn(0, 'xiao_yin', null, null, false);
-  game.spawn(0, 'dian_zhen', null, null, false);
+  game.spawn(0, 'art_h050', null, null, false);
   game.spawn(0, 'hou_ke', null, null, false);
   game.hands[0] = [chainId, chainId, chainId];
-  game.play(0, chainId, 'xiao_yin', null, 1);
-  game.play(0, chainId, 'dian_zhen', null, 2);
-  game.play(0, chainId, 'hou_ke', null, 3);
-  assert.equal(game.formationState(0).percent, 25);
+  game.play(0, chainId, 'xiao_yin');
+  game.play(0, chainId, 'art_h050');
+  game.play(0, chainId, 'hou_ke');
+  assert.equal(game.formationState(0).leader_attack, 0);
   game.spawn(1, 'art_h024', null, null, false);
   game.attack(0, 'xiao_yin', 'art_h024');
   assert.deepEqual(game.units(1), []);
@@ -157,7 +146,7 @@ check('connect aura does not stack or reprint', () => {
   game.upperLink(0, 'cm4_stack', 'xiao_yin');
   assert.equal(game.supply[0], 9);
   game.attack(0, 'qiao_jian', 'base');
-  assert.equal(game.bases[1], 13);
+  assert.equal(game.bases[1], 14);
   const before = fingerprint(game);
   rejects('already_used_ability', () => game.upperLink(0, 'art_h050', 'xiao_yin'));
   assert.equal(fingerprint(game), before);
@@ -178,14 +167,14 @@ check('illegal upper link types are atomic', () => {
   game.spawn(1, 'xiao_yin', null, null, false);
   game.hands[0] = [chainId];
   game.play(0, chainId, 'qiao_jian');
-  const link = game.boards[0].find(unit => unit.link);
+  const chip = game.units(0).find(unit => unit.card_id === 'qiao_jian').attachment_meta[0].iid;
   let before = fingerprint(game);
   for (const pair of [
     ['art_h018', 'qiao_jian'],
     ['art_h050', 'art_h018'],
     ['art_h050', 'xiao_yin'],
     ['art_h050', 'art_h050'],
-    ['art_h050', link.iid]
+    ['art_h050', chip]
   ]) {
     rejects('bad_target', () => game.upperLink(0, pair[0], pair[1]));
     assert.equal(fingerprint(game), before);
@@ -237,7 +226,7 @@ check('three services and combo order', () => {
   rejects('already_used_ability', () => game.play(0, 'aiflow_say'));
   assert.equal(fingerprint(game), before);
   game.attack(0, 'art_h024', 'base');
-  assert.equal(game.bases[1], 14);
+  assert.equal(game.bases[1], 15);
   assert.equal(game.aiflow_armed[0], false);
   game.hands[0] = ['aiflow_say', 'gan_rao'];
   game.supply[0] = 8;
@@ -258,7 +247,7 @@ check('seize moves control and keeps state', () => {
   game.hands[1] = [chainId];
   game.spawn(1, 'art_h050', null, null, false);
   game.seat = 1;
-  game.play(1, chainId, 'qiao_jian', null, 1);
+  game.play(1, chainId, 'qiao_jian');
   game.upperLink(1, 'art_h050', 'qiao_jian');
   game.seat = 0;
   const beforeDur = foe.durability;
@@ -270,9 +259,9 @@ check('seize moves control and keeps state', () => {
   assert.deepEqual(moved.attachments, [chainId]);
   assert.equal(moved.sick, true);
   assert.equal(moved.ability_lock, true);
-  assert.equal(game.boards[0].at(-1).link, true);
-  assert.equal(game.formationState(0).percent, 15);
-  assert.equal(game.formationState(1).percent, 10);
+  assert.equal(game.boards[0].some(unit => unit.link), false);
+  assert.equal(game.formationState(0).leader_attack, 0);
+  assert.equal(game.formationState(1).leader_attack, 0);
   assert.deepEqual(game.upper_links[1], []);
   rejects('summoning_sickness', () => game.attack(0, 'qiao_jian', 'base'));
   assert.equal(game.graves[0].includes('burner_seize'), true);
@@ -289,12 +278,12 @@ check('illegal seize is atomic and leader can be taken', () => {
   const leader = game.spawn(1, 'art_h050', null, null, false);
   game.hands[1] = [chainId];
   game.seat = 1;
-  game.play(1, chainId, 'art_h050', null, 1);
+  game.play(1, chainId, 'art_h050');
   game.seat = 0;
-  const link = game.boards[1].find(unit => unit.link);
+  const chip = leader.attachment_meta[0].iid;
   const before = fingerprint(game);
   assert.throws(() => game.play(0, 'burner_seize', 'base'));
-  assert.throws(() => game.play(0, 'burner_seize', link.iid));
+  assert.throws(() => game.play(0, 'burner_seize', chip));
   assert.throws(() => game.play(0, 'burner_seize', 'xiao_yin'));
   assert.equal(fingerprint(game), before);
   game.play(0, 'burner_seize', leader.iid);

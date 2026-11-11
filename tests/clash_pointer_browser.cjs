@@ -375,7 +375,7 @@ async function main() {
     await sleep(40);
     snap = await state();
     eq(snap.opening, 'sim', '模拟战入口');
-    eq(snap.pool, '96', '可入池张数');
+    eq(snap.pool, '99', '可入池张数');
     if (!snap.seed) throw new Error('没有显示种子');
     eq(snap.deck0.split(',').length, 30, '玩家 30 张');
     eq(snap.deck1.split(',').length, 30, '对方 30 张');
@@ -389,7 +389,7 @@ async function main() {
     snap = await state();
     if (snap.seed === firstSeed) throw new Error('重开模拟战没有换种子');
     await shot('10-sim-1280');
-    evidence.push('模拟战可入池 96 张，每边 30 张，同一种子重放，重开换种子');
+    evidence.push('模拟战可入池 99 张，每边 30 张，同一种子重放，重开换种子');
 
     await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
     await value(`document.querySelector('[data-action="mode"][data-mode="versus"]').click()`);
@@ -426,7 +426,7 @@ async function main() {
     await shot('12-phone-played-390');
     evidence.push('390×844 触屏拖出小印只部署一次，长按只查看，技能条没有挡住对方');
 
-    fs.writeFileSync(path.join(shotDir, 'evidence.json'), JSON.stringify({ evidence, pool: 96 }, null, 2));
+    fs.writeFileSync(path.join(shotDir, 'evidence.json'), JSON.stringify({ evidence, pool: 99 }, null, 2));
     console.log('PASS pointer');
     evidence.forEach(line => console.log(' -', line));
   } finally {

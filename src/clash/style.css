@@ -132,7 +132,7 @@ button { border: 0; color: inherit; background: none; font: inherit; }
 .supply-read b { font-family: "Pulse Numeral", "Arial Narrow", sans-serif; font-size: 28px; font-weight: 800; letter-spacing: .02em; }
 .slots {
   position: absolute; z-index: 3; display: flex; align-items: flex-end; justify-content: safe center;
-  gap: 10px; overflow: visible; padding: 26px 8px 4px;
+  gap: 10px; overflow: visible; padding: 4px 8px;
 }
 .slots.foe, .slots.mine { left: 220px; width: calc(100% - 430px); height: var(--lane-h); }
 .slots.foe { top: 156px; }
@@ -158,11 +158,29 @@ button { border: 0; color: inherit; background: none; font: inherit; }
 .hand-dock { position: absolute; z-index: 20; left: 8%; right: 8%; bottom: calc(var(--sink) * -1); height: var(--hand-h); pointer-events: none; overflow: visible; }
 .hand-dock .playcard, .hand-dock .hands { pointer-events: auto; }
 .hands.fan { height: 100%; display: flex; justify-content: center; align-items: flex-end; overflow: visible; }
-.unit-wrap {
-  position: relative; flex: 0 1 auto; height: auto; max-height: calc(100% - 6px);
-  width: min(210px, max(84px, calc((100% - 24px) / var(--n, 2))));
-  aspect-ratio: 132 / 169;
+.unit-wrap, .unit-col {
+  position: relative; flex: 0 1 auto; height: auto; max-height: 100%;
+  width: min(calc(var(--lane-h) * 132 / 169), max(84px, calc((100% - 24px) / var(--n, 2))));
 }
+.unit-col { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; }
+.slots.foe .unit-col { justify-content: flex-start; }
+.slots { perspective: 900px; }
+.slots.mine { perspective-origin: 50% -40%; }
+.slots.foe { perspective-origin: 50% 140%; }
+.unit-col .minion {
+  width: 100%; height: auto; aspect-ratio: 132 / 169; min-height: 0;
+  transform: rotateX(46deg); transform-origin: center bottom; transform-style: preserve-3d;
+}
+.slots.foe .unit-col .minion { transform: rotateX(-46deg); transform-origin: center top; }
+.row2 { display: flex; gap: 4px; min-height: 28px; max-width: 100%; overflow-x: auto; align-items: center; justify-content: center; }
+.chip { flex: 0 0 auto; min-width: 36px; height: 26px; padding: 0 6px; border-radius: 8px; background: #143028; color: #d7fff6; border: 1px solid #7dfff0; font-weight: 800; }
+.chip.cold { opacity: .55; }
+.wire { width: 2px; height: 8px; background: #7dfff0; }
+.bonus-face { position: absolute; left: 50%; bottom: 18%; transform: translateX(-50%); z-index: 3; color: #39ff7a; font-size: 28px; font-weight: 800; text-shadow: 0 1px 0 #04140a; }
+.minion .atk.tone-green, .minion .hp.tone-green { color: #39ff7a; }
+.minion .atk.tone-red, .minion .hp.tone-red { color: #ff5a3c; }
+.breakdown { display: none; position: absolute; z-index: 8; left: 50%; bottom: calc(100% + 8px); transform: translateX(-50%); width: max-content; max-width: 260px; padding: 4px 8px; border-radius: 8px; background: #102018f8; color: #f7fffb; border: 1px solid #7dfff0; font-size: 12px; font-weight: 800; white-space: normal; pointer-events: none; }
+.unit-col:hover .breakdown, .minion.selected .breakdown { display: block; }
 .minion, .playcard { position: relative; border: 0; background: transparent; color: #f4f7f8; text-align: center; }
 .minion { width: 100%; height: 100%; flex: none; padding: 0; overflow: visible; }
 .act-menu {
@@ -252,7 +270,8 @@ button { border: 0; color: inherit; background: none; font: inherit; }
 .playcard:hover .detail, .playcard.selected .detail { display: block; }
 .playcard.ready { filter: drop-shadow(0 0 8px #7dfff0); }
 .minion.can-attack { border-radius: 12px; }
-.minion.selected { transform: translateY(-10px); }
+.slots.mine .unit-col .minion.selected { transform: translateY(-8px) rotateX(46deg); }
+.slots.foe .unit-col .minion.selected { transform: translateY(8px) rotateX(-46deg); }
 .minion.hot { filter: drop-shadow(0 0 8px #ff5a3c); }
 .minion.guard { filter: drop-shadow(0 0 6px #ffb020); }
 .minion.arrive, .link-mark.arrive, .playcard.arrive { animation: flyin .35s ease; }
@@ -364,7 +383,7 @@ button { border: 0; color: inherit; background: none; font: inherit; }
 .skill-bar .act img { width: 18px; height: 18px; }
 .skill-bar .act-copy em, .skill-bar .act-why { font-size: 11px; }
 .arena.marking .slots, .arena.dragging .slots { overflow: visible; z-index: 8; }
-.insert, .core-wrap, .unit-wrap { position: relative; }
+.insert, .core-wrap, .unit-wrap, .unit-col { position: relative; }
 [data-mark="legal"], [data-mark="hot"] {
   outline: 3px solid #1cff6a; border-radius: 12px;
   box-shadow: 0 0 0 3px #063318, 0 0 0 6px #1cff6a;
@@ -451,21 +470,24 @@ body.hand-out .playcard { width: 72px !important; height: 34px !important; margi
   .supply-read { height: 16px; line-height: 16px; font-size: 10px; }
   .supply-read b { font-size: 14px; }
   .slots.foe, .slots.mine {
-    left: 8px; width: calc(100% - 16px); height: 118px;
+    left: 8px; width: calc(100% - 16px); height: 128px;
     overflow-x: auto; overflow-y: hidden;
     background: linear-gradient(#00000055, #00000088);
     border: 1px solid #7dfff066; border-radius: 12px;
     box-shadow: inset 0 0 0 1px #00000066;
+    padding-top: 8px; padding-bottom: 4px;
   }
-  .slots.foe { top: 162px; }
+  .slots.foe { top: 156px; }
   .slots.mine { top: auto; bottom: 268px; }
-  .midline { left: 12px; right: 12px; top: 286px; transform: none; }
-  .mode-bar { top: 328px; left: 8px; right: 8px; max-width: none; justify-items: center; }
+  .midline { left: 12px; right: 12px; top: 288px; transform: none; }
+  .mode-bar { top: 340px; left: 8px; right: 8px; max-width: none; justify-items: center; }
   .mode-switch { justify-content: center; }
   .mode-note { font-size: 12px; text-align: center; }
-  .nfc-dock { top: 404px; left: 8px; right: 8px; width: auto; }
+  .nfc-dock { top: 400px; left: 8px; right: 8px; width: auto; }
   .nfc-panel { top: 0; left: 0; right: 0; width: auto; max-height: 28vh; }
-  .unit-wrap { flex: 0 0 92px; width: 92px; max-width: 92px; height: calc(100% - 8px); }
+  .unit-wrap, .unit-col { flex: 0 0 92px; width: 92px; max-width: 92px; height: auto; max-height: 100%; }
+  .unit-col .minion { width: 100%; height: auto; aspect-ratio: 132 / 169; }
+  .row2 { max-width: 88px; }
   .minion { width: 100%; height: 100%; max-height: none; flex-basis: auto; }
   .link-mark { width: 36px; height: 64px; flex-basis: 36px; }
   .minion .mname, .playcard .cname { font-size: 13px; bottom: 16%; }
@@ -495,7 +517,7 @@ body.hand-out .playcard { width: 72px !important; height: 34px !important; margi
     background-size: 100% 100%;
   }
   .act-menu { max-width: 70vw; }
-  .end-confirm { top: 288px; right: 8px; left: 8px; bottom: auto; width: auto; padding: 6px; }
+  .end-confirm { top: 318px; right: 8px; left: 8px; bottom: auto; width: auto; padding: 6px; }
   .end-confirm p { font-size: 13px; }
   .end-confirm button { min-height: 28px; font-size: 12px; padding: 2px 8px; }
   .skill-bar.bottom { left: 8px; right: 120px; bottom: 232px; height: 36px; }

@@ -43,7 +43,9 @@
       "series_confidence": "official",
       "cost_note": "基线就是 Stamp-S3 本体。支援费用降到 1。",
       "chip_tier": "s3",
-      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。"
+      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。",
+      "host_family": "other",
+      "series_key": "stamp_core"
     },
     {
       "template_id": "dian_zhen",
@@ -67,7 +69,9 @@
       "series_confidence": "official",
       "cost_note": "基线就是 Atom-Matrix 本体。",
       "chip_tier": "classic",
-      "chip_tier_note": "官方芯片栏是经典 ESP32（LX6 或 PICO），不是 C3/S3/P4。"
+      "chip_tier_note": "官方芯片栏是经典 ESP32（LX6 或 PICO），不是 C3/S3/P4。",
+      "host_family": "atom",
+      "series_key": "atom_core"
     },
     {
       "template_id": "xuan_niu",
@@ -91,7 +95,9 @@
       "series_confidence": "official",
       "cost_note": "基线就是 Dial 本体，按 Dial 档，不按邮票模块。",
       "chip_tier": "s3",
-      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。"
+      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。",
+      "host_family": "other",
+      "series_key": "dial_body"
     },
     {
       "template_id": "qiao_jian",
@@ -115,7 +121,9 @@
       "series_confidence": "official",
       "cost_note": "基线就是 Cardputer 本体。",
       "chip_tier": "s3",
-      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。"
+      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。",
+      "host_family": "other",
+      "series_key": "cardputer_body"
     },
     {
       "template_id": "hou_ke",
@@ -142,7 +150,9 @@
       "series_confidence": "official",
       "cost_note": "基线就是 StamPLC 工控整机，不降到 1 费。",
       "chip_tier": "s3",
-      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。"
+      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。",
+      "host_family": "other",
+      "series_key": "stamp_machine"
     },
     {
       "template_id": "lian_jie",
@@ -167,7 +177,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "战术或配件，不按主机系列改费用。"
+      "cost_note": "战术或配件，不按主机系列改费用。",
+      "mount_class": "chain",
+      "atom_bus": null,
+      "mount_note": "基线链节，没有单独的 96 张图。按 Chain 装配。",
+      "face_numerals": "bonus"
     },
     {
       "template_id": "qian_li",
@@ -188,7 +202,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "忽略护卫能绕过护卫打基地，和 96 张里的同类配件一起上调到 4 费。"
+      "cost_note": "忽略护卫能绕过护卫打基地，和 96 张里的同类配件一起上调到 4 费。",
+      "mount_class": "unit",
+      "atom_bus": null,
+      "mount_note": "基线千里眼。硬件说明按 Unit。只装 Atom，占 Unit 口。",
+      "face_numerals": "bonus"
     },
     {
       "template_id": "hu_zhao",
@@ -209,7 +227,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "战术或配件，不按主机系列改费用。"
+      "cost_note": "战术或配件，不按主机系列改费用。",
+      "mount_class": "base",
+      "atom_bus": "plain",
+      "mount_note": "基线护罩没有官方 SKU。待试玩按底座，只装 Atom，用来演示已有护卫不能再装。",
+      "face_numerals": "bonus"
     },
     {
       "template_id": "bu_ji",

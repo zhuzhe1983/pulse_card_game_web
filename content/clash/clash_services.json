@@ -26,7 +26,10 @@
       "artwork": null,
       "official_name": "UIFlow / UiFlow",
       "role_note": "抽 1 张。手牌已满则那张牌进墓地。不给攻击。",
-      "hardware_note": "软件服务牌，不是硬件。"
+      "hardware_note": "软件服务牌，不是硬件。",
+      "artwork_status": "needs_service_face",
+      "artwork_requirement": "没有官方硬件图。卡面画中文卡名、费用和效果句，不画攻击和耐久，标明软件服务。不能用产品照片代替。",
+      "simulated_pool": true
     },
     {
       "template_id": "ezdata_note",
@@ -47,7 +50,10 @@
       "artwork": null,
       "official_name": "EzData / EzData2",
       "role_note": "把自己墓地最上面一张拿回手牌。墓地是空的也合法，这张牌照样消耗，不留待用次数。手牌已满则那张留在墓地。",
-      "hardware_note": "软件服务牌，不是硬件。"
+      "hardware_note": "软件服务牌，不是硬件。",
+      "artwork_status": "needs_service_face",
+      "artwork_requirement": "没有官方硬件图。卡面画中文卡名、费用和效果句，不画攻击和耐久，标明软件服务。不能用产品照片代替。",
+      "simulated_pool": true
     },
     {
       "template_id": "aiflow_say",
@@ -67,8 +73,11 @@
       "trusted_sku": null,
       "artwork": null,
       "official_name": "AiFlow / AIFlow",
-      "role_note": "直到本回合结束，下一次打击在阵型百分比之前攻击 +2，然后这次加成消失。已经武装时再打一张是非法，不扣电。固定伤害的战术不加这 2 点。",
-      "hardware_note": "软件服务牌，不是硬件。"
+      "role_note": "直到本回合结束，下一次打击攻击 +2，然后这次加成消失。已经武装时再打一张是非法，不扣电。固定伤害的战术不加这 2 点。",
+      "hardware_note": "软件服务牌，不是硬件。",
+      "artwork_status": "needs_service_face",
+      "artwork_requirement": "没有官方硬件图。卡面画中文卡名、费用和效果句，不画攻击和耐久，标明软件服务。不能用产品照片代替。",
+      "simulated_pool": true
     },
     {
       "template_id": "burner_seize",
@@ -89,7 +98,10 @@
       "artwork": null,
       "official_name": "M5Burner",
       "role_note": "指定一台敌方场上的主控，控制权改到己方，默认排到己方队伍最右。不是复制，不造成伤害，也不是临时增益。",
-      "hardware_note": "软件服务牌。现实里的 M5Burner 是本地烧录工具，不会远程夺走一台设备。"
+      "hardware_note": "软件服务牌。现实里的 M5Burner 是本地烧录工具，不会远程夺走一台设备。",
+      "simulated_pool": false,
+      "artwork_status": "needs_service_face",
+      "artwork_requirement": "没有官方硬件图。卡面画中文卡名、费用和效果句，不画攻击和耐久，标明软件服务。不能用产品照片代替。 夺舍不放进每一副模拟战牌库。"
     }
   ],
   "design_hosts": [

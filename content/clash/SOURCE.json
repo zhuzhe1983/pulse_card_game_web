@@ -2,26 +2,26 @@
   "ruleset_id": "pcg.clash.v0",
   "prompt_repo": "https://github.com/zhuzhe1983/pulse_card_game_prompt",
   "prompt_pr": 3,
-  "prompt_commit": "0309ed8334491c3f1693a42ad068be82f5bb46a7",
+  "prompt_commit": "9171f2594608b5e43b1aef66ed04feb21c902cf6",
   "prompt_commit_merged": false,
-  "previous_playtest_commit": "ead309b68815998a49e58b3d2823b94d692e11d2",
+  "previous_playtest_commit": "0309ed8334491c3f1693a42ad068be82f5bb46a7",
   "copied_from_handoff": {
     "HEAD.txt": "7ba58fb399956409ebc60323e2cca595c46112a0",
     "content/clash_playtest.json": {
       "repo_path": "content/clash/clash_playtest.json",
-      "sha256": "96c8ee84b57c6a6d637a2abe09c8bdf2d2b3c01c66787434e61a5fc172668de5"
+      "sha256": "7c7912e15dab9527c48475c803e029b960c0e8a869db7a89766e198b46f708df"
     },
     "fixtures/clash_v0_lesson.json": {
       "repo_path": "content/clash/clash_v0_lesson.json",
-      "sha256": "509f0c898d4806c6e3e8d5a32305eaaec22a1ff7b87489f54151829996b599c9"
+      "sha256": "d146ca765a840584b92cba942dc49f1d768940a4ecdde08e7f48e14c0f199942"
     },
     "docs/01_GAMEPLAY.md": {
       "repo_path": "content/clash/01_GAMEPLAY.md",
-      "sha256": "be3f241011b2925e33d2edbe0a8a5e486608670fa84e5300d384b7ae2e78aba8"
+      "sha256": "105f651212ff6f1eef244b6a32a62c897f1aac10bc90046864216715cca594aa"
     },
     "content/clash_roster_96.json": {
       "repo_path": "content/clash/clash_roster_96.json",
-      "sha256": "b8ebe6df6cff346d73a3583a7623dec0ce46afe5cafcc475f11336d83dd3a582"
+      "sha256": "c2c3ee54849595a53659fd6348213dc0e8392924adbde7d0b4891e7e321726f9"
     },
     "docs/18_ROSTER_AND_GROWTH.md": {
       "repo_path": "content/clash/18_ROSTER_AND_GROWTH.md",
@@ -29,20 +29,20 @@
     },
     "WEB_IMPLEMENTATION_HANDOFF.md": {
       "repo_path": "content/clash/WEB_IMPLEMENTATION_HANDOFF.md",
-      "sha256": "0544cd78d65a6aa0e9bfe5d0b74ff3fea7c1d0b079d3315425d52f034c4b54c3"
+      "sha256": "ab21910eae2a9df6cec26fcdf09cac72c56424562fe787491d45dac0d1004746"
     },
     "content/clash_services.json": {
       "repo_path": "content/clash/clash_services.json",
-      "sha256": "904edaec401443aa4ed49d32d6d26050be672803620a00671cf0d036fc64a35d"
+      "sha256": "19228ce71c8adb973ffc28122b0272c9bd6a9d8045a02b23798e1185b655e1fc"
     },
     "docs/19_SYNERGY_AND_SERVICES.md": {
       "repo_path": "content/clash/19_SYNERGY_AND_SERVICES.md",
-      "sha256": "ef11e1197d3fcdd7dc3d74e1e3356529929acb26b48b6d6caecde511cf3a839b"
+      "sha256": "eaff6b74435b3ad9a6cdbcbb76e722333bd62ac8af3bbd6477296c9b2710382f"
     },
     "docs/20_POINTER_AND_MODES.md": {
       "repo_path": "content/clash/20_POINTER_AND_MODES.md",
-      "sha256": "c822d56f24bf3cab474aa74d05511654877fd796a7429c9019f9c73e63d2682d"
+      "sha256": "9f4f0afbf8a8f803856ca331ae36550e43c3e30969f2c08f83530aedd1b35437"
     }
   },
-  "note": "芯片档次只改 48 张主控里 37 张的攻击和耐久，费用不变。教学局小印攻击 2，领队 10% 打出 3。"
+  "note": "装配改第二排和整数加成。最左主控 +1 按玩家要求取消，不实现。"
 }

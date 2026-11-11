@@ -106,9 +106,9 @@ check('series and hardware labels do not change the lesson', () => {
   loaded.cards.art_h024 = roster.cards.find(card => card.template_id === 'art_h024');
   const game = new C.Game(loaded.cards, data.decks.first, data.decks.second, loaded.rules, loaded.tokenId, loaded.capabilities);
   for (const step of lesson().lesson_steps) replayStep(game, step);
-  assert.equal(game.bases[0], 18);
+  assert.equal(game.bases[0], 19);
   assert.equal(game.bases[1], 20);
-  assert.deepEqual(game.units(0).map(unit => unit.card_id), ['art_h024']);
+  assert.deepEqual(game.units(0).map(unit => unit.card_id), ['xiao_yin', 'art_h024']);
   assert.deepEqual(game.units(1).map(unit => unit.card_id), ['dian_zhen', 'xiao_yin']);
 });
 
@@ -142,12 +142,13 @@ check('lesson fixture matches every checkpoint', () => {
   assert.ok(game.hands[1].includes('jie_yi_ge_dian'));
   assert.equal(game.decks[0][0], 'dian_zhen');
   for (const step of fixture.lesson_steps) replayStep(game, step);
-  assert.deepEqual(game.bases, [18, 20]);
-  assert.deepEqual(game.units(0).map(unit => unit.card_id), ['art_h024']);
+  assert.deepEqual(game.bases, [19, 20]);
+  assert.deepEqual(game.units(0).map(unit => unit.card_id), ['xiao_yin', 'art_h024']);
   assert.deepEqual(game.units(1).map(unit => unit.card_id), ['dian_zhen', 'xiao_yin']);
   assert.equal(game.winner, null);
   assert.ok(game.log.join('\n').includes('同时结算'));
-  assert.ok(game.log.join('\n').includes('小印进入座位0墓地'));
+  assert.equal(game.units(0)[0].durability, 1);
+  assert.equal(game.graves[0].includes('xiao_yin'), false);
 });
 
 check('finishTurn is end plus the other side starting, with no gap', () => {
@@ -183,19 +184,20 @@ check('first three turns and the coin above the cap', () => {
   game.start_turn();
   game.attack(0, 'xiao_yin', 'dian_zhen');
   assert.deepEqual(game.bases, [20, 20]);
-  assert.deepEqual(game.graves[0], ['xiao_yin']);
-  assert.equal(game.units(1)[0].durability, 1);
+  assert.deepEqual(game.graves[0], []);
+  assert.equal(game.units(0)[0].durability, 1);
+  assert.equal(game.units(1)[0].durability, 2);
   game.end_turn(0);
   game.start_turn();
   game.attack(1, 'dian_zhen', 'base');
-  assert.deepEqual(game.bases, [18, 20]);
+  assert.deepEqual(game.bases, [19, 20]);
   game.play(1, 'xiao_yin');
   unchanged(game, () => game.attack(1, 'xiao_yin', 'base'), 'summoning_sickness');
   game.end_turn(1);
   game.start_turn();
   game.play(0, 'art_h024');
-  assert.equal(game.units(0)[0].card_id, 'art_h024');
-  assert.equal(game.units(0)[0].sick, true);
+  assert.equal(game.units(0)[1].card_id, 'art_h024');
+  assert.equal(game.units(0)[1].sick, true);
   assert.deepEqual(game.units(1).map(unit => unit.card_id), ['dian_zhen', 'xiao_yin']);
   assert.equal(game.winner, null);
 });
@@ -318,8 +320,8 @@ check('full board, attachments, guard bypass, mend and burn', () => {
   const attacker = full.boards[0][6];
   attacker.sick = false;
   full.attack(0, attacker.iid, foe.iid);
-  assert.equal(foe.durability, 1);
-  assert.equal(full.boards[1][0].durability, 5);
+  assert.equal(foe.durability, 2);
+  assert.equal(full.boards[1][0].durability, 6);
   const queued = JSON.stringify(full.view());
   unchanged(full, () => full.play(0, 'art_h024', null, null, 99), 'bad_index');
   assert.equal(JSON.stringify(full.view()), queued);
@@ -334,7 +336,7 @@ check('full board, attachments, guard bypass, mend and burn', () => {
   const host = guard.units(0)[0];
   host.sick = false;
   guard.attack(0, 'dian_zhen', 'base');
-  assert.equal(guard.bases[1], 18);
+  assert.equal(guard.bases[1], 19);
 
   const mend = empty();
   mend.supply = [1, 1];
@@ -367,11 +369,10 @@ check('full board, attachments, guard bypass, mend and burn', () => {
   link.spawn(1, 'qiao_jian', 0, 3, false);
   link.attack(0, 'xiao_yin', 'qiao_jian');
   assert.deepEqual(link.graves[0], ['lian_jie', 'xiao_yin']);
-  assert.deepEqual(link.graves[1], ['qiao_jian']);
+  assert.equal(link.units(1)[0].durability, 1);
   assert.deepEqual(link.units(0), []);
   const deathLog = link.log.join('\n');
   assert.ok(deathLog.indexOf('链节随宿主进入墓地') < deathLog.indexOf('小印进入座位0墓地'));
-  assert.ok(deathLog.indexOf('小印进入座位0墓地') < deathLog.indexOf('敲键进入座位1墓地'));
 });
 
 check('illegal plays do not spend, and game over locks the table', () => {
@@ -386,7 +387,7 @@ check('illegal plays do not spend, and game over locks the table', () => {
   game.play(0, 'lian_jie', 'xiao_yin');
   assert.equal(game.supply[0], 0);
   game.supply[0] = 1;
-  unchanged(game, () => game.play(0, 'hu_zhao', 'xiao_yin'), 'already_has_attachment');
+  unchanged(game, () => game.play(0, 'hu_zhao', 'xiao_yin'), 'wrong_host');
 
   const knob = empty();
   knob.supply = [9, 0];
@@ -544,7 +545,7 @@ check('pack size is data, unknown effects and star ranks stay closed', () => {
   const played = new C.Game(ranked.cards, marked.decks.first, marked.decks.second, ranked.rules, ranked.tokenId, ranked.capabilities);
   played.start_turn();
   for (const step of lesson().lesson_steps.slice(1)) replayStep(played, step);
-  assert.deepEqual(played.bases, [18, 20]);
+  assert.deepEqual(played.bases, [19, 20]);
 
   const invented = JSON.parse(JSON.stringify(base));
   invented.cards[0] = Object.assign({}, invented.cards[0], { effect: 'rush', version: 'v1.2' });

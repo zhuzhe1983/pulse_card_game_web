@@ -18,7 +18,7 @@ ok(cards.length === 96 && new Set(cards.map(card => card.rid)).size === 96, '96 
 ok(new Set(roster.cards.map(card => card.rid)).size === 96, 'roster has 96 rids');
 ok(pack.status === 'integrated' && pack.design_status === 'playtest_draft', 'design is integrated and still a draft');
 ok(pack.ruleset_id === 'pcg.clash.v0', 'ruleset');
-ok(pack.source_commit === '0309ed8334491c3f1693a42ad068be82f5bb46a7', 'source commit');
+ok(pack.source_commit === '9171f2594608b5e43b1aef66ed04feb21c902cf6', 'source commit');
 ok(wiki.filterCards(cards, {cost: '1'}).length === cards.filter(card => card.design.gameplay.cost === 1).length, 'cost filter matches the printed cost');
 ok(wiki.filterCards(cards, {cost: '10'}).some(card => card.rid === 'H050'), 'zero key is in the 10 cost tier');
 ok(wiki.filterCards(cards, {band: 'series_machine'}).some(card => card.rid === 'H041'), 'StamPLC stays in the machine band');
