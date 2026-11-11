@@ -1517,9 +1517,17 @@
     if (!gesture || event.pointerId !== gesture.id) return;
     gesture.x = event.clientX;
     gesture.y = event.clientY;
-    const dist = Math.hypot(gesture.x - gesture.x0, gesture.y - gesture.y0);
-    if (dist > 10) {
-      if (gesture.inspect) return;
+    const dx = gesture.x - gesture.x0;
+    const dy = gesture.y - gesture.y0;
+    const dist = Math.hypot(dx, dy);
+    const dock = document.querySelector('.hand-dock');
+    const dockTop = dock ? dock.getBoundingClientRect().top : 0;
+    const pulledOut = gesture.kind === 'hand' && gesture.y < dockTop - 2;
+    const upward = gesture.kind === 'hand' && dy < -10 && Math.abs(dy) >= Math.abs(dx);
+    const handScroll = gesture.kind === 'hand' && !pulledOut && !upward;
+    if (handScroll) return;
+    if (dist > 10 || pulledOut) {
+      if (gesture.inspect && !pulledOut && !upward) return;
       event.preventDefault();
       if (!gesture.dragging) {
         gesture.dragging = true;

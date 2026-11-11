@@ -479,10 +479,25 @@ body.hand-out .playcard { width: 72px !important; height: 34px !important; margi
   .minion { width: 100%; height: 100%; max-height: none; flex-basis: auto; }
   .link-mark { width: 36px; height: 64px; flex-basis: 36px; }
   .minion .mname, .playcard .cname { font-size: 13px; bottom: 16%; }
-  .hand-dock { left: 4px; right: 4px; bottom: 0; height: 172px; overflow: hidden; z-index: 6; }
-  .hands.fan { overflow-x: auto; overflow-y: hidden; justify-content: flex-start; align-items: flex-end; }
-  .playcard { width: 132px; flex-basis: 132px; height: 164px; margin: 0 4px; transform: none; }
-  .playcard:hover, .playcard.selected { transform: translateY(-6px) scale(1.03) rotate(0deg); }
+  .table-page, .arena { width: 100%; max-width: 100%; overflow: hidden; }
+  .hand-dock {
+    left: 0; right: 0; bottom: 0; width: 100%; max-width: 100%; height: 168px;
+    overflow: hidden; z-index: 6; box-sizing: border-box;
+  }
+  .hands.fan {
+    box-sizing: border-box; width: 100%; min-width: 0; max-width: 100%; height: 100%;
+    margin: 0; padding: 0 8px 12px; justify-content: flex-start; align-items: flex-end;
+    overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity; touch-action: pan-x; scrollbar-width: thin;
+  }
+  .hands.fan::-webkit-scrollbar { height: 8px; }
+  .hands.fan::-webkit-scrollbar-thumb { background: #7dfff0aa; border-radius: 8px; }
+  .hands .playcard {
+    flex: 0 0 116px; width: 116px; min-width: 116px; max-width: 116px; height: 146px;
+    margin: 0 8px 0 0; transform: none; scroll-snap-align: start; touch-action: pan-x;
+  }
+  .hands .playcard:last-child { margin-right: 0; }
+  .playcard:hover, .playcard.selected { transform: translateY(-4px) scale(1) rotate(0deg); }
   .rail.tools { left: auto; top: auto; right: 8px; bottom: 178px; width: 104px; aspect-ratio: auto; z-index: 12; }
   .end-turn {
     width: 104px; height: 40px; padding: 0 6px; border-radius: 20px; font-size: 15px;
@@ -496,6 +511,41 @@ body.hand-out .playcard { width: 72px !important; height: 34px !important; margi
   .mode-switch button { font-size: 11px; }
   .pads:has(.live) { bottom: calc(100% + 6px); }
   .menu-pop, .log-panel { max-height: 70vh; overflow: auto; }
+}
+@media (max-height: 520px) and (min-width: 600px) {
+  .table-page, .arena { width: 100%; max-width: 100%; overflow: hidden; }
+  .opp-dock { left: 0; width: 100%; height: 36px; transform: none; }
+  .opp-hand { top: -8px; height: 42px; }
+  .back { width: 28px; height: 36px; margin: 0 -6px; }
+  .hand-count { top: 36px; left: 50%; transform: translateX(-50%); }
+  .core-slot.foe, .core-slot.mine { width: 64px; height: 56px; }
+  .core-slot.foe { top: 28px; }
+  .core-slot.mine { bottom: 104px; height: 46px; }
+  .core-slot.foe .battery, .core-slot.mine .battery { max-width: 34vw; }
+  .mana { flex-wrap: nowrap; gap: 1px; padding: 2px 4px; }
+  .mana i { width: 12px; height: 12px; }
+  .supply-read { height: 14px; line-height: 14px; font-size: 10px; }
+  .supply-read b { font-size: 13px; }
+  .slots.foe, .slots.mine { left: 8px; width: calc(100% - 16px); height: 60px; overflow-x: auto; overflow-y: hidden; }
+  .slots.foe { top: 86px; }
+  .slots.mine { top: auto; bottom: 156px; }
+  .unit-wrap { flex: 0 0 64px; width: 64px; max-width: 64px; height: calc(100% - 4px); }
+  .hand-dock {
+    left: 0; right: 0; bottom: 0; width: 100%; height: 100px; overflow: hidden; max-width: 100%;
+  }
+  .hands.fan {
+    box-sizing: border-box; width: 100%; min-width: 0; max-width: 100%; height: 100%;
+    padding: 0 8px 8px; justify-content: flex-start; align-items: flex-end;
+    overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; touch-action: pan-x;
+  }
+  .hands .playcard {
+    flex: 0 0 78px; width: 78px; min-width: 78px; max-width: 78px; height: 86px;
+    margin: 0 6px 0 0; transform: none; touch-action: pan-x;
+  }
+  .rail.tools { right: 8px; bottom: 104px; width: 88px; z-index: 12; }
+  .end-turn { width: 88px; height: 32px; border-radius: 16px; font-size: 13px; }
+  .skill-bar.bottom { left: 8px; right: 104px; bottom: 100px; height: 28px; }
+  .midline { top: 42%; }
 }
 </style>
 </head>
@@ -3129,9 +3179,17 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
     if (!gesture || event.pointerId !== gesture.id) return;
     gesture.x = event.clientX;
     gesture.y = event.clientY;
-    const dist = Math.hypot(gesture.x - gesture.x0, gesture.y - gesture.y0);
-    if (dist > 10) {
-      if (gesture.inspect) return;
+    const dx = gesture.x - gesture.x0;
+    const dy = gesture.y - gesture.y0;
+    const dist = Math.hypot(dx, dy);
+    const dock = document.querySelector('.hand-dock');
+    const dockTop = dock ? dock.getBoundingClientRect().top : 0;
+    const pulledOut = gesture.kind === 'hand' && gesture.y < dockTop - 2;
+    const upward = gesture.kind === 'hand' && dy < -10 && Math.abs(dy) >= Math.abs(dx);
+    const handScroll = gesture.kind === 'hand' && !pulledOut && !upward;
+    if (handScroll) return;
+    if (dist > 10 || pulledOut) {
+      if (gesture.inspect && !pulledOut && !upward) return;
       event.preventDefault();
       if (!gesture.dragging) {
         gesture.dragging = true;
