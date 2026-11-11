@@ -2,9 +2,9 @@
   "ruleset_id": "pcg.clash.v0",
   "prompt_repo": "https://github.com/zhuzhe1983/pulse_card_game_prompt",
   "prompt_pr": 3,
-  "prompt_commit": "7ba58fb399956409ebc60323e2cca595c46112a0",
+  "prompt_commit": "7e4c56675a93dfe759b81daa8582003ddf579aec",
   "prompt_commit_merged": false,
-  "previous_playtest_commit": "5e1caabddd13559ad8d05f1b9ff8b681ec164052",
+  "previous_playtest_commit": "7ba58fb399956409ebc60323e2cca595c46112a0",
   "copied_from_handoff": {
     "HEAD.txt": "7ba58fb399956409ebc60323e2cca595c46112a0",
     "content/clash_playtest.json": {
@@ -44,5 +44,5 @@
       "sha256": "c822d56f24bf3cab474aa74d05511654877fd796a7429c9019f9c73e63d2682d"
     }
   },
-  "note": "指针、绿标红×和模拟战对齐 prompt 7ba58fb。卡面数字仍是 5e1caab 的表，没有另改。占位牌细条已退役。模拟战候选是有实卡图且结算器认识的图册牌。"
+  "note": "刷卡出牌对齐 prompt 7e4c566 的第 21 篇。只在 Android Chrome 的 HTTPS 页面启用 NDEF。卡面数字没有改。"
 }

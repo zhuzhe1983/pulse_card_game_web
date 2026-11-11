@@ -383,6 +383,17 @@ button { border: 0; color: inherit; background: none; font: inherit; }
 .mode-switch button { pointer-events: auto; padding: 6px 12px; border-radius: 999px; background: #102018ee; color: #f7fffb; border: 1px solid #7dfff0; font-size: 15px; font-weight: 800; }
 .mode-switch button[aria-pressed="true"] { background: #7dfff0; color: #071014; }
 .mode-note { position: relative; margin: 0; padding: 4px 8px; border-radius: 8px; background: #07110ee6; color: #f7fffb; font-size: 15px; font-weight: 750; line-height: 1.35; text-align: left; }
+.nfc-dock { position: absolute; z-index: 15; top: 54px; right: 16px; width: min(280px, 34vw); display: grid; gap: 6px; justify-items: stretch; }
+.nfc-entry, .nfc-init, .nfc-panel button, .nfc-panel select {
+  pointer-events: auto; padding: 6px 8px; border-radius: 8px; background: #102018ee; color: #f7fffb;
+  border: 1px solid #8d98a0; font-size: 14px; font-weight: 750; text-align: left;
+}
+.nfc-entry:disabled { opacity: .92; }
+.nfc-status { margin: 0; padding: 4px 8px; border-radius: 8px; background: #07110ee6; color: #fff6d8; font-size: 14px; font-weight: 750; }
+.nfc-panel {
+  position: absolute; z-index: 16; top: 0; right: 0; width: min(300px, 80vw); max-height: 46vh; overflow: auto;
+  padding: 10px; display: grid; gap: 8px; background: #0e1714f5; border: 1px solid #7dfff0; border-radius: 12px;
+}
 .ai-banner, .handoff-mask { position: absolute; z-index: 24; }
 .ai-banner {
   top: 46%; left: 50%; transform: translate(-50%, -50%); margin: 0; padding: 8px 16px;
@@ -496,6 +507,8 @@ body.hand-out .playcard { width: 72px !important; height: 34px !important; margi
   .mode-bar { top: 328px; left: 8px; right: 8px; max-width: none; justify-items: center; }
   .mode-switch { justify-content: center; }
   .mode-note { font-size: 12px; text-align: center; }
+  .nfc-dock { top: 404px; left: 8px; right: 8px; width: auto; }
+  .nfc-panel { top: 0; left: 0; right: 0; width: auto; max-height: 28vh; }
   .unit-wrap { flex: 0 0 92px; width: 92px; max-width: 92px; height: calc(100% - 8px); }
   .minion { width: 100%; height: 100%; max-height: none; flex-basis: auto; }
   .link-mark { width: 36px; height: 64px; flex-basis: 36px; }
@@ -582,14 +595,14 @@ globalThis.PCGClashArt={"A001":{"card":"../../wiki/assets/card/A001__Hat_DAC2.we
 globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pulse-arena-bg-16x9.webp","core_frame":"scene/ui/core-portrait-frame-a.webp","core_frame_small":"scene/ui/core-portrait-frame-b.webp","unit_frame":"scene/ui/device-card-frame-c.webp","hand_frame":"scene/ui/device-card-frame-b.webp","end_turn":"scene/ui/end-turn-button-primary.webp","end_turn_compact":"scene/ui/end-turn-button-compact.webp","lamp_cost":"scene/ui/lamp-cost-cyan.webp","lamp_attack":"scene/ui/lamp-attack-amber.webp","lamp_durability":"scene/ui/lamp-durability-teal.webp"}};
 </script>
 <script>/* pcg.clash.v0 table rules.
- * Bound to prompt commit 7ba58fb399956409ebc60323e2cca595c46112a0.
+ * Bound to prompt commit 7e4c56675a93dfe759b81daa8582003ddf579aec.
  * Card numbers come from the playtest JSON. Combat reads kind, cost, attack,
  * durability, guard, bonuses and the closed effect list only.
  * star, family and version are stored when a pack supplies them and are not read here. */
 (function (root) {
   'use strict';
   const RULESET = 'pcg.clash.v0';
-  const SOURCE_COMMIT = '7ba58fb399956409ebc60323e2cca595c46112a0';
+  const SOURCE_COMMIT = '7e4c56675a93dfe759b81daa8582003ddf579aec';
   const IMPLEMENTED_EFFECTS = Object.freeze(['support', 'knob', 'mend', 'damage', 'heal_base', 'supply', 'play_draw', 'play_damage', 'draw_one', 'retrieve_grave', 'arm_aiflow', 'seize']);
   const IMPLEMENTED = new Set(IMPLEMENTED_EFFECTS);
   const REASON_TEXT = Object.freeze({
@@ -1681,7 +1694,233 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
   if (typeof module === 'object' && module.exports) module.exports = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
 </script>
-<script>(function (root) {
+<script>/* Web NFC tap-to-play for pcg.clash.v0.
+ * Bound to prompt commit 7e4c56675a93dfe759b81daa8582003ddf579aec.
+ * Scanning does not change costs, combat or Chain. */
+(function (root) {
+  'use strict';
+  const MIME = 'application/vnd.pulse.card+json';
+  const DEBOUNCE_MS = 1500;
+  const TEXT = Object.freeze({
+    unsupported: '这台浏览器不能刷卡，仍可用拖拽或点选出牌',
+    permission: '没有刷卡权限。可以改用拖拽或点选',
+    blank: '这是空白卡，可以初始化',
+    unknown: '这张卡不是脉冲对决的出牌记录',
+    occupied: '卡上已有其他内容',
+    overwrite: '仍然覆写',
+    write: '写入这张卡',
+    verify: '写入后校验失败',
+    readFail: '没读到卡，请再贴一次',
+    noUid: '这张卡没有可读序号',
+    noUidMore: '两张相同的卡这时无法区分',
+    notInHand: '手里没有这张牌',
+    notNow: '现在不能替这一方操作',
+    start: '开始刷卡'
+  });
+
+  function scanSupport(env) {
+    const ua = String(env && env.ua || '');
+    const android = /Android/i.test(ua);
+    const chrome = /Chrome\/\d/i.test(ua) && !/Edg\/|OPR\/|SamsungBrowser|CriOS/i.test(ua);
+    const hasApi = !!(env && env.NDEFReader);
+    if (!(android && chrome && hasApi)) return { enabled: false, reason: 'unsupported', text: TEXT.unsupported };
+    if (!env.secure) return { enabled: false, reason: 'insecure', text: TEXT.permission };
+    return { enabled: true, reason: '', text: TEXT.start };
+  }
+
+  function bytesToText(data) {
+    if (data == null) return '';
+    if (typeof data === 'string') return data;
+    const bytes = data.buffer ? new Uint8Array(data.buffer, data.byteOffset || 0, data.byteLength) : new Uint8Array(data);
+    if (typeof TextDecoder === 'function') return new TextDecoder().decode(bytes);
+    return Buffer.from(bytes).toString('utf8');
+  }
+
+  function textToBytes(text) {
+    if (typeof TextEncoder === 'function') return new TextEncoder().encode(text);
+    return Uint8Array.from(Buffer.from(text, 'utf8'));
+  }
+
+  function canonical(body) {
+    const out = { v: body.v, cardId: body.cardId };
+    if (body.star != null) out.star = body.star;
+    return JSON.stringify(out);
+  }
+
+  function classifyMessage(message, lookup) {
+    const records = message && Array.isArray(message.records) ? message.records : [];
+    if (!records.length) return { kind: 'blank' };
+    const mime = records.find(record => record && record.recordType === 'mime' && String(record.mediaType || '').toLowerCase() === MIME);
+    if (!mime) return { kind: 'unknown' };
+    let body;
+    try { body = JSON.parse(bytesToText(mime.data)); }
+    catch (error) { return { kind: 'unknown' }; }
+    if (!body || typeof body !== 'object' || Array.isArray(body) || body.v !== 1 || typeof body.cardId !== 'string' || !body.cardId) {
+      return { kind: 'unknown' };
+    }
+    const card = lookup(body.cardId);
+    if (!card) return { kind: 'unknown' };
+    if (body.star != null && body.star !== card.star) return { kind: 'unknown' };
+    return {
+      kind: 'ready',
+      cardId: body.cardId,
+      templateId: card.template_id,
+      name: card.name,
+      star: card.star == null ? null : card.star,
+      json: canonical(body)
+    };
+  }
+
+  function payloadFor(card) {
+    const body = { v: 1, cardId: card.rid };
+    if (card.star != null) body.star = card.star;
+    return body;
+  }
+
+  function messageFor(card, wikiBase) {
+    const json = canonical(payloadFor(card));
+    const records = [{ recordType: 'mime', mediaType: MIME, data: textToBytes(json) }];
+    if (wikiBase) {
+      const base = String(wikiBase).replace(/\/$/, '');
+      records.push({ recordType: 'url', data: base + '/cards/' + card.rid });
+    }
+    return { records, json };
+  }
+
+  function debounceKey(serial, cardId) {
+    if (serial) return 'uid:' + serial;
+    return 'card:' + (cardId || 'blank');
+  }
+
+  function decideTap(state, found) {
+    if (!state || !state.canAct) return { action: 'refuse', text: TEXT.notNow, code: 'not_your_turn' };
+    if (!found || found.kind === 'blank') return { action: 'show', text: TEXT.blank };
+    if (found.kind === 'unknown') return { action: 'show', text: TEXT.unknown };
+    if (found.kind !== 'ready') return { action: 'show', text: TEXT.readFail };
+    if (!state.hand || state.hand.indexOf(found.templateId) < 0) return { action: 'refuse', text: TEXT.notInHand, code: 'not_in_hand' };
+    if (state.needsTarget) return { action: 'aim', templateId: found.templateId };
+    return { action: 'play', templateId: found.templateId };
+  }
+
+  function createTapSession(options) {
+    const opts = options || {};
+    const lookup = opts.lookup || function () { return null; };
+    const now = opts.now || function () { return Date.now(); };
+    const support = scanSupport(opts.env || {});
+    const seen = new Map();
+    let reader = null;
+    let selected = null;
+    let lastKind = '';
+    let expectJson = '';
+    let status = support.enabled ? '' : support.text;
+    const log = [];
+
+    function emit(text, extra) {
+      status = text;
+      log.push(Object.assign({ text, at: now() }, extra || {}));
+      if (opts.onStatus) opts.onStatus(status, extra || {});
+    }
+
+    function remember(key, at) {
+      const prev = seen.get(key);
+      if (prev != null && at - prev < DEBOUNCE_MS) return true;
+      seen.set(key, at);
+      return false;
+    }
+
+    function handleReading(event) {
+      const serial = event && typeof event.serialNumber === 'string' ? event.serialNumber : '';
+      const found = classifyMessage(event && event.message, lookup);
+      const key = debounceKey(serial, found.cardId);
+      if (expectJson) {
+        const note = serial ? [] : [TEXT.noUid, TEXT.noUidMore];
+        if (found.kind === 'ready' && found.json === expectJson) {
+          expectJson = '';
+          lastKind = 'ready';
+          seen.set(key, now());
+          emit(['读到 ' + found.name].concat(note).join('。'), { kind: 'ready', card: found });
+          return { kind: 'verified', card: found };
+        }
+        expectJson = '';
+        lastKind = 'verify-failed';
+        emit(TEXT.verify, { kind: 'verify-failed' });
+        return { kind: 'verify-failed' };
+      }
+      if (remember(key, now())) return { ignored: true, kind: found.kind };
+      const note = [];
+      if (!serial) note.push(TEXT.noUid, TEXT.noUidMore);
+      lastKind = found.kind;
+      if (found.kind === 'ready') emit(['读到 ' + found.name].concat(note).join('。'), { kind: 'ready', card: found });
+      else if (found.kind === 'blank') emit([TEXT.blank].concat(note).join('。'), { kind: 'blank' });
+      else emit([TEXT.unknown, TEXT.occupied].concat(note).join('。'), { kind: 'unknown' });
+      if (found.kind === 'ready' && opts.onReady) opts.onReady(found, { serial });
+      return found;
+    }
+
+    async function start() {
+      if (!support.enabled) {
+        emit(support.text, { kind: support.reason });
+        return support;
+      }
+      reader = opts.readerFactory();
+      reader.addEventListener('reading', event => { handleReading(event); });
+      reader.addEventListener('readingerror', () => {
+        lastKind = 'failure';
+        emit(TEXT.readFail, { kind: 'failure' });
+      });
+      try {
+        await reader.scan();
+      } catch (error) {
+        lastKind = 'permission';
+        emit(TEXT.permission, { kind: 'permission' });
+        return { enabled: false, reason: 'permission', text: TEXT.permission };
+      }
+      emit(TEXT.start, { kind: 'scanning' });
+      return { enabled: true, reason: 'scanning', text: TEXT.start };
+    }
+
+    async function writeSelected(force) {
+      if (!selected) return { wrote: false, reason: 'no-selection' };
+      if (!reader) return { wrote: false, reason: 'not-started' };
+      if (lastKind === 'unknown' && !force) return { wrote: false, reason: 'needs-overwrite' };
+      if (lastKind !== 'blank' && !(lastKind === 'unknown' && force)) return { wrote: false, reason: 'not-writable' };
+      const message = messageFor(selected, opts.wikiBase || '');
+      try {
+        await reader.write({ records: message.records });
+      } catch (error) {
+        expectJson = '';
+        emit(TEXT.readFail, { kind: 'write-failed' });
+        return { wrote: false, reason: 'write-failed' };
+      }
+      expectJson = message.json;
+      return { wrote: true, json: message.json };
+    }
+
+    return {
+      TEXT,
+      MIME,
+      support,
+      start,
+      handleReading,
+      select(card) { selected = card || null; },
+      selected() { return selected; },
+      lastKind() { return lastKind; },
+      status() { return status; },
+      log() { return log.slice(); },
+      writeCard() { return writeSelected(false); },
+      overwrite() { return writeSelected(true); },
+      reader() { return reader; }
+    };
+  }
+
+  const api = Object.freeze({
+    MIME, DEBOUNCE_MS, TEXT, scanSupport, classifyMessage, messageFor, canonical, debounceKey, decideTap, createTapSession
+  });
+  root.PCGClashNfc = api;
+  if (typeof module === 'object' && module.exports) module.exports = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
+(function (root) {
   'use strict';
   const C = root.PCGClash;
   const content = root.PCGClashContent;
@@ -1730,7 +1969,8 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
       scenario, reveal: false, catalog: false, handIndex: null, attacker: null, target: null, knob: false,
       aiming: false, linking: false, linkSource: null, chainIndex: null, menu: false, logOpen: false,
       showBanner: true, fresh: true, seen: new Set(), fx: null, error: null, log: [],
-      handoff: false, seed: 0, opening: scenario === 'sim' ? 'sim' : 'lesson', simPool: 0, simExcluded: '', simNotes: ''
+      handoff: false, seed: 0, opening: scenario === 'sim' ? 'sim' : 'lesson', simPool: 0, simExcluded: '', simNotes: '',
+      nfcPanel: false, nfcRid: '', nfcStatus: ''
     };
   }
 
@@ -2375,6 +2615,68 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
     });
   }
 
+  const Nfc = root.PCGClashNfc;
+  const byRid = Object.create(null);
+  roster.cards.forEach(card => { byRid[card.rid] = card; });
+  function lookupRid(rid) { return byRid[rid] || null; }
+  const nfcSession = Nfc.createTapSession({
+    env: {
+      ua: navigator.userAgent,
+      secure: typeof window !== 'undefined' && window.isSecureContext,
+      NDEFReader: typeof NDEFReader === 'function' ? NDEFReader : null
+    },
+    lookup: lookupRid,
+    onStatus(text) {
+      ui.nfcStatus = text;
+      if (document.body.dataset.ready === '1') render();
+    },
+    onReady(found) { playFromNfc(found); }
+  });
+
+  function playFromNfc(found) {
+    if (ui.nfcPanel) return;
+    const card = cards[found.templateId];
+    const decision = Nfc.decideTap({
+      canAct: canAct(),
+      hand: game && game.hands[game.seat],
+      needsTarget: !(card && directPlay(card))
+    }, found);
+    if (decision.action === 'refuse') return note(new C.ClashError(decision.text, decision.code));
+    if (decision.action !== 'play' && decision.action !== 'aim') return render();
+    ui.handIndex = game.hands[game.seat].indexOf(found.templateId);
+    ui.attacker = null;
+    ui.knob = false;
+    ui.linking = false;
+    ui.linkSource = null;
+    blockDouble = true;
+    swallowUntil = Date.now() + 400;
+    if (decision.action === 'aim') {
+      ui.aiming = true;
+      return render();
+    }
+    play(null);
+  }
+
+  function nfcControl() {
+    const support = nfcSession.support;
+    const label = support.enabled ? Nfc.TEXT.start : support.text;
+    const init = support.enabled ? '<button type="button" class="nfc-init" data-action="nfc-init">初始化空白卡</button>' : '';
+    const status = ui.nfcStatus ? `<p class="nfc-status">${esc(ui.nfcStatus)}</p>` : '';
+    return `<button type="button" class="nfc-entry" data-action="nfc-start" data-nfc="${support.enabled ? 'on' : 'off'}"${support.enabled ? '' : ' disabled'}>${esc(label)}</button>${init}${status}`;
+  }
+
+  function nfcPanel() {
+    if (!ui.nfcPanel || !nfcSession.support.enabled) return '';
+    const options = roster.cards.map(card => `<option value="${esc(card.rid)}"${card.rid === ui.nfcRid ? ' selected' : ''}>${esc(card.name)}</option>`).join('');
+    const card = lookupRid(ui.nfcRid);
+    const detail = card
+      ? `中文名 ${card.name} · 费用 ${card.cost} · 攻击 ${card.attack} · 耐久 ${card.durability} · 星级 ${card.star == null ? '无' : card.star}`
+      : '先选一张图册牌';
+    const canWrite = nfcSession.lastKind() === 'blank' && card;
+    const canOverwrite = nfcSession.lastKind() === 'unknown' && card;
+    return `<section class="nfc-panel" data-nfc-panel="1"><label>图册牌<select data-nfc-pick="1">${options}</select></label><p>${esc(detail)}</p><button type="button" data-action="nfc-write"${canWrite ? '' : ' disabled'}>写入这张卡</button><button type="button" data-action="nfc-overwrite"${canOverwrite ? '' : ' hidden'}>仍然覆写</button></section>`;
+  }
+
   function render() {
     if (ui.scenario === 'builder') return renderBuilder();
     const ghosts = captureGhosts();
@@ -2438,6 +2740,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
         <button type="button" class="end-turn${canEnd && !ui.aiBusy && (ui.mode !== 'ai' || game.seat === 0) ? ' hot' : ' wait'}" ${sceneAttr('end_turn')} data-action="end-turn">结束回合</button>
         <div class="pads">${actions()}</div>
       </aside>
+      <div class="nfc-dock">${nfcControl()}${nfcPanel()}</div>
       <button type="button" class="log-toggle" data-action="toggle-log" aria-expanded="${ui.logOpen ? 'true' : 'false'}">记录</button>
       <aside class="log-panel"${ui.logOpen ? '' : ' hidden'}>
         <h3>对战记录</h3>
@@ -2646,6 +2949,25 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
       return render();
     }
     if (action === 'replay-seed') return begin('sim', ui.seed);
+    if (action === 'nfc-start') {
+      ui.nfcScanning = true;
+      nfcSession.start();
+      return;
+    }
+    if (action === 'nfc-init') {
+      ui.nfcPanel = !ui.nfcPanel;
+      return render();
+    }
+    if (action === 'nfc-write') {
+      nfcSession.writeCard();
+      ui.nfcStatus = nfcSession.status();
+      return render();
+    }
+    if (action === 'nfc-overwrite') {
+      nfcSession.overwrite();
+      ui.nfcStatus = nfcSession.status();
+      return render();
+    }
     if (action === 'mode') {
       if (el.dataset.mode === 'hotseat') begin('lesson');
       else if (el.dataset.mode === 'sim') begin('sim');
@@ -3244,6 +3566,14 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
     event.preventDefault();
     gesture.dead = true;
     finishGesture(true);
+  });
+
+  document.addEventListener('change', event => {
+    const el = event.target.closest('[data-nfc-pick]');
+    if (!el) return;
+    ui.nfcRid = el.value;
+    nfcSession.select(lookupRid(ui.nfcRid));
+    render();
   });
 
   document.addEventListener('click', event => {

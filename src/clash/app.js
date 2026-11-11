@@ -47,7 +47,8 @@
       scenario, reveal: false, catalog: false, handIndex: null, attacker: null, target: null, knob: false,
       aiming: false, linking: false, linkSource: null, chainIndex: null, menu: false, logOpen: false,
       showBanner: true, fresh: true, seen: new Set(), fx: null, error: null, log: [],
-      handoff: false, seed: 0, opening: scenario === 'sim' ? 'sim' : 'lesson', simPool: 0, simExcluded: '', simNotes: ''
+      handoff: false, seed: 0, opening: scenario === 'sim' ? 'sim' : 'lesson', simPool: 0, simExcluded: '', simNotes: '',
+      nfcPanel: false, nfcRid: '', nfcStatus: ''
     };
   }
 
@@ -692,6 +693,68 @@
     });
   }
 
+  const Nfc = root.PCGClashNfc;
+  const byRid = Object.create(null);
+  roster.cards.forEach(card => { byRid[card.rid] = card; });
+  function lookupRid(rid) { return byRid[rid] || null; }
+  const nfcSession = Nfc.createTapSession({
+    env: {
+      ua: navigator.userAgent,
+      secure: typeof window !== 'undefined' && window.isSecureContext,
+      NDEFReader: typeof NDEFReader === 'function' ? NDEFReader : null
+    },
+    lookup: lookupRid,
+    onStatus(text) {
+      ui.nfcStatus = text;
+      if (document.body.dataset.ready === '1') render();
+    },
+    onReady(found) { playFromNfc(found); }
+  });
+
+  function playFromNfc(found) {
+    if (ui.nfcPanel) return;
+    const card = cards[found.templateId];
+    const decision = Nfc.decideTap({
+      canAct: canAct(),
+      hand: game && game.hands[game.seat],
+      needsTarget: !(card && directPlay(card))
+    }, found);
+    if (decision.action === 'refuse') return note(new C.ClashError(decision.text, decision.code));
+    if (decision.action !== 'play' && decision.action !== 'aim') return render();
+    ui.handIndex = game.hands[game.seat].indexOf(found.templateId);
+    ui.attacker = null;
+    ui.knob = false;
+    ui.linking = false;
+    ui.linkSource = null;
+    blockDouble = true;
+    swallowUntil = Date.now() + 400;
+    if (decision.action === 'aim') {
+      ui.aiming = true;
+      return render();
+    }
+    play(null);
+  }
+
+  function nfcControl() {
+    const support = nfcSession.support;
+    const label = support.enabled ? Nfc.TEXT.start : support.text;
+    const init = support.enabled ? '<button type="button" class="nfc-init" data-action="nfc-init">初始化空白卡</button>' : '';
+    const status = ui.nfcStatus ? `<p class="nfc-status">${esc(ui.nfcStatus)}</p>` : '';
+    return `<button type="button" class="nfc-entry" data-action="nfc-start" data-nfc="${support.enabled ? 'on' : 'off'}"${support.enabled ? '' : ' disabled'}>${esc(label)}</button>${init}${status}`;
+  }
+
+  function nfcPanel() {
+    if (!ui.nfcPanel || !nfcSession.support.enabled) return '';
+    const options = roster.cards.map(card => `<option value="${esc(card.rid)}"${card.rid === ui.nfcRid ? ' selected' : ''}>${esc(card.name)}</option>`).join('');
+    const card = lookupRid(ui.nfcRid);
+    const detail = card
+      ? `中文名 ${card.name} · 费用 ${card.cost} · 攻击 ${card.attack} · 耐久 ${card.durability} · 星级 ${card.star == null ? '无' : card.star}`
+      : '先选一张图册牌';
+    const canWrite = nfcSession.lastKind() === 'blank' && card;
+    const canOverwrite = nfcSession.lastKind() === 'unknown' && card;
+    return `<section class="nfc-panel" data-nfc-panel="1"><label>图册牌<select data-nfc-pick="1">${options}</select></label><p>${esc(detail)}</p><button type="button" data-action="nfc-write"${canWrite ? '' : ' disabled'}>写入这张卡</button><button type="button" data-action="nfc-overwrite"${canOverwrite ? '' : ' hidden'}>仍然覆写</button></section>`;
+  }
+
   function render() {
     if (ui.scenario === 'builder') return renderBuilder();
     const ghosts = captureGhosts();
@@ -755,6 +818,7 @@
         <button type="button" class="end-turn${canEnd && !ui.aiBusy && (ui.mode !== 'ai' || game.seat === 0) ? ' hot' : ' wait'}" ${sceneAttr('end_turn')} data-action="end-turn">结束回合</button>
         <div class="pads">${actions()}</div>
       </aside>
+      <div class="nfc-dock">${nfcControl()}${nfcPanel()}</div>
       <button type="button" class="log-toggle" data-action="toggle-log" aria-expanded="${ui.logOpen ? 'true' : 'false'}">记录</button>
       <aside class="log-panel"${ui.logOpen ? '' : ' hidden'}>
         <h3>对战记录</h3>
@@ -963,6 +1027,25 @@
       return render();
     }
     if (action === 'replay-seed') return begin('sim', ui.seed);
+    if (action === 'nfc-start') {
+      ui.nfcScanning = true;
+      nfcSession.start();
+      return;
+    }
+    if (action === 'nfc-init') {
+      ui.nfcPanel = !ui.nfcPanel;
+      return render();
+    }
+    if (action === 'nfc-write') {
+      nfcSession.writeCard();
+      ui.nfcStatus = nfcSession.status();
+      return render();
+    }
+    if (action === 'nfc-overwrite') {
+      nfcSession.overwrite();
+      ui.nfcStatus = nfcSession.status();
+      return render();
+    }
     if (action === 'mode') {
       if (el.dataset.mode === 'hotseat') begin('lesson');
       else if (el.dataset.mode === 'sim') begin('sim');
@@ -1561,6 +1644,14 @@
     event.preventDefault();
     gesture.dead = true;
     finishGesture(true);
+  });
+
+  document.addEventListener('change', event => {
+    const el = event.target.closest('[data-nfc-pick]');
+    if (!el) return;
+    ui.nfcRid = el.value;
+    nfcSession.select(lookupRid(ui.nfcRid));
+    render();
   });
 
   document.addEventListener('click', event => {

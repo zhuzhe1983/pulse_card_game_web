@@ -285,6 +285,17 @@ button { border: 0; color: inherit; background: none; font: inherit; }
 .mode-switch button { pointer-events: auto; padding: 6px 12px; border-radius: 999px; background: #102018ee; color: #f7fffb; border: 1px solid #7dfff0; font-size: 15px; font-weight: 800; }
 .mode-switch button[aria-pressed="true"] { background: #7dfff0; color: #071014; }
 .mode-note { position: relative; margin: 0; padding: 4px 8px; border-radius: 8px; background: #07110ee6; color: #f7fffb; font-size: 15px; font-weight: 750; line-height: 1.35; text-align: left; }
+.nfc-dock { position: absolute; z-index: 15; top: 54px; right: 16px; width: min(280px, 34vw); display: grid; gap: 6px; justify-items: stretch; }
+.nfc-entry, .nfc-init, .nfc-panel button, .nfc-panel select {
+  pointer-events: auto; padding: 6px 8px; border-radius: 8px; background: #102018ee; color: #f7fffb;
+  border: 1px solid #8d98a0; font-size: 14px; font-weight: 750; text-align: left;
+}
+.nfc-entry:disabled { opacity: .92; }
+.nfc-status { margin: 0; padding: 4px 8px; border-radius: 8px; background: #07110ee6; color: #fff6d8; font-size: 14px; font-weight: 750; }
+.nfc-panel {
+  position: absolute; z-index: 16; top: 0; right: 0; width: min(300px, 80vw); max-height: 46vh; overflow: auto;
+  padding: 10px; display: grid; gap: 8px; background: #0e1714f5; border: 1px solid #7dfff0; border-radius: 12px;
+}
 .ai-banner, .handoff-mask { position: absolute; z-index: 24; }
 .ai-banner {
   top: 46%; left: 50%; transform: translate(-50%, -50%); margin: 0; padding: 8px 16px;
@@ -398,6 +409,8 @@ body.hand-out .playcard { width: 72px !important; height: 34px !important; margi
   .mode-bar { top: 328px; left: 8px; right: 8px; max-width: none; justify-items: center; }
   .mode-switch { justify-content: center; }
   .mode-note { font-size: 12px; text-align: center; }
+  .nfc-dock { top: 404px; left: 8px; right: 8px; width: auto; }
+  .nfc-panel { top: 0; left: 0; right: 0; width: auto; max-height: 28vh; }
   .unit-wrap { flex: 0 0 92px; width: 92px; max-width: 92px; height: calc(100% - 8px); }
   .minion { width: 100%; height: 100%; max-height: none; flex-basis: auto; }
   .link-mark { width: 36px; height: 64px; flex-basis: 36px; }

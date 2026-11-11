@@ -129,7 +129,11 @@ async function main() {
     }
 
     eq(await attr('main.table', 'data-ruleset'), 'pcg.clash.v0', '规则编号');
-    eq(await attr('main.table', 'data-source-commit'), '7ba58fb399956409ebc60323e2cca595c46112a0', '来源提交');
+    eq(await attr('main.table', 'data-source-commit'), '7e4c56675a93dfe759b81daa8582003ddf579aec', '来源提交');
+    eq(await attr('.nfc-entry', 'data-nfc'), 'off', '这台桌面浏览器不能刷卡');
+    if (await value(`document.querySelector('.nfc-entry').disabled`) !== true) throw new Error('刷卡入口没有禁用');
+    const nfcText = await text('.nfc-entry');
+    if (!nfcText.includes('这台浏览器不能刷卡，仍可用拖拽或点选出牌')) throw new Error('禁用文案不对 ' + nfcText);
     eq(await attr('main.table', 'data-mode'), 'ai', '默认人机');
     eq(await attr('main.table', 'data-opening'), 'lesson', '默认是固定教学');
     await click('[data-action="mode"][data-mode="hotseat"]');
