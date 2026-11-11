@@ -263,49 +263,76 @@ button { border: 0; color: inherit; background: none; font: inherit; }
 @keyframes floatup { to { opacity: 0; transform: translate(-50%, -42px); } }
 @keyframes lack { 50% { filter: brightness(2.2); } }
 @media (max-width: 800px) {
-  .arena { background-position: center 42%; }
-  .turn-banner { font-size: 28px; padding: 10px 18px; }
-  .opp-dock { top: 0; left: 50%; width: 92%; height: 58px; transform: translateX(-50%); }
-  .opp-hand { top: -22px; height: 78px; transform: none; }
-  .back { width: 48px; height: 64px; margin: 0 -12px; }
-  .hand-count { left: calc(50% + 64px); top: 4px; right: auto; font-size: 11px; transform: none; }
-  .compensation { top: 42px; left: 8px; right: auto; max-width: 70%; font-size: 11px; }
-  .unit-wrap { flex-basis: 96px; max-width: 108px; height: 100%; }
-  .minion { width: 100%; height: 100%; }
-  .act-menu { max-width: 70vw; }
-  .battery { padding: 3px; }
-  .mana { width: 92px; flex-wrap: wrap; }
-  .mana i { width: 16px; height: 16px; }
-  .supply-read { height: 22px; line-height: 22px; font-size: 11px; }
-  .supply-read b { font-size: 18px; }
-  .core-slot.foe .battery, .core-slot.mine .battery { left: calc(100% + 12px); right: auto; top: 8px; transform: none; }
-  .hand-count { font-size: 12px; }
-  .bays { top: 46px; left: 8px; width: auto; grid-template-columns: auto; }
-  .pile { grid-template-columns: 42px 42px; }
-  .deck-stack, .grave-stack { width: 42px; height: 54px; font-size: 14px; box-shadow: 3px 2px 0 #0b1612; }
-  .deck-stack span, .grave-stack span { font-size: 9px; bottom: 4px; }
-  .core-slot.foe, .core-slot.mine { width: 78px; height: 72px; left: 8px; transform: none; }
-  .core-slot.foe { top: 64px; width: 84px; height: 76px; }
-  .core-slot.mine { top: auto; bottom: 200px; width: 84px; height: 76px; }
-  .core-name { font-size: 11px; }
-  .base-btn .hp { font-size: 22px; min-width: 36px; }
-  .slots.foe, .slots.mine { left: 8px; width: calc(100% - 16px); height: 132px; overflow-x: auto; overflow-y: hidden; }
-  .slots.foe { top: 136px; }
-  .slots.mine { top: 292px; }
-  .midline { left: 8px; right: 8px; top: 39%; }
-  .minion { width: 100%; height: 100%; max-height: 124px; flex-basis: auto; }
+  .arena { background-position: center 46%; }
+  .opp-dock { top: 0; left: 0; width: 100%; height: 46px; transform: none; z-index: 13; }
+  .opp-hand { top: -20px; left: 0; right: 0; height: 64px; transform: none; }
+  .back { width: 44px; height: 58px; margin: 0 -11px; }
+  .hand-count {
+    top: 66px; left: 50%; right: auto; transform: translateX(-50%);
+    font-size: 12px; padding: 2px 6px;
+  }
+  .compensation {
+    top: 48px; left: 8px; right: auto; max-width: 128px; font-size: 11px; z-index: 14;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .bays {
+    top: 74px; left: 6px; width: 78px; z-index: 6; gap: 4px;
+  }
+  .pile {
+    grid-template-columns: 1fr 1fr; gap: 2px; padding: 2px 3px;
+    background: #07110ee6; border: 1px solid #3d4f48; border-radius: 8px;
+  }
+  .pile-name { grid-column: 1 / -1; font-size: 10px; line-height: 1.1; }
+  .deck-stack, .grave-stack {
+    width: auto; height: 20px; aspect-ratio: auto; font-size: 12px;
+    background: #102018; box-shadow: none; border-radius: 6px;
+  }
+  .deck-stack span, .grave-stack span { font-size: 8px; bottom: 0; }
+  .silk { display: none; }
+  .core-slot.foe, .core-slot.mine {
+    left: 50%; width: 84px; height: 78px; transform: translateX(-50%); z-index: 8;
+  }
+  .core-slot.foe { top: 72px; }
+  .core-slot.mine { top: auto; bottom: 178px; }
+  .core-name { font-size: 10px; }
+  .base-btn .hp { font-size: 20px; min-width: 32px; }
+  .core-slot.foe .battery {
+    left: calc(100% + 10px); right: auto; top: 50%; transform: translateY(-50%);
+    max-width: 118px;
+  }
+  .core-slot.mine .battery {
+    left: auto; right: calc(100% + 10px); top: 50%; transform: translateY(-50%);
+    max-width: 118px;
+  }
+  .mana { width: auto; flex-wrap: nowrap; gap: 1px; padding: 3px 4px; }
+  .mana i { width: 10px; height: 10px; }
+  .supply-read { height: 16px; line-height: 16px; font-size: 10px; }
+  .supply-read b { font-size: 14px; }
+  .slots.foe, .slots.mine {
+    left: 8px; width: calc(100% - 16px); height: 118px;
+    overflow-x: auto; overflow-y: hidden;
+    background: linear-gradient(#00000055, #00000088);
+    border: 1px solid #7dfff066; border-radius: 12px;
+    box-shadow: inset 0 0 0 1px #00000066;
+  }
+  .slots.foe { top: 162px; }
+  .slots.mine { top: auto; bottom: 268px; }
+  .midline { left: 12px; right: 12px; top: 46%; }
+  .unit-wrap { flex: 0 0 92px; width: 92px; max-width: 92px; height: calc(100% - 8px); }
+  .minion { width: 100%; height: 100%; max-height: none; flex-basis: auto; }
   .link-mark { width: 36px; height: 64px; flex-basis: 36px; }
-  .minion .mname, .playcard .cname { font-size: 13px; }
-  .hand-dock { left: 8px; right: 8px; bottom: 0; height: 196px; }
-  .hands.fan { overflow-x: auto; overflow-y: hidden; justify-content: flex-start; }
-  .playcard { width: 148px; flex-basis: 148px; height: 190px; margin: 0 6px; transform: none; }
-  .playcard:hover, .playcard.selected { transform: translateY(-8px) scale(1.04) rotate(0deg); }
-  .rail.tools { left: auto; top: auto; right: 8px; bottom: 204px; width: 120px; aspect-ratio: auto; z-index: 14; }
+  .minion .mname, .playcard .cname { font-size: 13px; bottom: 16%; }
+  .hand-dock { left: 4px; right: 4px; bottom: 0; height: 172px; overflow: hidden; z-index: 6; }
+  .hands.fan { overflow-x: auto; overflow-y: hidden; justify-content: flex-start; align-items: flex-end; }
+  .playcard { width: 132px; flex-basis: 132px; height: 164px; margin: 0 4px; transform: none; }
+  .playcard:hover, .playcard.selected { transform: translateY(-6px) scale(1.03) rotate(0deg); }
+  .rail.tools { left: auto; top: auto; right: 8px; bottom: 178px; width: 104px; aspect-ratio: auto; z-index: 12; }
   .end-turn {
-    width: 132px; height: 48px; padding: 0 8px; border-radius: 24px; font-size: 16px;
+    width: 104px; height: 40px; padding: 0 6px; border-radius: 20px; font-size: 15px;
     background-image: url("scene/ui/end-turn-button-compact.webp");
     background-size: 100% 100%;
   }
+  .act-menu { max-width: 70vw; }
   .pads:has(.live) { bottom: calc(100% + 6px); }
   .menu-pop, .log-panel { max-height: 70vh; overflow: auto; }
 }
