@@ -283,11 +283,51 @@ async function main() {
     await shot('10-roster-play');
     await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
     await shot('11-narrow-table');
-    const narrowOverflow = await value(`(() => {
-      const nodes = [...document.querySelectorAll('.end-turn, .playcard, .minion, .base-btn, .slot, .back')];
-      return nodes.some(node => { const r = node.getBoundingClientRect(); return r.width > 8 && (r.right > window.innerWidth + 4 || r.left < -4); });
+    const narrow = await value(`(() => {
+      const clipped = node => {
+        let parent = node.parentElement;
+        while (parent) {
+          const style = getComputedStyle(parent);
+          if (/(auto|scroll|hidden)/.test(style.overflowX) && parent.scrollWidth > parent.clientWidth + 1) return true;
+          parent = parent.parentElement;
+        }
+        return false;
+      };
+      const nodes = [...document.querySelectorAll('.end-turn, .playcard, .minion, .base-btn, .slot, .back, .supply-read')];
+      const spilled = nodes.some(node => {
+        const box = node.getBoundingClientRect();
+        if (box.width <= 8 || clipped(node)) return false;
+        return box.right > window.innerWidth + 4 || box.left < -4;
+      });
+      const hand = document.querySelector('.hand-dock');
+      const end = document.querySelector('.end-turn');
+      const handBox = hand.getBoundingClientRect();
+      const endBox = end.getBoundingClientRect();
+      const overlap = !(endBox.bottom <= handBox.top || endBox.top >= handBox.bottom);
+      const card = document.querySelector('.hands .playcard');
+      const art = card && card.querySelector('img');
+      const supply = document.querySelector('.supply-read');
+      return {
+        spilled,
+        pageWider: document.documentElement.scrollWidth > window.innerWidth + 4,
+        overlap,
+        handTop: handBox.top,
+        handBottom: handBox.bottom,
+        view: window.innerHeight,
+        attack: card ? card.querySelector('.patk').textContent : '',
+        artWidth: art ? art.naturalWidth : 0,
+        artSrc: art ? art.getAttribute('src') : '',
+        supply: supply.textContent.replace(/\\s+/g, ' '),
+        supplyTall: supply.getBoundingClientRect().height
+      };
     })()`);
-    if (narrowOverflow) throw new Error('窄屏牌桌有控件伸出屏幕');
+    if (narrow.spilled || narrow.pageWider) throw new Error('窄屏牌桌有控件伸出屏幕');
+    if (narrow.overlap) throw new Error('结束回合盖住了手牌');
+    if (narrow.handBottom > narrow.view + 8) throw new Error('一屏内看不到自己的手牌');
+    if (!narrow.attack) throw new Error('手牌没有游戏攻防');
+    if (narrow.artSrc.includes('/card/')) throw new Error('手牌用了整张印刷卡');
+    if (narrow.artWidth < 8) throw new Error('手牌主体图没有画出来');
+    if (narrow.supplyTall > 28) throw new Error('供电数字被拆行');
     await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
     await send('Page.navigate', { url: `http://127.0.0.1:${port}/` });
     await waitFor(async () => { if (!(await value('document.body && document.body.innerText')).includes('同一套牌')) throw new Error('lobby'); }, 'lobby');
