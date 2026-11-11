@@ -1,6 +1,6 @@
 {
   "ruleset_id": "pcg.clash.v0",
-  "baseline_commit": "704411fcb6138a05f9fdf8c168a366b7a2bb8237",
+  "baseline_commit": "2752e13b584c184bd073cc31f139802237cb5f66",
   "effects": ["support", "knob", "mend", "damage", "heal_base", "supply", "play_draw", "play_damage"],
   "bindings": {
     "support": {

@@ -1,12 +1,12 @@
 /* pcg.clash.v0 table rules.
- * Bound to prompt commit 5b85cc15305d3fcb1585d1096aa03b7c1766e3fe.
+ * Bound to prompt commit 2752e13b584c184bd073cc31f139802237cb5f66.
  * Card numbers come from the playtest JSON. Combat reads kind, cost, attack,
  * durability, guard, bonuses and the closed effect list only.
  * star, family and version are stored when a pack supplies them and are not read here. */
 (function (root) {
   'use strict';
   const RULESET = 'pcg.clash.v0';
-  const SOURCE_COMMIT = '704411fcb6138a05f9fdf8c168a366b7a2bb8237';
+  const SOURCE_COMMIT = '2752e13b584c184bd073cc31f139802237cb5f66';
   const IMPLEMENTED_EFFECTS = Object.freeze(['support', 'knob', 'mend', 'damage', 'heal_base', 'supply', 'play_draw', 'play_damage']);
   const IMPLEMENTED = new Set(IMPLEMENTED_EFFECTS);
 
@@ -121,7 +121,7 @@
       game.fatigue = [0, 0];
       game.decks = [[], []];
       game.hands = [[], []];
-      game.boards = [Array(rules.boardLimit).fill(null), Array(rules.boardLimit).fill(null)];
+      game.boards = [[], []];
       game.graves = [[], []];
       game.ability_used = [{}, {}];
       game.promoteBan = [[], []];
@@ -144,7 +144,7 @@
       this.fatigue = [0, 0];
       this.decks = [deck0.slice(), deck1.slice()];
       this.hands = [[], []];
-      this.boards = [Array(rules.boardLimit).fill(null), Array(rules.boardLimit).fill(null)];
+      this.boards = [[], []];
       this.graves = [[], []];
       this.ability_used = [{}, {}];
       this.promoteBan = [[], []];
@@ -244,29 +244,35 @@
       this.hands[seat].splice(index, 1);
     }
 
-    emptySlot(seat) {
-      const slot = this.boards[seat].indexOf(null);
-      return slot < 0 ? null : slot;
+    reindex(seat) {
+      this.boards[seat].forEach((unit, index) => { unit.slot = index; });
     }
 
-    placeNew(seat, cardId, slot = null, sick = true) {
-      if (slot == null) slot = this.emptySlot(seat);
-      if (slot == null) throw new ClashError('场上没有空位', 'board_full');
-      if (this.boards[seat][slot] != null) throw new ClashError('位置已有单位', 'board_full');
+    makeUnit(seat, cardId, sick, durability = null) {
       const unit = {
         iid: `u${this._nextId}`,
         card_id: cardId,
         seat,
-        slot,
-        durability: this.cards[cardId].durability,
+        slot: 0,
+        durability: durability == null ? this.cards[cardId].durability : durability,
         sick,
         attacked: false,
         temp_attack: 0,
         attachments: []
       };
       this._nextId += 1;
-      this.boards[seat][slot] = unit;
-      this.event(`座位${seat}${this.cards[cardId].name}进入位置${slot}，${sick ? '本回合不能攻击' : '本回合可以攻击'}`);
+      return unit;
+    }
+
+    insertUnit(seat, cardId, index, sick, durability = null) {
+      const row = this.boards[seat];
+      if (!Number.isInteger(index) || index < 0 || index > row.length) {
+        throw new ClashError('插入位置越界', 'bad_index');
+      }
+      const unit = this.makeUnit(seat, cardId, sick, durability);
+      row.splice(index, 0, unit);
+      this.reindex(seat);
+      this.event(`座位${seat}${this.cards[cardId].name}进入位置${index}，${sick ? '本回合不能攻击' : '本回合可以攻击'}`);
       return unit;
     }
 
@@ -280,15 +286,19 @@
       return found[0];
     }
 
-    play(seat, cardId, target = null, mode = null) {
+    play(seat, cardId, target = null, mode = null, index = null) {
       this.requireMain(seat);
       const card = this.cards[cardId];
       if (!card) throw new ClashError('未知卡牌');
       if (!this.hands[seat].includes(cardId)) throw new ClashError('手牌里没有这张牌', 'not_in_hand');
       if (this.supply[seat] < card.cost) throw new ClashError('供电不足', 'not_enough_supply');
       let host = null;
+      let at = null;
       if (card.kind === 'main') {
-        if (this.aliveCount(seat) >= this.rules.boardLimit) throw new ClashError('场位已满', 'board_full');
+        at = index == null ? this.boards[seat].length : index;
+        if (!Number.isInteger(at) || at < 0 || at > this.boards[seat].length) {
+          throw new ClashError('插入位置越界', 'bad_index');
+        }
         if (card.effect === 'play_damage' && target != null) {
           const found = this.find(this.resolveIid(1 - seat, target));
           if (found[0] === seat) throw new ClashError('入场伤害只能指定敌方单位', 'bad_target');
@@ -308,7 +318,7 @@
       this.pay(seat, card.cost);
       this.takeHand(seat, cardId);
       if (card.kind === 'main') {
-        this.placeNew(seat, cardId, null, !card.rush);
+        this.insertUnit(seat, cardId, at, !card.rush);
         if (card.effect === 'play_draw') this.draw(seat);
         else if (card.effect === 'play_damage' && target != null) {
           const foe = this.find(this.resolveIid(1 - seat, target))[2];
@@ -388,14 +398,13 @@
       if (!this.graves[seat].includes(reviveId) || this.promoteBan[seat].includes(reviveId)) {
         throw new ClashError('墓地里没有可支援的厚壳工控', 'no_shell_in_grave');
       }
-      if (this.aliveCount(seat) >= this.rules.boardLimit) throw new ClashError('场上没有空位', 'board_full');
       const cost = this.cards[sources[0].card_id].amount;
       if (this.supply[seat] < cost) throw new ClashError('供电不足', 'not_enough_supply');
       this.pay(seat, cost);
       this.ability_used[seat].support = 1;
       this.graves[seat].splice(this.graves[seat].indexOf(reviveId), 1);
       this.event('小印支援，厚壳工控离开墓地');
-      return this.placeNew(seat, reviveId);
+      return this.insertUnit(seat, reviveId, 0, true);
     }
 
     promoteCost(currentId, nextId) {
@@ -429,16 +438,17 @@
       this.pay(seat, cost);
       this.takeHand(seat, nextId);
       if (kind === 'main') {
-        const slot = unit.slot;
+        const index = this.boards[seat].indexOf(unit);
         for (const attachment of unit.attachments.slice()) {
           this.graves[seat].push(attachment);
           this.event(`${this.cards[attachment].name}随升星进入墓地`);
         }
-        this.boards[seat][slot] = null;
         this.graves[seat].push(currentId);
         this.promoteBan[seat].push(currentId);
         this.event(`${current.name}升星退役，进入墓地`);
-        this.placeNew(seat, nextId, slot, true);
+        const fresh = this.makeUnit(seat, nextId, true);
+        this.boards[seat].splice(index, 1, fresh);
+        this.reindex(seat);
       } else {
         unit.attachments.splice(unit.attachments.indexOf(currentId), 1);
         this.graves[seat].push(currentId);
@@ -506,18 +516,22 @@
     check_deaths() {
       const dead = [];
       for (const seat of [0, 1]) {
-        this.boards[seat].forEach((unit, slot) => {
-          if (unit && unit.durability <= 0) dead.push([seat, slot, unit]);
-        });
+        for (const unit of this.boards[seat]) {
+          if (unit.durability <= 0) dead.push(unit);
+        }
       }
-      for (const [seat, slot, unit] of dead) {
+      for (const unit of dead) {
+        const seat = unit.seat;
         for (const attachment of unit.attachments) {
           this.graves[seat].push(attachment);
           this.event(`${this.cards[attachment].name}随宿主进入墓地`);
         }
         this.graves[seat].push(unit.card_id);
-        this.boards[seat][slot] = null;
         this.event(`${this.cards[unit.card_id].name}进入座位${seat}墓地`);
+      }
+      for (const seat of [0, 1]) {
+        this.boards[seat] = this.boards[seat].filter(unit => unit.durability > 0);
+        this.reindex(seat);
       }
     }
 
@@ -546,23 +560,8 @@
       this.phase = 'between';
     }
 
-    spawn(seat, cardId, slot, durability = null, sick = false) {
-      const card = this.cards[cardId];
-      const unit = {
-        iid: `u${this._nextId}`,
-        card_id: cardId,
-        seat,
-        slot,
-        durability: durability == null ? card.durability : durability,
-        sick,
-        attacked: false,
-        temp_attack: 0,
-        attachments: []
-      };
-      this._nextId += 1;
-      if (this.boards[seat][slot] != null) throw new ClashError('位置已有单位');
-      this.boards[seat][slot] = unit;
-      return unit;
+    spawn(seat, cardId, index, durability = null, sick = false) {
+      return this.insertUnit(seat, cardId, index, sick, durability);
     }
 
     view() {

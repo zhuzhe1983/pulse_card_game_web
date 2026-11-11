@@ -82,6 +82,9 @@ check('all nine chains promote in place and reject skips', () => {
     game.max_supply = [cost, 0];
     game.hands = [[next.template_id], []];
     if (current.kind === 'main') {
+      game.spawn(0, 'xi_tiao', 0, null, false);
+      game.spawn(0, 'xi_tiao', 1, null, false);
+      game.spawn(0, 'xi_tiao', 2, null, false);
       const unit = game.spawn(0, current.template_id, 3, 1, false);
       unit.attachments = ['lian_jie'];
       unit.attacked = true;
@@ -94,7 +97,7 @@ check('all nine chains promote in place and reject skips', () => {
       assert.equal(promoted.attacked, false);
       assert.deepEqual(game.graves[0].slice(-2), ['lian_jie', current.template_id]);
     } else {
-      const host = game.spawn(0, 'qiao_jian', 1, null, false);
+      const host = game.spawn(0, 'qiao_jian', 0, null, false);
       host.attachments = [current.template_id];
       game.promote(0, current.template_id);
       assert.deepEqual(host.attachments, [next.template_id]);
@@ -113,7 +116,7 @@ check('promote is atomic and does not refresh support or revive a retired shell'
   const game = fresh();
   game.supply = [5, 0];
   game.hands = [['art_h038a'], []];
-  const stamp = game.spawn(0, 'xiao_yin', 2, null, false);
+  const stamp = game.spawn(0, 'xiao_yin', 0, null, false);
   stamp.attachments = ['lian_jie'];
   game.graves = [['hou_ke'], []];
   game.support(0);
@@ -128,7 +131,8 @@ check('promote is atomic and does not refresh support or revive a retired shell'
   game.supply[0] = 3;
   game.promote(0, 'xiao_yin');
   assert.equal(game.supply[0], 2);
-  assert.equal(game.boards[0][2].card_id, 'art_h038a');
+  assert.equal(game.boards[0][0].card_id, 'hou_ke');
+  assert.equal(game.boards[0][1].card_id, 'art_h038a');
   assert.throws(() => game.support(0), error => error.code === 'already_used_ability');
   assert.equal(game.supply[0], 2);
   assert.throws(() => game.promote(0, 'art_h038b'), error => error.code === 'no_growth');
@@ -144,7 +148,8 @@ check('promote is atomic and does not refresh support or revive a retired shell'
   banned.promoteBan[0] = [];
   banned.support(0);
   assert.equal(banned.supply[0], 4);
-  assert.equal(banned.boards[0][1].card_id, 'hou_ke');
+  assert.equal(banned.boards[0][0].card_id, 'hou_ke');
+  assert.equal(banned.boards[0][1].card_id, 'xiao_yin');
 });
 
 check('guarded host blocks a guarding upgrade, and rush or entry effects resolve', () => {

@@ -210,12 +210,13 @@ check('support while the stamp is already on board', () => {
   game.support(0);
   assert.equal(game.supply[0], 4);
   assert.deepEqual(game.graves[0], []);
-  assert.deepEqual(game.units(0).map(unit => unit.card_id), ['xiao_yin', 'hou_ke']);
+  assert.deepEqual(game.units(0).map(unit => unit.card_id), ['hou_ke', 'xiao_yin']);
   const shell = game.units(0).find(unit => unit.card_id === 'hou_ke');
   const stamp = game.units(0).find(unit => unit.card_id === 'xiao_yin');
   assert.equal(shell.durability, 6);
   assert.equal(shell.sick, true);
-  assert.equal(shell.slot, 1);
+  assert.equal(shell.slot, 0);
+  assert.equal(stamp.slot, 1);
   assert.equal(stamp.sick, false);
   assert.equal(C.hasGuard(game.cards, shell), true);
   assert.deepEqual(shell.attachments, []);
@@ -228,7 +229,7 @@ check('support while the stamp is already on board', () => {
   game.play(0, 'gan_rao', 'dian_zhen');
   assert.equal(game.units(1)[0].durability, 2);
   assert.equal(game.supply[0], 1);
-  assert.deepEqual(game.units(0).map(unit => unit.card_id), ['xiao_yin', 'hou_ke']);
+  assert.deepEqual(game.units(0).map(unit => unit.card_id), ['hou_ke', 'xiao_yin']);
 });
 
 check('support after deploying the stamp, and again after the shell dies', () => {
@@ -260,7 +261,7 @@ check('support after deploying the stamp, and again after the shell dies', () =>
   stayed.play(1, 'gan_rao', 'hou_ke');
   assert.deepEqual(stayed.units(0).map(unit => unit.card_id), ['xiao_yin']);
   assert.deepEqual(stayed.graves[0], ['hou_ke']);
-  assert.equal(stayed.boards[0][1].card_id, 'xiao_yin');
+  assert.equal(stayed.boards[0][0].card_id, 'xiao_yin');
   stayed.end_turn(1);
   stayed.seat = 0;
   stayed.phase = 'main';
@@ -298,8 +299,28 @@ check('full board, attachments, guard bypass, mend and burn', () => {
   ['xiao_yin', 'dian_zhen', 'xuan_niu', 'qiao_jian', 'xi_tiao'].forEach((cardId, slot) => {
     full.spawn(0, cardId, slot, null, false);
   });
+  full.hands[0] = ['xi_tiao', 'xi_tiao'];
+  full.play(0, 'xi_tiao');
+  assert.equal(full.boards[0].length, 6);
+  assert.equal(full.boards[0][5].card_id, 'xi_tiao');
+  const shifted = full.boards[0][0].iid;
   full.graves[0] = ['hou_ke'];
-  unchanged(full, () => full.support(0), 'board_full');
+  full.support(0);
+  assert.equal(full.boards[0][0].card_id, 'hou_ke');
+  assert.equal(full.boards[0].length, 7);
+  assert.equal(full.boards[0][1].iid, shifted);
+  assert.equal(full.boards[0][1].card_id, 'xiao_yin');
+  full.spawn(1, 'xi_tiao', 0, 5, false);
+  full.spawn(1, 'xi_tiao', 1, 5, false);
+  const foe = full.boards[1][1];
+  const attacker = full.boards[0][6];
+  attacker.sick = false;
+  full.attack(0, attacker.iid, foe.iid);
+  assert.equal(foe.durability, 4);
+  assert.equal(full.boards[1][0].durability, 5);
+  const queued = JSON.stringify(full.view());
+  unchanged(full, () => full.play(0, 'xi_tiao', null, null, 99), 'bad_index');
+  assert.equal(JSON.stringify(full.view()), queued);
 
   const guard = empty();
   guard.supply = [2, 2];
@@ -425,7 +446,7 @@ check('illegal plays do not spend, and game over locks the table', () => {
   unchanged(guards, () => guards.attack(0, 'qiao_jian', 'base'), 'guard_blocks');
   guards.attack(0, 'qiao_jian', 'hou_ke');
   assert.equal(guards.units(1).some(unit => unit.card_id === 'hou_ke'), true);
-  guards.spawn(0, 'qiao_jian', 1, null, false);
+  guards.spawn(0, 'qiao_jian', guards.boards[0].length, null, false);
   guards.attack(0, guards.units(0).find(unit => !unit.attacked).iid, 'dian_zhen');
   assert.deepEqual(guards.graves[1], ['dian_zhen']);
 });
