@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PULSE · 大厅</title>
+<link rel="stylesheet" href="shared/pulse.css">
+<style>
+  main { max-width: 1100px; margin: 0 auto; padding: 28px 20px 48px; }
+  h1 { font-size: clamp(36px, 5vw, 56px); letter-spacing: -.05em; line-height: 1.15; margin: 12px 0; }
+  h1 span { color: var(--accent); }
+  .lead { max-width: 460px; color: #727973; }
+  .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 28px; }
+  .card { display: block; padding: 22px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; text-decoration: none; color: inherit; min-height: 160px; }
+  .card:hover { transform: translateY(-3px); border-color: #aeb8a5; }
+  .card h2 { margin: 8px 0; font-size: 18px; }
+  .card p { margin: 0; color: #7a807b; font-size: 13px; line-height: 1.6; }
+  .eyebrow { font-size: 11px; letter-spacing: .16em; font-weight: 750; color: var(--mint); }
+  @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header class="pulse-top">
+  <a class="pulse-brand" href="./index.html"><span class="pulse-mark">P</span><span><span class="pulse-name">PULSE</span><div class="pulse-sub">大厅</div></span></a>
+  <nav class="pulse-nav" aria-label="站点入口">
+    <a href="./index.html" aria-current="page">大厅</a>
+    <a href="dist/clash/index.html">回合战</a>
+    <a href="wiki/index.html">图鉴</a>
+    <a href="dist/index.html">旧版点数</a>
+  </nav>
+</header>
+<main>
+  <p class="eyebrow">PULSE</p>
+  <h1>同一套牌，<br><span>两处可去。</span></h1>
+  <p class="lead">回合战是炉石式的本地双人牌桌。图鉴收着 96 张待试玩设计和对应卡图。旧的点数对局和读卡仍然留着。</p>
+  <div class="grid">
+    <a class="card" href="dist/clash/index.html"><p class="eyebrow">CLASH</p><h2>回合战</h2><p>基地、供电、手牌和升星。教学局可以直接开打。</p></a>
+    <a class="card" href="wiki/index.html"><p class="eyebrow">WIKI</p><h2>卡牌图鉴</h2><p>96 张卡、搜索、星级和硬件资料。美术仍是待验收。</p></a>
+    <a class="card" href="dist/index.html"><p class="eyebrow">LEGACY</p><h2>旧版点数对局</h2><p>原来的三局点数、收藏和读卡器。数值不跟回合战混用。</p></a>
+  </div>
+</main>
+</body>
+</html>

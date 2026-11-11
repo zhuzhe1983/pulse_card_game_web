@@ -1,5 +1,17 @@
 # PULSE · 触卡对决
 
+## 回合战试玩（pcg.clash.v0）
+
+从仓库根目录打开大厅。规则绑定 prompt 提交 `704411fcb6138a05f9fdf8c168a366b7a2bb8237`。大厅可以进入回合战、图鉴和旧版点数对局。
+
+```bash
+python3 -m http.server 8002 --bind 127.0.0.1
+```
+
+打开 <http://127.0.0.1:8002>。回合战在 `dist/clash/`，图鉴在 `wiki/`，旧版仍在 `dist/index.html`。不要占用 8000 或 8001。
+
+下面仍是原来的 `pcg.core.v1` 触卡对决说明。旧页面、读卡和固件没有改。
+
 一个可以直接用静态服务器运行的 NFC 卡牌对战游戏。用你提供的 M5Stack 卡图，组合十张卡，在前后两排部署角色，通过留牌、停牌和技能选择赢下三局内的对决。
 
 **在线试玩：** <https://zhuzhe1983.github.io/pulse_card_game_web/>
@@ -16,6 +28,8 @@ python3 -m http.server 8000 --bind 127.0.0.1
 ```
 
 在浏览器打开 **http://localhost:8000**。Windows 上若命令是 `python` 或 `py`，用相应命令替换 `python3`。
+
+卡牌图鉴在仓库的 `wiki/`，不打进对战单文件。从仓库根目录开静态服务时，`dist/index.html` 里的「卡牌图鉴」会指向它。只预览图鉴用 `wiki/README.md` 里的 8003。
 
 如果只下载了单文件 HTML，把它放在一个文件夹里，启动同样的静态服务器，再打开该文件。若文件名不是 `index.html`，地址应带文件名，例如 `http://localhost:8000/pulse-card-game.html`。
 
@@ -144,6 +158,7 @@ node tests/network-game.test.cjs
 | `content/pack.json`、`content/presentation.json` | 数值与卡包；显示名称、素材编号及文案 |
 | `asset/card/`、`asset/char/` | 用户提供的 22 张完整卡图与 22 张角色图 |
 | `docs/` | 规则接口、网页配置、联网和读卡协议 |
+| `wiki/` | 独立卡牌图鉴。硬件资料和待试玩设计分开，不进入对战引擎 |
 | `firmware/` | M5Dial NFC·USB 桥（WS1850R/MFRC522，ESP-IDF）与 PN532 桥固件 |
 
 素材来自用户提供的 [pulse_card_game_prompt/asset](https://github.com/zhuzhe1983/pulse_card_game_prompt/tree/main/asset)，本包保留原图。涉及公开发布或素材再分发时，遵循原素材权利人的授权范围。

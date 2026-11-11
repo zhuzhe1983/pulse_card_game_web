@@ -1,0 +1,36 @@
+{
+  "ruleset_id": "pcg.clash.v0",
+  "prompt_repo": "https://github.com/zhuzhe1983/pulse_card_game_prompt",
+  "prompt_pr": 3,
+  "prompt_commit": "704411fcb6138a05f9fdf8c168a366b7a2bb8237",
+  "prompt_commit_merged": false,
+  "previous_playtest_commit": "5b85cc15305d3fcb1585d1096aa03b7c1766e3fe",
+  "copied_from_handoff": {
+    "HEAD.txt": "704411fcb6138a05f9fdf8c168a366b7a2bb8237",
+    "content/clash_playtest.json": {
+      "repo_path": "content/clash/clash_playtest.json",
+      "sha256": "5dbcd4692c6846891bcc530eef2ce060a8fc664d5a45bb82a6002dccac895909"
+    },
+    "fixtures/clash_v0_lesson.json": {
+      "repo_path": "content/clash/clash_v0_lesson.json",
+      "sha256": "0acce84683c82c1e88f3009a41a083cbda48d28ff9b748a57831e199ca6b3b18"
+    },
+    "docs/01_GAMEPLAY.md": {
+      "repo_path": "content/clash/01_GAMEPLAY.md",
+      "sha256": "dd1d5b48e8dbb39b48da6ea51b1b9af94a0075969aa1627e19f152541d47944d"
+    },
+    "content/clash_roster_96.json": {
+      "repo_path": "content/clash/clash_roster_96.json",
+      "sha256": "3279ebcf6bac546a026f7e792a61e7c7a1763a36882dd1d6df66d05fa93723ab"
+    },
+    "docs/18_ROSTER_AND_GROWTH.md": {
+      "repo_path": "content/clash/18_ROSTER_AND_GROWTH.md",
+      "sha256": "c4247c54aff064587ea8e215064e49d10336f84b5ed6a7771e5b9d193ee5c13f"
+    },
+    "WEB_IMPLEMENTATION_HANDOFF.md": {
+      "repo_path": "content/clash/WEB_IMPLEMENTATION_HANDOFF.md",
+      "sha256": "981adf8b5460944564ee6ce46177a727d27b991985998c5292fab51df5b28969"
+    }
+  },
+  "note": "教学 12 张仍是上一份交接的原字节。96 张扩展、升星和入场效果以 704411fc 为准。结算不读阵营、美术 type、硬件型号或版本号。"
+}
