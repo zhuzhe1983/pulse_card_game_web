@@ -1932,5 +1932,17 @@
     deployFromHand(Number(el.dataset.handIndex));
   });
 
-  begin('versus');
+  function startScenario() {
+    const params = new URLSearchParams(globalThis.location ? globalThis.location.search : '');
+    const scenario = params.get('scenario');
+    const known = ['versus', 'sim', 'lesson', 'support-present', 'support-deploy', 'support-again', 'promote-stamp', 'grow', 'crowd', 'synergy', 'builder'];
+    if (known.includes(scenario)) return scenario;
+    const mode = params.get('mode');
+    if (mode === 'sim') return 'sim';
+    if (mode === 'versus') return 'versus';
+    if (mode === 'hotseat' || mode === 'lesson') return 'lesson';
+    return 'sim';
+  }
+
+  begin(startScenario());
 })(globalThis);

@@ -143,7 +143,14 @@ async function main() {
     }, 'app');
     let snap = await state();
     eq(snap.mode, 'ai', '默认人机');
-    eq(snap.opening, 'lesson', '默认固定教学');
+    eq(snap.opening, 'sim', '默认模拟战');
+    eq(snap.deck0.split(',').length, 30, '默认玩家 30 张');
+    eq(snap.deck1.split(',').length, 30, '默认对方 30 张');
+    if (!snap.seed) throw new Error('默认模拟战没有种子');
+    await value(`document.querySelector('[data-action="mode"][data-mode="versus"]').click()`);
+    await sleep(80);
+    snap = await state();
+    eq(snap.opening, 'lesson', '固定教学仍可进入');
     eq(await value(`document.querySelector('[data-hand-seat="0"]').closest('.hand-dock') ? 'bottom' : 'no'`), 'bottom', '玩家手牌在下方');
     eq(await value(`document.querySelector('.slots.foe') && document.querySelector('.slots.mine') ? 'lanes' : ''`), 'lanes', '上下两条队伍');
 

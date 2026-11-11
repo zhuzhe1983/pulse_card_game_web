@@ -160,7 +160,17 @@ async function main() {
     const nfcText = await text('.nfc-entry');
     if (!nfcText.includes('这台浏览器不能刷卡，仍可用拖拽或点选出牌')) throw new Error('禁用文案不对 ' + nfcText);
     eq(await attr('main.table', 'data-mode'), 'ai', '默认人机');
-    eq(await attr('main.table', 'data-opening'), 'lesson', '默认是固定教学');
+    eq(await attr('main.table', 'data-opening'), 'sim', '默认是模拟战');
+    eq(await attr('main.table', 'data-sim-pool'), '99', '模拟战牌池');
+    const simOpen = await value(`(() => { const table = document.querySelector('main.table'); return { decks: [table.dataset.deck0.split(',').length, table.dataset.deck1.split(',').length], seed: table.dataset.seed, note: document.querySelector('.mode-note').textContent }; })()`);
+    if (simOpen.decks[0] !== 30 || simOpen.decks[1] !== 30 || !simOpen.seed) throw new Error('默认不是 30 张模拟战 ' + JSON.stringify(simOpen));
+    if (!simOpen.note.includes('模拟战')) throw new Error('开局没有写模拟战 ' + simOpen.note);
+    await send('Page.navigate', { url: `http://127.0.0.1:${port}/dist/clash/?scenario=versus` });
+    await waitFor(async () => {
+      if (await value('document.body && document.body.dataset.ready') !== '1') throw new Error('not ready');
+      if (await attr('main.table', 'data-opening') !== 'lesson') throw new Error('地址没有进入教学');
+    }, 'lesson url');
+    eq(await attr('main.table', 'data-mode'), 'ai', '教学地址仍是人机');
     await click('[data-action="mode"][data-mode="hotseat"]');
     eq(await attr('main.table', 'data-mode'), 'hotseat', '教学局改走本地双人');
     eq(await text('[data-seat="0"][data-stat="base"]'), '20', '先手基地');
