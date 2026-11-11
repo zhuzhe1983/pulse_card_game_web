@@ -1,5 +1,24 @@
 # PULSE · 触卡对决
 
+## 回合战试玩（pcg.clash.v0）
+
+当前要玩的单局回合战在 `dist/clash/`。规则绑定 prompt 提交 `5b85cc15305d3fcb1585d1096aa03b7c1766e3fe`，只用 12 张代表卡。请用 **8002** 端口，不要占用 8000（下面这一份旧版点数对局）或 8001（硬件预览）。
+
+```bash
+cd dist/clash
+python3 -m http.server 8002 --bind 127.0.0.1
+```
+
+打开 <http://127.0.0.1:8002>。说明见 `dist/clash/README.md`。
+
+共享入口只加在回合战页面的导航上，不改旧页面的结构：
+
+- `data-nav="clash"`：本页回合战。
+- `data-nav="legacy"`：指向 `../index.html`，也就是现在这份旧版。
+- `data-nav="wiki"`：图鉴占位，还不是链接。另一条分支可以把它换成指向 `../wiki/` 的链接。回合战不读取图鉴数据。
+
+下面仍是原来的 `pcg.core.v1` 触卡对决说明。旧页面、读卡和固件没有改。
+
 一个可以直接用静态服务器运行的 NFC 卡牌对战游戏。用你提供的 M5Stack 卡图，组合十张卡，在前后两排部署角色，通过留牌、停牌和技能选择赢下三局内的对决。
 
 **在线试玩：** <https://zhuzhe1983.github.io/pulse_card_game_web/>

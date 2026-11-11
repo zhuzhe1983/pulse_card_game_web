@@ -1,0 +1,23 @@
+{
+  "ruleset_id": "pcg.clash.v0",
+  "prompt_repo": "https://github.com/zhuzhe1983/pulse_card_game_prompt",
+  "prompt_pr": 3,
+  "prompt_commit": "5b85cc15305d3fcb1585d1096aa03b7c1766e3fe",
+  "prompt_commit_merged": false,
+  "copied_from_handoff": {
+    "HEAD.txt": "5b85cc15305d3fcb1585d1096aa03b7c1766e3fe",
+    "content/clash_playtest.json": {
+      "repo_path": "content/clash/clash_playtest.json",
+      "sha256": "5dbcd4692c6846891bcc530eef2ce060a8fc664d5a45bb82a6002dccac895909"
+    },
+    "fixtures/clash_v0_lesson.json": {
+      "repo_path": "content/clash/clash_v0_lesson.json",
+      "sha256": "0acce84683c82c1e88f3009a41a083cbda48d28ff9b748a57831e199ca6b3b18"
+    },
+    "docs/01_GAMEPLAY.md": {
+      "repo_path": "content/clash/01_GAMEPLAY.md",
+      "sha256": "048090c31e0d25dc21311ad58bacdff3ba5408901efe7c102502661d385e0c05"
+    }
+  },
+  "note": "12 张代表卡、后手代币、教学牌库和战例按该未合并提交原样拷入。结算不读取 series、hardware_controller、art_type 或 NFC 型号。图鉴元数据不是本规则的数据源。"
+}

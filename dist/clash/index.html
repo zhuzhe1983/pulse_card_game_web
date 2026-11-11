@@ -1,0 +1,957 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#12211d">
+<title>PULSE · 脉冲对决</title>
+<style>:root {
+  color-scheme: dark;
+  --bg: #101614;
+  --felt: #1a3330;
+  --felt-2: #23423e;
+  --ink: #f3efe4;
+  --muted: #b7c2b8;
+  --line: #3e5c55;
+  --gold: #e2b657;
+  --hp: #e36a4a;
+  --mint: #8fd0b4;
+  --paper: #f6f1e6;
+  --paper-ink: #1d1914;
+  --guard: #8eb7ff;
+  --sick: #e7c59a;
+  --danger: #ffb4a8;
+  font-family: "Segoe UI", "PingFang SC", "Noto Sans CJK SC", "Source Han Sans SC", sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+button:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+#app { min-height: 100vh; }
+.top {
+  display: flex; justify-content: space-between; gap: 16px; align-items: center;
+  padding: 12px 20px; border-bottom: 1px solid var(--line); background: #0c1211;
+}
+.brand { display: flex; flex-direction: column; gap: 2px; }
+.brand b { letter-spacing: .14em; font-size: 14px; }
+.brand span, .hint, .meta { color: var(--muted); font-size: 12px; }
+nav[data-shared-entry] { display: flex; gap: 14px; align-items: center; }
+nav a, nav span[data-nav="wiki"] { color: var(--ink); text-decoration: none; font-size: 14px; }
+nav a[aria-current="page"] { color: var(--gold); }
+nav span[data-nav="wiki"] { color: #6f7c74; border-bottom: 1px dashed #6f7c74; }
+.top-actions, .scenario-row, .action-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.btn, .scenario-row button, .action-row button, .card, .unit, .base-btn {
+  border: 1px solid var(--line); background: #13211e; border-radius: 8px;
+}
+.btn, .scenario-row button, .action-row button { padding: 8px 12px; }
+.btn.primary, .action-row button.primary { background: var(--gold); color: #1b1408; border-color: var(--gold); font-weight: 700; }
+.btn[aria-pressed="true"] { background: #5a4630; border-color: var(--sick); }
+.banner {
+  margin: 10px 20px 0; padding: 8px 12px; border-radius: 8px;
+  background: #5a4630; color: var(--sick); font-weight: 700;
+}
+.balance { margin: 8px 20px 0; color: var(--gold); font-size: 13px; }
+.table { max-width: 1180px; margin: 0 auto; padding: 12px 16px 28px; }
+.side { background: var(--felt); border: 1px solid var(--line); border-radius: 12px; padding: 10px; margin-top: 10px; }
+.side.active { box-shadow: inset 0 0 0 2px var(--gold); }
+.side-head, .statline, .slot-label { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.side-head h2 { margin: 0; font-size: 16px; }
+.hp { color: var(--hp); font-size: 28px; font-weight: 800; }
+.stats b { color: var(--ink); font-size: 16px; }
+.stats { color: var(--muted); font-size: 12px; }
+.slots { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin-top: 8px; }
+.unit, .slot.empty {
+  min-height: 112px; padding: 8px; text-align: left; background: var(--felt-2); width: 100%;
+}
+.slot.empty { color: var(--muted); display: grid; place-items: center; border-style: dashed; }
+.unit .name { font-weight: 800; }
+.unit .nums { font-variant-numeric: tabular-nums; }
+.tag { display: inline-block; margin: 2px 4px 0 0; padding: 1px 5px; border-radius: 4px; font-size: 11px; background: #0e1a18; }
+.tag.guard { color: var(--guard); }
+.tag.sick { color: var(--sick); }
+.tag.att { color: var(--mint); }
+.grave { margin: 8px 0 0; padding-left: 18px; color: var(--muted); font-size: 13px; }
+.center { margin: 12px 0; padding: 12px; border-radius: 12px; background: #0e1715; border: 1px solid var(--line); }
+.center h3 { margin: 0 0 6px; font-size: 18px; }
+#coach { margin: 0 0 8px; line-height: 1.5; }
+#last-error { margin: 0 0 8px; min-height: 1.4em; }
+#last-error[data-code]:not([data-code=""]) { color: var(--danger); }
+.hands { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+.card {
+  width: 132px; flex: 0 0 132px; min-height: 128px; padding: 8px; text-align: left;
+  background: var(--paper); color: var(--paper-ink);
+}
+.card .hint { min-height: 2.6em; }
+.card.selected { outline: 3px solid var(--gold); }
+.card .cost { float: right; width: 26px; height: 26px; border-radius: 6px; background: #1d1914; color: white; display: grid; place-items: center; font-weight: 800; }
+.card .name { font-weight: 800; margin: 6px 0; }
+.card .hint, .card .no-art { color: #5c564c; }
+.card .no-art { display: block; font-size: 12px; }
+.card .series-art { display: block; width: 100%; height: 64px; object-fit: contain; }
+.back {
+  width: 72px; height: 96px; border-radius: 8px; border: 1px solid var(--line);
+  background: repeating-linear-gradient(45deg, #1c3a34, #1c3a34 8px, #245049 8px, #245049 16px);
+}
+.log { max-height: 140px; overflow: auto; margin: 8px 0 0; padding-left: 18px; font-size: 13px; }
+.log .bad { color: var(--danger); }
+.catalog { margin-top: 12px; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px; }
+.catalog article { background: var(--paper); color: var(--paper-ink); border-radius: 8px; padding: 10px; }
+.catalog h4 { margin: 0 0 6px; }
+.catalog p { margin: 0 0 6px; font-size: 13px; line-height: 1.45; }
+.foot { color: var(--muted); font-size: 12px; margin-top: 12px; line-height: 1.5; }
+@media (max-width: 800px) {
+  .top { flex-direction: column; align-items: flex-start; }
+  .slots { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hp { font-size: 22px; }
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>globalThis.PCGClashContent={"ruleset_id":"pcg.clash.v0","balance":"playtest_unverified","base_life":20,"max_supply":10,"hand_limit":8,"board_limit":5,"opening_hand":[3,4],"deck_size_min":8,"deck_size_max":12,"minimum_main_units":4,"classification":{"game_role":"主控单位、配件或战术。只决定这张牌在回合战里怎么用。","hardware_controller":"以研究目录里的硬件结论为准，例如独立可编程宿主、辅助可编程 MCU、无芯片连接件。不从游戏角色反推，也不把带可编程 MCU 的 Chain 写成无主控。","art_type":"美术 type A / type B 按该硬件自己的卡面家族。本试玩卡表不填这个字段，也不用游戏角色代替它。"},"cards":[{"template_id":"xiao_yin","name":"小印","kind":"main","cost":2,"attack":2,"durability":2,"guard":false,"attack_bonus":0,"grants_guard":false,"bypass_guard":false,"effect":"support","amount":2,"series":"stamp","game_role":"main","hardware_controller":"independent_host","art_type":null,"role_note":"主控单位。支援：支付 2 点供电，把墓地里的厚壳工控以满耐久召到空位。每回合限 1 次。小印留在场上。复活的厚壳本回合不能攻击。","hardware_note":"灵感是能独立运行的邮票形主机。卡名不写型号。它和厚壳工控没有芯片一对一绑定。"},{"template_id":"xi_tiao","name":"细条","kind":"main","cost":1,"attack":1,"durability":2,"guard":false,"attack_bonus":0,"grants_guard":false,"bypass_guard":false,"effect":null,"amount":0,"series":"stick","role_note":"主控单位。便宜的第一回合身体。","hardware_note":"灵感是细长的独立主机，不是外接条。"},{"template_id":"dian_zhen","name":"点阵哨","kind":"main","cost":3,"attack":2,"durability":4,"guard":true,"attack_bonus":0,"grants_guard":false,"bypass_guard":false,"effect":null,"amount":0,"series":"atom","role_note":"主控单位，自带护卫。","hardware_note":"灵感是带灯阵的独立小主机。"},{"template_id":"xuan_niu","name":"旋钮台","kind":"main","cost":3,"attack":1,"durability":3,"guard":false,"attack_bonus":0,"grants_guard":false,"bypass_guard":false,"effect":"knob","amount":1,"series":"dial","role_note":"主控单位。你的回合支付 1 点供电，让一个己方单位本回合攻击 +1。每回合限 1 次。","hardware_note":"灵感是带旋钮的独立桌面主机。"},{"template_id":"qiao_jian","name":"敲键","kind":"main","cost":4,"attack":4,"durability":3,"guard":false,"attack_bonus":0,"grants_guard":false,"bypass_guard":false,"effect":null,"amount":0,"series":"cardputer","role_note":"主控单位。攻击高、耐久低。","hardware_note":"灵感是带键盘的掌上主机。不写成某一版型号，也不和厚壳工控混成同一张卡。"},{"template_id":"hou_ke","name":"厚壳工控","kind":"main","cost":5,"attack":3,"durability":6,"guard":true,"attack_bonus":0,"grants_guard":false,"bypass_guard":false,"effect":null,"amount":0,"series":"stamplc","game_role":"main","hardware_controller":"independent_host","art_type":null,"role_note":"主控单位，自带护卫。自己不能把小印从墓地叫回来。它死在墓地里时，要由场上的小印支援才能回来。","hardware_note":"灵感是机壳里已经焊有一块邮票主机的工控机。场上的小印是另一张卡，不是壳里那一块原装芯片。"},{"template_id":"lian_jie","name":"链节","kind":"attachment","cost":1,"attack":0,"durability":0,"guard":false,"attack_bonus":1,"grants_guard":false,"bypass_guard":false,"effect":null,"amount":0,"series":"chain","game_role":"attachment","hardware_controller":"auxiliary_programmable_mcu","art_type":null,"role_note":"游戏角色是配件。装到一台己方主控上，使它攻击 +1。不占场位。宿主死亡时配件进墓地。这个角色不改写硬件结论。","hardware_note":"对应目录里的 Chain 节点。那些节点写的是 STM32G031 一类辅助可编程单片机，不是无主控。Chain DualKey 是另一条记录，主控是 ESP32-S3，能独立运行，链节不代表它。美术 type A/B 以后按该硬件的卡面家族填，不从游戏角色推导。"},{"template_id":"qian_li","name":"千里眼","kind":"attachment","cost":2,"attack":0,"durability":0,"guard":false,"attack_bonus":0,"grants_guard":false,"bypass_guard":true,"effect":null,"amount":0,"series":"unit","role_note":"配件。宿主攻击时可以不理会对方护卫。反击仍然发生。","hardware_note":"Unit 系列里有的只是传感器。这张按外接眼睛来做，不因为系列名就猜成主控。"},{"template_id":"hu_zhao","name":"护罩","kind":"attachment","cost":1,"attack":0,"durability":0,"guard":false,"attack_bonus":0,"grants_guard":true,"bypass_guard":false,"effect":null,"amount":0,"series":"module","role_note":"配件。让宿主获得护卫。宿主本来就有护卫时不能安装。一台主控同时只装一个配件。","hardware_note":"灵感是套在主机外面的保护件，自己不站到场上。"},{"template_id":"bu_ji","name":"补给包","kind":"spell","cost":1,"attack":0,"durability":0,"guard":false,"attack_bonus":0,"grants_guard":false,"bypass_guard":false,"effect":"mend","amount":2,"series":"tactic","role_note":"战术。选择一个己方单位：恢复 2 点耐久，或者本回合攻击 +1。不能超过卡面耐久。不能治疗基地。","hardware_note":"没有对应某一颗具体芯片。"},{"template_id":"gan_rao","name":"干扰","kind":"spell","cost":2,"attack":0,"durability":0,"guard":false,"attack_bonus":0,"grants_guard":false,"bypass_guard":false,"effect":"damage","amount":2,"series":"tactic","role_note":"战术。对一个敌方单位造成 2 点耐久伤害。护卫拦不住战术。没有反击。","hardware_note":"没有对应某一颗具体芯片。"},{"template_id":"hui_chong","name":"回充","kind":"spell","cost":2,"attack":0,"durability":0,"guard":false,"attack_bonus":0,"grants_guard":false,"bypass_guard":false,"effect":"heal_base","amount":4,"series":"tactic","role_note":"战术。己方基地恢复 4 点生命，不超过 20。","hardware_note":"没有对应某一颗具体芯片。"}],"second_player_token":{"template_id":"jie_yi_ge_dian","name":"借一格电","kind":"spell","cost":0,"attack":0,"durability":0,"guard":false,"attack_bonus":0,"grants_guard":false,"bypass_guard":false,"effect":"supply","amount":1,"series":"system","role_note":"后手补偿，不放进 12 张代表卡，也不放进牌库。打出后本回合当前供电 +1，可以暂时高于上限。下回合开始会把供电设回上限。","hardware_note":"规则代币，不是硬件。"},"decks":{"first":["xi_tiao","xiao_yin","bu_ji","dian_zhen","lian_jie","hou_ke","gan_rao","qiao_jian"],"second":["xi_tiao","hu_zhao","xiao_yin","gan_rao","dian_zhen","hui_chong","hou_ke","qiao_jian"]}};
+</script>
+<script>/* pcg.clash.v0 table rules.
+ * Bound to prompt commit 5b85cc15305d3fcb1585d1096aa03b7c1766e3fe.
+ * Card numbers come from the playtest JSON. Combat reads kind, cost, attack,
+ * durability, guard, bonuses and effect only. */
+(function (root) {
+  'use strict';
+  const RULESET = 'pcg.clash.v0';
+  const SOURCE_COMMIT = '5b85cc15305d3fcb1585d1096aa03b7c1766e3fe';
+
+  class ClashError extends Error {
+    constructor(message, code = 'rejected') {
+      super(message);
+      this.name = 'ClashError';
+      this.code = code;
+    }
+  }
+
+  function loadCards(payload) {
+    const cards = Object.create(null);
+    for (const card of payload.cards) cards[card.template_id] = Object.assign({}, card);
+    const token = payload.second_player_token;
+    cards[token.template_id] = Object.assign({}, token);
+    return cards;
+  }
+
+  function rulesFromPayload(payload) {
+    return {
+      baseLife: payload.base_life,
+      maxSupply: payload.max_supply,
+      handLimit: payload.hand_limit,
+      boardLimit: payload.board_limit,
+      openingHand: payload.opening_hand.slice()
+    };
+  }
+
+  function attackOf(cards, unit) {
+    const bonus = unit.attachments.reduce((sum, id) => sum + cards[id].attack_bonus, 0);
+    return cards[unit.card_id].attack + bonus + unit.temp_attack;
+  }
+
+  function hasGuard(cards, unit) {
+    if (cards[unit.card_id].guard) return true;
+    return unit.attachments.some(id => cards[id].grants_guard);
+  }
+
+  function bypassGuard(cards, unit) {
+    return unit.attachments.some(id => cards[id].bypass_guard);
+  }
+
+  class Game {
+    static empty(cards, rules) {
+      const game = Object.create(Game.prototype);
+      game.cards = cards;
+      game.rules = rules;
+      game.bases = [rules.baseLife, rules.baseLife];
+      game.max_supply = [0, 0];
+      game.supply = [0, 0];
+      game.fatigue = [0, 0];
+      game.decks = [[], []];
+      game.hands = [[], []];
+      game.boards = [Array(rules.boardLimit).fill(null), Array(rules.boardLimit).fill(null)];
+      game.graves = [[], []];
+      game.ability_used = [{}, {}];
+      game.seat = 0;
+      game.turns_started = [1, 0];
+      game.phase = 'main';
+      game.winner = null;
+      game.log = [];
+      game._nextId = 1;
+      return game;
+    }
+
+    constructor(cards, deck0, deck1, rules, tokenId = 'jie_yi_ge_dian') {
+      this.cards = cards;
+      this.rules = rules;
+      this.bases = [rules.baseLife, rules.baseLife];
+      this.max_supply = [0, 0];
+      this.supply = [0, 0];
+      this.fatigue = [0, 0];
+      this.decks = [deck0.slice(), deck1.slice()];
+      this.hands = [[], []];
+      this.boards = [Array(rules.boardLimit).fill(null), Array(rules.boardLimit).fill(null)];
+      this.graves = [[], []];
+      this.ability_used = [{}, {}];
+      this.seat = 0;
+      this.turns_started = [0, 0];
+      this.phase = 'opening';
+      this.winner = null;
+      this.log = [];
+      this._nextId = 1;
+      for (let n = 0; n < rules.openingHand[0]; n++) this._openingDraw(0);
+      for (let n = 0; n < rules.openingHand[1]; n++) this._openingDraw(1);
+      this.hands[1].push(tokenId);
+      this.log.push('起手：先手3张，后手4张，后手获得借一格电');
+    }
+
+    _openingDraw(seat) {
+      if (!this.decks[seat].length) throw new ClashError('起手时牌库不够');
+      this.hands[seat].push(this.decks[seat].shift());
+    }
+
+    event(text) { this.log.push(text); }
+
+    units(seat) { return this.boards[seat].filter(unit => unit != null); }
+
+    aliveCount(seat) { return this.units(seat).length; }
+
+    find(iid) {
+      for (const seat of [0, 1]) {
+        for (let slot = 0; slot < this.boards[seat].length; slot++) {
+          const unit = this.boards[seat][slot];
+          if (unit && unit.iid === iid) return [seat, slot, unit];
+        }
+      }
+      throw new ClashError('场上没有这张单位');
+    }
+
+    requireMain(seat) {
+      if (this.winner != null) throw new ClashError('对局已经结束', 'game_over');
+      if (this.phase !== 'main' || this.seat !== seat) throw new ClashError('还没轮到这一方的主阶段', 'not_your_turn');
+    }
+
+    start_turn() {
+      if (this.winner != null) throw new ClashError('对局已经结束', 'game_over');
+      if (this.phase !== 'opening' && this.phase !== 'between') {
+        throw new ClashError('回合开始只能接在开局或上一回合结束之后', 'bad_phase');
+      }
+      const seat = this.seat;
+      this.phase = 'start';
+      this.turns_started[seat] += 1;
+      this.ability_used[seat] = {};
+      const firstOpening = seat === 0 && this.turns_started[seat] === 1;
+      if (firstOpening) {
+        this.event(`座位${seat}回合开始：先手第1回合不抽牌`);
+      } else {
+        this.event(`座位${seat}回合开始：抽牌`);
+        this.draw(seat);
+        if (this.winner != null) return;
+      }
+      for (const unit of this.units(seat)) {
+        unit.sick = false;
+        unit.attacked = false;
+      }
+      this.event(`座位${seat}场上原有单位解除新入场限制`);
+      this.max_supply[seat] = Math.min(this.rules.maxSupply, this.max_supply[seat] + 1);
+      this.supply[seat] = this.max_supply[seat];
+      this.phase = 'main';
+      this.event(`座位${seat}供电上限${this.max_supply[seat]}，当前供电回满`);
+    }
+
+    draw(seat) {
+      if (this.decks[seat].length) {
+        const cardId = this.decks[seat].shift();
+        if (this.hands[seat].length >= this.rules.handLimit) {
+          this.graves[seat].push(cardId);
+          this.event(`座位${seat}手牌已满，${this.cards[cardId].name}展示后进入墓地`);
+        } else {
+          this.hands[seat].push(cardId);
+          this.event(`座位${seat}抽到${this.cards[cardId].name}`);
+        }
+        return;
+      }
+      this.fatigue[seat] += 1;
+      this.bases[seat] = Math.max(0, this.bases[seat] - this.fatigue[seat]);
+      this.event(`座位${seat}疲劳${this.fatigue[seat]}，基地变为${this.bases[seat]}`);
+      this.check_bases();
+    }
+
+    pay(seat, amount) {
+      if (this.supply[seat] < amount) throw new ClashError('供电不足', 'not_enough_supply');
+      this.supply[seat] -= amount;
+    }
+
+    takeHand(seat, cardId) {
+      const index = this.hands[seat].indexOf(cardId);
+      if (index < 0) throw new ClashError('手牌里没有这张牌', 'not_in_hand');
+      this.hands[seat].splice(index, 1);
+    }
+
+    emptySlot(seat) {
+      const slot = this.boards[seat].indexOf(null);
+      return slot < 0 ? null : slot;
+    }
+
+    placeNew(seat, cardId) {
+      const slot = this.emptySlot(seat);
+      if (slot == null) throw new ClashError('场上没有空位', 'board_full');
+      const unit = {
+        iid: `u${this._nextId}`,
+        card_id: cardId,
+        seat,
+        slot,
+        durability: this.cards[cardId].durability,
+        sick: true,
+        attacked: false,
+        temp_attack: 0,
+        attachments: []
+      };
+      this._nextId += 1;
+      this.boards[seat][slot] = unit;
+      this.event(`座位${seat}${this.cards[cardId].name}进入位置${slot}，新入场不能攻击`);
+      return unit;
+    }
+
+    resolveIid(seat, ref) {
+      if (typeof ref === 'string' && /^u\d+$/.test(ref)) {
+        this.find(ref);
+        return ref;
+      }
+      const found = this.units(seat).filter(unit => unit.card_id === ref).map(unit => unit.iid);
+      if (found.length !== 1) throw new ClashError('无法唯一确定单位', 'bad_target');
+      return found[0];
+    }
+
+    play(seat, cardId, target = null, mode = null) {
+      this.requireMain(seat);
+      const card = this.cards[cardId];
+      if (!card) throw new ClashError('未知卡牌');
+      if (!this.hands[seat].includes(cardId)) throw new ClashError('手牌里没有这张牌', 'not_in_hand');
+      if (this.supply[seat] < card.cost) throw new ClashError('供电不足', 'not_enough_supply');
+      let host = null;
+      if (card.kind === 'main') {
+        if (this.aliveCount(seat) >= this.rules.boardLimit) throw new ClashError('场位已满', 'board_full');
+      } else if (card.kind === 'attachment') {
+        if (target == null) throw new ClashError('配件必须指定己方主控', 'bad_target');
+        const found = this.find(this.resolveIid(seat, target));
+        if (found[0] !== seat) throw new ClashError('配件只能装在己方主控上', 'bad_target');
+        host = found[2];
+        if (host.attachments.length >= 1) throw new ClashError('这台主控已经有配件', 'already_has_attachment');
+        if (card.grants_guard && hasGuard(this.cards, host)) throw new ClashError('这台主控已经有护卫', 'already_has_guard');
+      } else if (card.kind === 'spell') {
+        this.prepareSpell(seat, card, target, mode);
+      } else {
+        throw new ClashError('未知卡种');
+      }
+      this.pay(seat, card.cost);
+      this.takeHand(seat, cardId);
+      if (card.kind === 'main') {
+        this.placeNew(seat, cardId);
+      } else if (card.kind === 'attachment') {
+        host.attachments.push(cardId);
+        this.event(`${card.name}装到${this.cards[host.card_id].name}上`);
+      } else {
+        this.castSpell(seat, card, target, mode);
+        this.graves[seat].push(cardId);
+        this.event(`${card.name}进入墓地`);
+      }
+      this.check_deaths();
+      this.check_bases();
+    }
+
+    prepareSpell(seat, card, target, mode) {
+      const effect = card.effect;
+      if (effect === 'supply' || effect === 'heal_base') return;
+      if (effect === 'damage') {
+        if (target == null) throw new ClashError('干扰必须指定敌方单位', 'bad_target');
+        const found = this.find(this.resolveIid(1 - seat, target));
+        if (found[0] === seat) throw new ClashError('干扰只能指定敌方单位', 'bad_target');
+        return;
+      }
+      if (effect === 'mend') {
+        if (target == null) throw new ClashError('补给必须指定己方单位', 'bad_target');
+        const found = this.find(this.resolveIid(seat, target));
+        if (found[0] !== seat) throw new ClashError('补给只能指定己方单位', 'bad_target');
+        if (mode !== 'heal' && mode !== 'temp') throw new ClashError('补给要选择修复或临时强化', 'bad_target');
+        return;
+      }
+      throw new ClashError('未知战术');
+    }
+
+    castSpell(seat, card, target, mode) {
+      const effect = card.effect;
+      if (effect === 'supply') {
+        this.supply[seat] += card.amount;
+        this.event(`当前供电变为${this.supply[seat]}`);
+      } else if (effect === 'heal_base') {
+        const before = this.bases[seat];
+        this.bases[seat] = Math.min(this.rules.baseLife, this.bases[seat] + card.amount);
+        this.event(`座位${seat}基地从${before}变为${this.bases[seat]}`);
+      } else if (effect === 'damage') {
+        const host = this.find(this.resolveIid(1 - seat, target))[2];
+        host.durability = Math.max(0, host.durability - card.amount);
+        this.event(`${this.cards[host.card_id].name}耐久变为${host.durability}`);
+      } else if (effect === 'mend') {
+        const found = this.find(this.resolveIid(seat, target));
+        const host = found[2];
+        if (found[0] !== seat) throw new ClashError('补给只能指定己方单位', 'bad_target');
+        if (mode === 'heal') {
+          const cap = this.cards[host.card_id].durability;
+          host.durability = Math.min(cap, host.durability + card.amount);
+          this.event(`${this.cards[host.card_id].name}耐久变为${host.durability}`);
+        } else if (mode === 'temp') {
+          host.temp_attack += 1;
+          this.event(`${this.cards[host.card_id].name}本回合攻击变为${attackOf(this.cards, host)}`);
+        } else {
+          throw new ClashError('补给要选择修复或临时强化', 'bad_target');
+        }
+      } else {
+        throw new ClashError('未知战术');
+      }
+    }
+
+    support(seat) {
+      this.requireMain(seat);
+      const sources = this.units(seat).filter(unit => unit.card_id === 'xiao_yin');
+      if (sources.length !== 1) throw new ClashError('场上要有一台小印才能支援', 'no_stamp_on_board');
+      if (this.ability_used[seat].xiao_yin) throw new ClashError('本回合已经支援过', 'already_used_ability');
+      if (!this.graves[seat].includes('hou_ke')) throw new ClashError('墓地里没有厚壳工控', 'no_shell_in_grave');
+      if (this.aliveCount(seat) >= this.rules.boardLimit) throw new ClashError('场上没有空位', 'board_full');
+      const cost = this.cards.xiao_yin.amount;
+      if (this.supply[seat] < cost) throw new ClashError('供电不足', 'not_enough_supply');
+      this.pay(seat, cost);
+      this.ability_used[seat].xiao_yin = 1;
+      this.graves[seat].splice(this.graves[seat].indexOf('hou_ke'), 1);
+      this.event('小印支援，厚壳工控离开墓地');
+      return this.placeNew(seat, 'hou_ke');
+    }
+
+    knob(seat, hostId, target) {
+      this.requireMain(seat);
+      hostId = this.resolveIid(seat, hostId);
+      target = this.resolveIid(seat, target);
+      const hostFound = this.find(hostId);
+      if (hostFound[0] !== seat || hostFound[2].card_id !== 'xuan_niu') {
+        throw new ClashError('只有己方旋钮台能调这一下', 'bad_target');
+      }
+      if (this.ability_used[seat].xuan_niu) throw new ClashError('本回合旋钮已经用过', 'already_used_ability');
+      const allyFound = this.find(target);
+      if (allyFound[0] !== seat) throw new ClashError('旋钮只能强化己方单位', 'bad_target');
+      const cost = this.cards.xuan_niu.amount;
+      if (this.supply[seat] < cost) throw new ClashError('供电不足', 'not_enough_supply');
+      this.pay(seat, cost);
+      this.ability_used[seat].xuan_niu = 1;
+      allyFound[2].temp_attack += 1;
+      this.event(`旋钮台让${this.cards[allyFound[2].card_id].name}本回合攻击变为${attackOf(this.cards, allyFound[2])}`);
+    }
+
+    attack(seat, attackerId, target) {
+      this.requireMain(seat);
+      attackerId = this.resolveIid(seat, attackerId);
+      const atkFound = this.find(attackerId);
+      if (atkFound[0] !== seat) throw new ClashError('不能操作对方的单位', 'bad_target');
+      const attacker = atkFound[2];
+      if (attacker.sick) throw new ClashError('新入场的单位本回合不能攻击', 'summoning_sickness');
+      if (attacker.attacked) throw new ClashError('这台单位本回合已经攻击过', 'already_attacked');
+      const guards = this.units(1 - seat).filter(unit => hasGuard(this.cards, unit));
+      if (target === 'base') {
+        if (guards.length && !bypassGuard(this.cards, attacker)) throw new ClashError('对方有护卫时只能攻击护卫', 'guard_blocks');
+        attacker.attacked = true;
+        const damage = attackOf(this.cards, attacker);
+        this.bases[1 - seat] = Math.max(0, this.bases[1 - seat] - damage);
+        this.event(`${this.cards[attacker.card_id].name}攻击基地，对方基地变为${this.bases[1 - seat]}`);
+        this.check_bases();
+        return;
+      }
+      const defFound = this.find(this.resolveIid(1 - seat, target));
+      if (defFound[0] === seat) throw new ClashError('不能攻击己方单位', 'bad_target');
+      const defender = defFound[2];
+      if (guards.length && !guards.includes(defender) && !bypassGuard(this.cards, attacker)) {
+        throw new ClashError('对方有护卫时只能攻击护卫', 'guard_blocks');
+      }
+      attacker.attacked = true;
+      const atkDamage = attackOf(this.cards, attacker);
+      const defDamage = attackOf(this.cards, defender);
+      attacker.durability = Math.max(0, attacker.durability - defDamage);
+      defender.durability = Math.max(0, defender.durability - atkDamage);
+      this.event(`${this.cards[attacker.card_id].name}与${this.cards[defender.card_id].name}同时结算，耐久变为${attacker.durability}和${defender.durability}`);
+      this.check_deaths();
+    }
+
+    check_deaths() {
+      const dead = [];
+      for (const seat of [0, 1]) {
+        this.boards[seat].forEach((unit, slot) => {
+          if (unit && unit.durability <= 0) dead.push([seat, slot, unit]);
+        });
+      }
+      for (const [seat, slot, unit] of dead) {
+        for (const attachment of unit.attachments) {
+          this.graves[seat].push(attachment);
+          this.event(`${this.cards[attachment].name}随宿主进入墓地`);
+        }
+        this.graves[seat].push(unit.card_id);
+        this.boards[seat][slot] = null;
+        this.event(`${this.cards[unit.card_id].name}进入座位${seat}墓地`);
+      }
+    }
+
+    check_bases() {
+      const fallen = this.bases.map((life, seat) => life <= 0 ? seat : -1).filter(seat => seat >= 0);
+      if (fallen.length === 2) {
+        this.winner = 'draw';
+        this.phase = 'over';
+        this.event('双方基地同时倒下，平局');
+      } else if (fallen.length === 1) {
+        this.winner = 1 - fallen[0];
+        this.phase = 'over';
+        this.event(`座位${fallen[0]}基地倒下，座位${this.winner}获胜`);
+      }
+    }
+
+    end_turn(seat) {
+      this.requireMain(seat);
+      for (const unit of this.units(seat)) {
+        unit.temp_attack = 0;
+        unit.attacked = false;
+      }
+      this.supply[seat] = 0;
+      this.event(`座位${seat}回合结束，临时攻击加成清除，没用完的供电清零`);
+      this.seat = 1 - seat;
+      this.phase = 'between';
+    }
+
+    spawn(seat, cardId, slot, durability = null, sick = false) {
+      const card = this.cards[cardId];
+      const unit = {
+        iid: `u${this._nextId}`,
+        card_id: cardId,
+        seat,
+        slot,
+        durability: durability == null ? card.durability : durability,
+        sick,
+        attacked: false,
+        temp_attack: 0,
+        attachments: []
+      };
+      this._nextId += 1;
+      if (this.boards[seat][slot] != null) throw new ClashError('位置已有单位');
+      this.boards[seat][slot] = unit;
+      return unit;
+    }
+
+    view() {
+      const show = unit => {
+        if (!unit) return null;
+        return {
+          iid: unit.iid,
+          card_id: unit.card_id,
+          durability: unit.durability,
+          attack: attackOf(this.cards, unit),
+          sick: unit.sick,
+          guard: hasGuard(this.cards, unit),
+          attachments: unit.attachments.slice()
+        };
+      };
+      return {
+        bases: this.bases.slice(),
+        supply: this.supply.slice(),
+        max_supply: this.max_supply.slice(),
+        hands: this.hands.map(hand => hand.slice()),
+        decks: this.decks.map(deck => deck.length),
+        boards: this.boards.map(row => row.map(show)),
+        graves: this.graves.map(grave => grave.slice()),
+        winner: this.winner,
+        seat: this.seat,
+        phase: this.phase
+      };
+    }
+  }
+
+  function finishTurn(game) {
+    game.end_turn(game.seat);
+    if (game.winner != null) return;
+    game.start_turn();
+  }
+
+  const api = Object.freeze({
+    RULESET, SOURCE_COMMIT, ClashError, loadCards, rulesFromPayload,
+    attackOf, hasGuard, bypassGuard, Game, finishTurn
+  });
+  root.PCGClash = api;
+  if (typeof module === 'object' && module.exports) module.exports = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+</script>
+<script>(function (root) {
+  'use strict';
+  const C = root.PCGClash;
+  const content = root.PCGClashContent;
+  const $ = document.querySelector.bind(document);
+  const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+  const rules = C.rulesFromPayload(content);
+  const cards = C.loadCards(content);
+  const tokenId = content.second_player_token.template_id;
+  const seatName = seat => seat === 0 ? '先手' : '后手';
+  const kindName = kind => kind === 'main' ? '主控' : kind === 'attachment' ? '配件' : '战术';
+  function blurb(card) {
+    if (card.kind === 'main') return `主控 · 攻${card.attack} 耐${card.durability}${card.guard ? ' · 护卫' : ''}`;
+    if (card.attack_bonus) return `配件 · 攻击 +${card.attack_bonus}`;
+    if (card.grants_guard) return '配件 · 获得护卫';
+    if (card.bypass_guard) return '配件 · 无视护卫';
+    if (card.effect === 'supply') return `战术 · 供电 +${card.amount}`;
+    if (card.effect === 'heal_base') return `战术 · 基地 +${card.amount}`;
+    if (card.effect === 'damage') return `战术 · 敌方 -${card.amount} 耐久`;
+    if (card.effect === 'mend') return `战术 · 修复 ${card.amount} 或攻击 +1`;
+    return kindName(card.kind);
+  }
+
+  let game = null;
+  let ui = blankUi('lesson');
+
+  function blankUi(scenario) {
+    return { scenario, reveal: false, catalog: false, handIndex: null, attacker: null, target: null, knob: false, error: null, log: [] };
+  }
+
+  function push(text, code) {
+    ui.log.push({ text, code: code || '' });
+    if (ui.log.length > 40) ui.log.shift();
+  }
+
+  function note(error) {
+    ui.error = { code: error.code || 'rejected', message: error.message || String(error) };
+    push(ui.error.message, ui.error.code);
+    render();
+  }
+
+  function clearChoice() {
+    ui.handIndex = null;
+    ui.attacker = null;
+    ui.target = null;
+    ui.knob = false;
+    ui.error = null;
+  }
+
+  function begin(scenario) {
+    const keepReveal = ui.reveal;
+    ui = blankUi(scenario);
+    ui.reveal = keepReveal;
+    if (scenario === 'lesson') {
+      game = new C.Game(cards, content.decks.first.slice(), content.decks.second.slice(), rules, tokenId);
+      game.start_turn();
+      push('教学局。牌序固定，不洗牌。先手第 1 回合不抽牌，供电已回满。');
+    } else if (scenario === 'support-present') {
+      game = C.Game.empty(cards, rules);
+      game.supply = [6, 6];
+      game.max_supply = [6, 6];
+      game.bases = [16, 18];
+      game.hands = [['bu_ji', 'gan_rao'], []];
+      game.graves = [['hou_ke'], []];
+      game.spawn(0, 'xiao_yin', 0, null, false);
+      game.spawn(1, 'dian_zhen', 0);
+      push('摆阵：小印已经在场，厚壳在自己的墓地。支援叫回厚壳，小印留在场上。');
+    } else if (scenario === 'support-deploy') {
+      game = C.Game.empty(cards, rules);
+      game.supply = [6, 6];
+      game.max_supply = [6, 6];
+      game.hands = [['xiao_yin'], []];
+      game.graves = [['hou_ke'], []];
+      push('摆阵：厚壳已在墓地，小印还在手牌。没有小印在场时支援不会扣电。');
+    } else if (scenario === 'support-again') {
+      game = C.Game.empty(cards, rules);
+      game.supply = [0, 2];
+      game.max_supply = [3, 2];
+      game.bases = [16, 18];
+      game.hands = [[], ['gan_rao']];
+      game.turns_started = [0, 1];
+      game.spawn(0, 'hou_ke', 0, 2, false);
+      game.spawn(0, 'xiao_yin', 1, null, false);
+      game.seat = 1;
+      push('摆阵：后手用干扰打掉位置 0 的厚壳。小印留在位置 1。结束回合后先手可以再支援。');
+    }
+    render();
+  }
+
+  function selectedCard() {
+    if (ui.handIndex == null) return null;
+    const id = game.hands[game.seat][ui.handIndex];
+    return id ? cards[id] : null;
+  }
+
+  function coach() {
+    if (game.winner != null) return '终局已锁定。出牌、攻击、支援、旋钮和结束回合都会被拒绝。';
+    if (ui.knob) return '旋钮已准备。点一台己方单位，本回合攻击 +1。可以点旋钮台自己。新入场也能用。';
+    const card = selectedCard();
+    if (card && card.kind === 'main') return `准备打出${card.name}。它进入最左边的空位，本回合不能攻击，技能不受这个限制。`;
+    if (card && card.effect === 'supply') return '打出后当前供电 +1，可以暂时高于上限。回合结束会清零。';
+    if (card && card.effect === 'heal_base') return '打出后己方基地恢复 4，不超过 20。';
+    if (card && card.kind === 'attachment') return `点一台己方主控，装上${card.name}。一台只能挂一个。护罩不能装到已有护卫的单位。`;
+    if (card && card.effect === 'damage') return '点一台敌方单位。护卫拦不住，也没有反击。';
+    if (card && card.effect === 'mend' && !ui.target) return '点一台己方单位。可以修复耐久，或让它本回合攻击 +1。不能治疗基地。';
+    if (card && card.effect === 'mend') return '选择修复 2 点耐久（不超过卡面），或本回合攻击 +1。';
+    if (ui.attacker) return '点敌方单位，或按“攻击对方基地”。新入场不能攻击。对方有护卫时，没有千里眼就只能打护卫。';
+    return '点手牌出牌，点己方单位后再选攻击目标。场上的小印可以支援自己墓地里的厚壳，小印不会离场。';
+  }
+
+  function art(card) {
+    const series = esc(card.series || '');
+    return `<span class="no-art">无图 · 系列 ${series}</span><img class="series-art" alt="" hidden data-series="${series}" src="series/${series}.png" onload="this.hidden=false;this.previousElementSibling.hidden=true" onerror="this.remove()">`;
+  }
+
+  function handHtml(seat) {
+    const show = ui.reveal || seat === game.seat;
+    if (!show) {
+      const backs = game.hands[seat].map(() => '<div class="back" aria-hidden="true"></div>').join('');
+      return `<div class="hands" data-hand-seat="${seat}" data-hidden="1">${backs}<span class="hint">手牌 ${game.hands[seat].length} 张，牌面已遮住</span></div>`;
+    }
+    const open = game.hands[seat].map((id, index) => {
+      const card = cards[id];
+      const selected = seat === game.seat && ui.handIndex === index;
+      const body = `${art(card)}<span class="cost">${card.cost}</span><div class="name">${esc(card.name)}</div><div class="hint">${esc(blurb(card))}</div>`;
+      if (seat !== game.seat) return `<div class="card" data-card="${esc(id)}">${body}<div class="tag">教学明牌</div></div>`;
+      return `<button type="button" class="card${selected ? ' selected' : ''}" data-action="select-hand" data-hand-index="${index}" data-card="${esc(id)}">${body}</button>`;
+    }).join('');
+    return `<div class="hands" data-hand-seat="${seat}" data-hidden="0">${open || '<span class="hint">没有手牌</span>'}</div>`;
+  }
+
+  function unitHtml(seat, slot, unit) {
+    if (!unit) return `<div class="slot empty" data-board-seat="${seat}" data-slot="${slot}" data-card="">空位 ${slot}</div>`;
+    const card = cards[unit.card_id];
+    const tags = [
+      unit.sick ? '<span class="tag sick">新入场</span>' : '',
+      unit.attacked ? '<span class="tag">已攻击</span>' : '',
+      C.hasGuard(cards, unit) ? '<span class="tag guard">护卫</span>' : '',
+      unit.temp_attack ? `<span class="tag att">临时 +${unit.temp_attack}</span>` : '',
+      unit.attachments.map(id => `<span class="tag att">配件 ${esc(cards[id].name)}</span>`).join('')
+    ].join('');
+    return `<button type="button" class="unit" data-action="select-unit" data-board-seat="${seat}" data-slot="${slot}" data-seat="${seat}" data-iid="${esc(unit.iid)}" data-card="${esc(unit.card_id)}" data-sick="${unit.sick}" data-guard="${C.hasGuard(cards, unit)}" data-attack="${C.attackOf(cards, unit)}" data-durability="${unit.durability}">
+      <div class="slot-label"><b>${slot}</b><span class="name">${esc(card.name)}</span></div>
+      <div class="nums">攻 ${C.attackOf(cards, unit)} · 耐 ${unit.durability}/${card.durability}</div>
+      ${tags || '<span class="tag">可行动</span>'}
+    </button>`;
+  }
+
+  function side(seat) {
+    const active = game.seat === seat && game.phase === 'main';
+    return `<section class="side${active ? ' active' : ''}" data-player="${seat}">
+      <div class="side-head">
+        <h2>${seatName(seat)}${active ? ' · 当前回合' : ''}</h2>
+        <button type="button" class="base-btn" data-action="hit-base" data-seat="${seat}">基地 <span class="hp" data-seat="${seat}" data-stat="base">${game.bases[seat]}</span></button>
+        <div class="stats">供电 <b data-seat="${seat}" data-stat="supply">${game.supply[seat]}</b> / 上限 <b data-seat="${seat}" data-stat="max-supply">${game.max_supply[seat]}</b>${game.supply[seat] > game.max_supply[seat] ? ' · 高于上限' : ''}</div>
+        <div class="stats">牌库 <b data-seat="${seat}" data-stat="deck">${game.decks[seat].length}</b> · 疲劳 <b data-seat="${seat}" data-stat="fatigue">${game.fatigue[seat]}</b> · 手牌 <b data-seat="${seat}" data-stat="hand">${game.hands[seat].length}</b></div>
+      </div>
+      <div class="slots">${game.boards[seat].map((unit, slot) => unitHtml(seat, slot, unit)).join('')}</div>
+      ${handHtml(seat)}
+      <ol class="grave" data-grave="${seat}">${game.graves[seat].map(id => `<li data-card="${esc(id)}">${esc(cards[id].name)}</li>`).join('') || '<li>墓地是空的</li>'}</ol>
+    </section>`;
+  }
+
+  function catalog() {
+    if (!ui.catalog) return '';
+    const rows = content.cards.map(card => `<article>
+      <h4>${esc(card.name)} · ${card.cost} 费</h4>
+      <p>${kindName(card.kind)}${card.kind === 'main' ? ` · 攻 ${card.attack} · 耐 ${card.durability}` : ''}${card.guard ? ' · 护卫' : ''}</p>
+      <p>玩法种类：${kindName(card.kind)}。游戏角色：${esc(card.game_role || '卡表未单列')}。硬件主控：${esc(card.hardware_controller || '卡表未单列，不从玩法反推')}。美术 type：${card.art_type == null ? '未填' : esc(card.art_type)}。</p>
+      <p>${esc(card.role_note || '')}</p>
+      <p class="hint">系列 ${esc(card.series)} 只用于找图，不参与结算。本地没有这张图时就显示文字。</p>
+    </article>`).join('');
+    const token = content.second_player_token;
+    return `<div class="catalog">${rows}<article><h4>${esc(token.name)}</h4><p>${esc(token.role_note)}</p><p class="hint">后手代币，不在 12 张代表卡里，也不在牌库里。</p></article></div>`;
+  }
+
+  function actions() {
+    const card = selectedCard();
+    const bits = [];
+    if (card && (card.kind === 'main' || card.effect === 'supply' || card.effect === 'heal_base')) {
+      bits.push(`<button type="button" class="primary" data-action="play">${card.kind === 'main' ? '打出到最左空位' : '打出'}</button>`);
+    }
+    if (card && card.effect === 'mend' && ui.target) {
+      bits.push('<button type="button" class="primary" data-action="mend-heal">修复 2 点耐久</button>');
+      bits.push('<button type="button" class="primary" data-action="mend-temp">本回合攻击 +1</button>');
+    }
+    bits.push('<button type="button" data-action="attack-base">攻击对方基地</button>');
+    bits.push('<button type="button" data-action="support">小印支援厚壳</button>');
+    bits.push('<button type="button" data-action="arm-knob">旋钮强化</button>');
+    bits.push('<button type="button" class="primary" data-action="end-turn">结束回合</button>');
+    return bits.join('');
+  }
+
+  function render() {
+    const over = game.winner == null ? '' : game.winner === 'draw' ? '平局' : `${seatName(game.winner)}获胜`;
+    $('#app').innerHTML = `<header class="top">
+      <div class="brand"><b>PULSE</b><span>脉冲对决 · 回合战</span></div>
+      <nav data-shared-entry="clash-home" aria-label="站点入口">
+        <a data-nav="clash" href="./index.html" aria-current="page">回合战</a>
+        <a data-nav="legacy" href="../index.html" title="旧版点数对局在上一级页面。只发回合战压缩包时，这个链接不在包内。">旧版点数对局</a>
+        <!-- wiki-slot: 图鉴分支把下一行换成 <a data-nav="wiki" href="../wiki/">卡片图鉴</a>。不要把图鉴元数据当玩法数据。 -->
+        <span data-nav="wiki" data-wiki-slot="pending" title="图鉴由另一条分支接入。本页只有 12 张可玩代表卡。">图鉴</span>
+      </nav>
+      <div class="top-actions">
+        <button type="button" class="btn" data-action="toggle-reveal" aria-pressed="${ui.reveal}">${ui.reveal ? '遮住对方手牌' : '教学明牌'}</button>
+        <button type="button" class="btn" data-action="toggle-catalog">${ui.catalog ? '收起卡表' : '12 张卡表'}</button>
+        <button type="button" class="btn" data-action="restart">重新开局</button>
+      </div>
+    </header>
+    ${ui.reveal ? '<div class="banner" id="reveal-banner">教学明牌 · 双方手牌都看得见 · 牌库仍只显示张数</div>' : '<div id="reveal-banner" hidden></div>'}
+    <p class="balance">首版数值，待试玩平衡。基地 20，供电上限 10，手牌 8，场位 5。鼠标本地双人，没有联网，也没有电脑对手。</p>
+    <main class="table" data-scenario="${esc(ui.scenario)}" data-ruleset="${esc(content.ruleset_id)}" data-source-commit="${esc(C.SOURCE_COMMIT)}">
+      <div class="scenario-row">
+        <button type="button" data-action="scenario" data-scenario="lesson">教学局</button>
+        <button type="button" data-action="scenario" data-scenario="support-present">战例：小印已在场</button>
+        <button type="button" data-action="scenario" data-scenario="support-deploy">战例：先打出小印</button>
+        <button type="button" data-action="scenario" data-scenario="support-again">战例：厚壳再死</button>
+      </div>
+      ${side(1)}
+      <section class="center">
+        <h3 id="turn-label" data-seat="${game.seat}">${over || seatName(game.seat) + '的回合'}</h3>
+        <p id="coach">${esc(coach())}</p>
+        <p id="last-error" data-code="${esc(ui.error ? ui.error.code : '')}">${ui.error ? esc(ui.error.message) + '（' + esc(ui.error.code) + '）' : '没有待处理的非法操作'}</p>
+        <div class="action-row">${actions()}</div>
+        <ol id="action-log" class="log">${ui.log.slice().reverse().map(item => `<li${item.code ? ` class="bad" data-error-code="${esc(item.code)}"` : ''}>${esc(item.text)}</li>`).join('')}</ol>
+      </section>
+      ${side(0)}
+      ${catalog()}
+      <p class="foot">规则 ${esc(content.ruleset_id)} · 来源提交 ${esc(C.SOURCE_COMMIT)} · 只使用这 12 张代表卡和后手代币。系列图片按 series 从本目录 series/ 读取，缺图就用文字，不借用别的卡图。结算不看硬件型号。</p>
+    </main>`;
+    document.body.dataset.ready = '1';
+    document.body.dataset.ruleset = content.ruleset_id;
+  }
+
+  function play(target, mode) {
+    const card = selectedCard();
+    if (!card) return note(new C.ClashError('请先选择手牌', 'not_in_hand'));
+    const seat = game.seat;
+    try {
+      game.play(seat, card.template_id, target == null ? null : target, mode || null);
+    } catch (error) {
+      return note(error);
+    }
+    let text = `${seatName(seat)}打出${card.name}，费用 ${card.cost}。`;
+    if (card.effect === 'supply') text += `当前供电 ${game.supply[seat]}，上限仍是 ${game.max_supply[seat]}。`;
+    push(text);
+    clearChoice();
+    render();
+  }
+
+  function attack(target) {
+    if (!ui.attacker) return note(new C.ClashError('请先点一台己方单位', 'bad_target'));
+    const attacker = game.find(ui.attacker)[2];
+    try {
+      game.attack(game.seat, ui.attacker, target);
+    } catch (error) {
+      return note(error);
+    }
+    const name = cards[attacker.card_id].name;
+    push(target === 'base' ? `${name}攻击了对方基地。` : `${name}与对方单位同时结算伤害。`);
+    clearChoice();
+    render();
+  }
+
+  function onUnit(el) {
+    const iid = el.dataset.iid;
+    const seat = Number(el.dataset.seat);
+    const card = selectedCard();
+    if (ui.knob) {
+      try { game.knob(game.seat, 'xuan_niu', iid); }
+      catch (error) { return note(error); }
+      push(`旋钮台强化了${cards[game.find(iid)[2].card_id].name}，本回合攻击 +1。`);
+      clearChoice();
+      return render();
+    }
+    if (card && (card.kind === 'attachment' || card.effect === 'damage')) return play(iid);
+    if (card && card.effect === 'mend') {
+      ui.target = iid;
+      ui.error = null;
+      return render();
+    }
+    if (seat === game.seat) {
+      ui.attacker = iid;
+      ui.handIndex = null;
+      ui.error = null;
+      return render();
+    }
+    if (ui.attacker) return attack(iid);
+    note(new C.ClashError('这台不是你的单位', 'bad_target'));
+  }
+
+  function endTurn() {
+    const next = 1 - game.seat;
+    const deckBefore = game.decks[next].length;
+    const handBefore = game.hands[next].length;
+    const graveBefore = game.graves[next].length;
+    const fatigueBefore = game.fatigue[next];
+    const actor = seatName(game.seat);
+    try {
+      C.finishTurn(game);
+    } catch (error) {
+      return note(error);
+    }
+    clearChoice();
+    let text = `${actor}结束回合，临时攻击和供电清零。立刻轮到${seatName(game.seat)}。`;
+    if (deckBefore === 0 && game.fatigue[next] !== fatigueBefore) {
+      text += game.winner != null
+        ? ` ${seatName(next)}疲劳后基地倒下，供电上限没有增加。终局锁定。`
+        : ` ${seatName(next)}疲劳 ${game.fatigue[next]}，基地 ${game.bases[next]}，然后供电回满。`;
+    } else if (deckBefore > 0 && game.hands[next].length === handBefore && game.graves[next].length > graveBefore) {
+      text += ` 手牌已满，${cards[game.graves[next].at(-1)].name}亮出后进入墓地。`;
+    } else if (deckBefore > 0 && game.hands[next].length > handBefore) {
+      text += ui.reveal ? ` 教学明牌：抽到${cards[game.hands[next].at(-1)].name}。` : ' 抽了 1 张牌。';
+    } else if (game.seat === 0 && game.turns_started[0] === 1) {
+      text += ' 先手第 1 回合不抽牌。';
+    }
+    push(text);
+    render();
+  }
+
+  function act(action, el) {
+    if (action === 'toggle-reveal') { ui.reveal = !ui.reveal; return render(); }
+    if (action === 'toggle-catalog') { ui.catalog = !ui.catalog; return render(); }
+    if (action === 'restart' || action === 'scenario') return begin(action === 'restart' ? ui.scenario : el.dataset.scenario);
+    if (action === 'select-hand') {
+      ui.handIndex = Number(el.dataset.handIndex);
+      ui.attacker = null;
+      ui.target = null;
+      ui.knob = false;
+      ui.error = null;
+      return render();
+    }
+    if (action === 'select-unit') return onUnit(el);
+    if (action === 'play') return play(null);
+    if (action === 'mend-heal') return play(ui.target, 'heal');
+    if (action === 'mend-temp') return play(ui.target, 'temp');
+    if (action === 'attack-base') return attack('base');
+    if (action === 'hit-base') {
+      if (Number(el.dataset.seat) !== game.seat && ui.attacker) return attack('base');
+      return;
+    }
+    if (action === 'support') {
+      try { game.support(game.seat); }
+      catch (error) { return note(error); }
+      push('小印支援：厚壳以满耐久进入最左空位，有护卫，本回合不能攻击。小印留在场上。');
+      clearChoice();
+      return render();
+    }
+    if (action === 'arm-knob') {
+      ui.knob = true;
+      ui.handIndex = null;
+      ui.attacker = null;
+      ui.error = null;
+      return render();
+    }
+    if (action === 'end-turn') return endTurn();
+  }
+
+  document.addEventListener('click', event => {
+    const el = event.target.closest('[data-action]');
+    if (!el || !$('#app').contains(el)) return;
+    event.preventDefault();
+    act(el.dataset.action, el);
+  });
+
+  begin('lesson');
+})(globalThis);
+</script>
+</body>
+</html>
