@@ -727,9 +727,7 @@
       <div class="opp-dock">${handHtml(other, false)}</div>
       ${(game.hands[1] || []).includes(tokenId) ? '<p class="compensation">后手补偿：多 1 张牌 + 借一格电</p>' : ''}
       <aside class="bays">${stack(other)}${stack(bottom)}</aside>
-      <div class="core-slot foe">${core(other)}</div>
-      <div class="slots foe">${lane(other)}</div>
-      <div class="midline">
+      <div class="mode-bar">
         <div class="mode-switch">
           <button type="button" data-action="mode" data-mode="versus" aria-pressed="${ui.mode === 'ai' && ui.opening === 'lesson' ? 'true' : 'false'}">固定教学</button>
           <button type="button" data-action="mode" data-mode="sim" aria-pressed="${ui.opening === 'sim' ? 'true' : 'false'}">模拟战</button>
@@ -737,6 +735,10 @@
           ${ui.opening === 'sim' ? `<button type="button" data-action="replay-seed">重放种子</button>` : ''}
         </div>
         <p class="mode-note">${esc(modeNote)}</p>
+      </div>
+      <div class="core-slot foe">${core(other)}</div>
+      <div class="slots foe" style="--n:${Math.max(1, game.units(other).length)}">${lane(other)}</div>
+      <div class="midline">
         <h3 id="turn-label" data-seat="${game.seat}">${esc(turnText)}</h3>
         <p class="formation" data-formation="${game.formationState(active).percent}">${esc(formationLine(active))}</p>
         ${strikeHint()}
@@ -745,7 +747,7 @@
       </div>
       ${ui.aiBusy ? '<p class="ai-banner">对方正在行动</p>' : ''}
       ${ui.handoff ? `<div class="handoff-mask" data-handoff="1"><div class="handoff-card"><p>轮到座位 ${game.seat}，请交给对方</p><p>两人轮流，共用这一块屏幕。确认之前不能替对方行动。</p><button type="button" data-action="handoff-confirm">交给座位 ${game.seat}</button></div></div>` : ''}
-      <div class="slots mine">${lane(bottom)}</div>
+      <div class="slots mine" style="--n:${Math.max(1, game.units(bottom).length)}">${lane(bottom)}</div>
       <div class="core-slot mine">${core(bottom)}</div>
       ${skillBar()}
       <section class="hand-dock" aria-label="当前手牌">${handHtml(bottom, true)}</section>
