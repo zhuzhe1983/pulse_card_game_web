@@ -51,7 +51,7 @@ check('roster is the 96-card handoff and keeps the baseline cards', () => {
   }
   assert.deepEqual(linked.slice().sort(), ['dian_zhen', 'hou_ke', 'qiao_jian', 'xiao_yin', 'xuan_niu']);
   assert.equal(byTemplate.art_h024.game_name_zh, '新细条');
-  assert.deepEqual([byTemplate.art_h024.cost, byTemplate.art_h024.attack, byTemplate.art_h024.durability], [3, 2, 3]);
+  assert.deepEqual([byTemplate.art_h024.cost, byTemplate.art_h024.attack, byTemplate.art_h024.durability], [3, 3, 2]);
   assert.equal(playtest.retired[0].template_id, 'xi_tiao');
   assert.equal(playtest.retired[0].replaced_by, 'art_h024');
   for (const id of ['lian_jie', 'qian_li', 'hu_zhao', 'bu_ji', 'gan_rao', 'hui_chong']) {
@@ -189,7 +189,7 @@ check('guarded host blocks a guarding upgrade, and rush or entry effects resolve
   peck.hands = [['art_h025'], []];
   const sentry = peck.spawn(1, 'dian_zhen', 0, null, false);
   peck.play(0, 'art_h025', sentry.iid);
-  assert.equal(sentry.durability, 2);
+  assert.equal(sentry.durability, 3);
   assert.equal(peck.supply[0], 0);
   const miss = fresh();
   miss.supply = [3, 0];
@@ -213,17 +213,21 @@ check('mid costs follow the 902812b machine data', () => {
   assert.equal(counts[3] + counts[4] + counts[5], 34);
   const byRid = Object.create(null);
   for (const card of roster.cards) byRid[card.rid] = card;
-  for (const rid of ['H038', 'H038b', 'H038c', 'H039a', 'H039b', 'H039c', 'H039e', 'H039f']) {
+  for (const rid of ['H039a', 'H039b', 'H039c', 'H039e']) {
     assert.equal(byRid[rid].cost, 1);
-    assert.ok(byRid[rid].attack <= 1);
+    assert.equal(byRid[rid].attack, 1);
   }
+  assert.deepEqual([byRid.H038.cost, byRid.H038.attack, byRid.H038.durability], [1, 2, 2]);
+  assert.deepEqual([byRid.H038b.attack, byRid.H038b.durability], [2, 2]);
+  assert.deepEqual([byRid.H038c.attack, byRid.H038c.durability], [2, 2]);
+  assert.deepEqual([byRid.H039f.cost, byRid.H039f.attack, byRid.H039f.durability], [1, 3, 1]);
   assert.equal(byRid.H016.cost, 3);
   assert.equal(byRid.H016.guard, true);
-  assert.deepEqual([byRid.H017.cost, byRid.H017.attack, byRid.H017.durability, byRid.H017.guard], [5, 2, 7, true]);
-  assert.deepEqual([byRid.H036.cost, byRid.H036.attack, byRid.H036.durability], [2, 2, 2]);
-  assert.deepEqual([byRid.H036a.cost, byRid.H036a.attack, byRid.H036a.durability], [3, 1, 4]);
-  assert.deepEqual([byRid.H037.cost, byRid.H037.attack, byRid.H037.durability], [2, 1, 3]);
-  assert.deepEqual([byRid.H037a.cost, byRid.H037a.attack, byRid.H037a.durability], [3, 2, 3]);
+  assert.deepEqual([byRid.H017.cost, byRid.H017.attack, byRid.H017.durability, byRid.H017.guard], [5, 3, 7, true]);
+  assert.deepEqual([byRid.H036.cost, byRid.H036.attack, byRid.H036.durability], [2, 3, 2]);
+  assert.deepEqual([byRid.H036a.cost, byRid.H036a.attack, byRid.H036a.durability], [3, 4, 2]);
+  assert.deepEqual([byRid.H037.cost, byRid.H037.attack, byRid.H037.durability], [2, 3, 2]);
+  assert.deepEqual([byRid.H037a.cost, byRid.H037a.attack, byRid.H037a.durability], [3, 4, 2]);
   assert.equal(byRid.H036.series_confidence, 'official');
   assert.equal(byRid.H037.series_confidence, 'official');
   const byId = Object.create(null);

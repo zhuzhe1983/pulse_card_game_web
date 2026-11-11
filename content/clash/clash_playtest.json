@@ -23,7 +23,7 @@
       "name": "小印",
       "kind": "main",
       "cost": 1,
-      "attack": 1,
+      "attack": 2,
       "durability": 2,
       "guard": false,
       "attack_bonus": 0,
@@ -41,7 +41,9 @@
       "cost_band": "series_core",
       "cost_line": "stamp_core",
       "series_confidence": "official",
-      "cost_note": "基线就是 Stamp-S3 本体。支援费用降到 1。"
+      "cost_note": "基线就是 Stamp-S3 本体。支援费用降到 1。",
+      "chip_tier": "s3",
+      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。"
     },
     {
       "template_id": "dian_zhen",
@@ -49,7 +51,7 @@
       "kind": "main",
       "cost": 2,
       "attack": 1,
-      "durability": 3,
+      "durability": 4,
       "guard": true,
       "attack_bonus": 0,
       "grants_guard": false,
@@ -63,15 +65,17 @@
       "cost_band": "series_core",
       "cost_line": "atom_core",
       "series_confidence": "official",
-      "cost_note": "基线就是 Atom-Matrix 本体。"
+      "cost_note": "基线就是 Atom-Matrix 本体。",
+      "chip_tier": "classic",
+      "chip_tier_note": "官方芯片栏是经典 ESP32（LX6 或 PICO），不是 C3/S3/P4。"
     },
     {
       "template_id": "xuan_niu",
       "name": "旋钮台",
       "kind": "main",
       "cost": 8,
-      "attack": 3,
-      "durability": 6,
+      "attack": 4,
+      "durability": 5,
       "guard": false,
       "attack_bonus": 0,
       "grants_guard": false,
@@ -85,7 +89,9 @@
       "cost_band": "series_core",
       "cost_line": "dial_body",
       "series_confidence": "official",
-      "cost_note": "基线就是 Dial 本体，按 Dial 档，不按邮票模块。"
+      "cost_note": "基线就是 Dial 本体，按 Dial 档，不按邮票模块。",
+      "chip_tier": "s3",
+      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。"
     },
     {
       "template_id": "qiao_jian",
@@ -93,7 +99,7 @@
       "kind": "main",
       "cost": 9,
       "attack": 5,
-      "durability": 5,
+      "durability": 4,
       "guard": false,
       "attack_bonus": 0,
       "grants_guard": false,
@@ -107,7 +113,9 @@
       "cost_band": "series_core",
       "cost_line": "cardputer_body",
       "series_confidence": "official",
-      "cost_note": "基线就是 Cardputer 本体。"
+      "cost_note": "基线就是 Cardputer 本体。",
+      "chip_tier": "s3",
+      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。"
     },
     {
       "template_id": "hou_ke",
@@ -115,7 +123,7 @@
       "kind": "main",
       "cost": 6,
       "attack": 3,
-      "durability": 7,
+      "durability": 5,
       "guard": true,
       "attack_bonus": 0,
       "grants_guard": false,
@@ -132,7 +140,9 @@
       "cost_band": "series_machine",
       "cost_line": "stamp_machine",
       "series_confidence": "official",
-      "cost_note": "基线就是 StamPLC 工控整机，不降到 1 费。"
+      "cost_note": "基线就是 StamPLC 工控整机，不降到 1 费。",
+      "chip_tier": "s3",
+      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。"
     },
     {
       "template_id": "lian_jie",

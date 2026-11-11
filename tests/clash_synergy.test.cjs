@@ -61,9 +61,9 @@ check('two 1/2 leaders each strike for 2 once', () => {
   assert.equal(game.upper_links[1].length, 0);
   assert.equal(game.aiflow_armed[0], false);
   assert.equal(game.aiflow_armed[1], false);
-  assert.equal(C.attackOf(game.cards, mine), 1);
+  assert.equal(C.attackOf(game.cards, mine), 2);
   assert.equal(game.strikePreview(0, 1), 2);
-  assert.equal(game.strikePreview(1, 1), 2);
+  assert.equal(game.strikePreview(0, 2), 3);
   const before = game.log.length;
   game.attack(0, mine.iid, foe.iid);
   const lines = game.log.slice(before).filter(line => String(line).includes('同时结算'));
@@ -75,8 +75,8 @@ check('two 1/2 leaders each strike for 2 once', () => {
   const left = thick.spawn(0, 'xiao_yin', null, 5, false);
   const right = thick.spawn(1, 'xiao_yin', null, 5, false);
   thick.attack(0, left.iid, right.iid);
-  assert.equal(left.durability, 3);
-  assert.equal(right.durability, 3);
+  assert.equal(left.durability, 2);
+  assert.equal(right.durability, 2);
 });
 
 check('leader percent and low attack ceil', () => {
@@ -84,7 +84,7 @@ check('leader percent and low attack ceil', () => {
   game.spawn(0, 'xiao_yin', null, null, false);
   assert.equal(game.formationState(0).percent, 10);
   game.attack(0, 'xiao_yin', 'base');
-  assert.equal(game.bases[1], 18);
+  assert.equal(game.bases[1], 17);
 });
 
 check('zero attack stays zero', () => {
@@ -141,7 +141,7 @@ check('fixed spell ignores percent', () => {
   game.spawn(1, 'hou_ke', null, null, false);
   game.hands[0] = ['gan_rao'];
   game.play(0, 'gan_rao', 'hou_ke');
-  assert.equal(game.units(1)[0].durability, 5);
+  assert.equal(game.units(1)[0].durability, 3);
 });
 
 check('connect aura does not stack or reprint', () => {
@@ -237,14 +237,14 @@ check('three services and combo order', () => {
   rejects('already_used_ability', () => game.play(0, 'aiflow_say'));
   assert.equal(fingerprint(game), before);
   game.attack(0, 'art_h024', 'base');
-  assert.equal(game.bases[1], 15);
+  assert.equal(game.bases[1], 14);
   assert.equal(game.aiflow_armed[0], false);
   game.hands[0] = ['aiflow_say', 'gan_rao'];
   game.supply[0] = 8;
   game.spawn(1, 'hou_ke', null, null, false);
   game.play(0, 'aiflow_say');
   game.play(0, 'gan_rao', 'hou_ke');
-  assert.equal(game.units(1)[0].durability, 5);
+  assert.equal(game.units(1)[0].durability, 3);
   assert.equal(game.aiflow_armed[0], true);
   game.end_turn(0);
   assert.equal(game.aiflow_armed[0], false);
@@ -321,7 +321,7 @@ check('seized shell returns to the current controller', () => {
   game.ability_used[0] = {};
   game.support(0);
   assert.equal(game.units(0)[0].card_id, 'hou_ke');
-  assert.equal(game.units(0)[0].durability, 7);
+  assert.equal(game.units(0)[0].durability, 5);
   game.seat = 1;
   rejects('no_shell_in_grave', () => game.support(1));
 });

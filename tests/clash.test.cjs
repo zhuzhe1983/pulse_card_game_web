@@ -215,7 +215,7 @@ check('support while the stamp is already on board', () => {
   assert.deepEqual(game.units(0).map(unit => unit.card_id), ['hou_ke', 'xiao_yin']);
   const shell = game.units(0).find(unit => unit.card_id === 'hou_ke');
   const stamp = game.units(0).find(unit => unit.card_id === 'xiao_yin');
-  assert.equal(shell.durability, 7);
+  assert.equal(shell.durability, 5);
   assert.equal(shell.sick, true);
   assert.equal(shell.slot, 0);
   assert.equal(stamp.slot, 1);
@@ -226,10 +226,10 @@ check('support while the stamp is already on board', () => {
   unchanged(game, () => game.attack(0, 'hou_ke', 'dian_zhen'), 'summoning_sickness');
   unchanged(game, () => game.attack(0, 'xiao_yin', 'base'), 'guard_blocks');
   game.play(0, 'bu_ji', 'hou_ke', 'heal');
-  assert.equal(shell.durability, 7);
+  assert.equal(shell.durability, 5);
   assert.equal(game.supply[0], 4);
   game.play(0, 'gan_rao', 'dian_zhen');
-  assert.equal(game.units(1)[0].durability, 1);
+  assert.equal(game.units(1)[0].durability, 2);
   assert.equal(game.supply[0], 2);
   assert.deepEqual(game.units(0).map(unit => unit.card_id), ['hou_ke', 'xiao_yin']);
 });
@@ -247,7 +247,7 @@ check('support after deploying the stamp, and again after the shell dies', () =>
   later.support(0);
   assert.equal(later.supply[0], 4);
   const shell = later.units(0).find(unit => unit.card_id === 'hou_ke');
-  assert.equal(shell.durability, 7);
+  assert.equal(shell.durability, 5);
   assert.equal(shell.sick, true);
   unchanged(later, () => later.attack(0, 'hou_ke', 'base'), 'summoning_sickness');
   unchanged(later, () => later.attack(0, 'xiao_yin', 'base'), 'summoning_sickness');
@@ -272,7 +272,7 @@ check('support after deploying the stamp, and again after the shell dies', () =>
   const revived = stayed.units(0).find(unit => unit.card_id === 'hou_ke');
   assert.deepEqual(stayed.units(0).map(unit => unit.card_id), ['hou_ke', 'xiao_yin']);
   assert.equal(revived.slot, 0);
-  assert.equal(revived.durability, 7);
+  assert.equal(revived.durability, 5);
   assert.equal(revived.sick, true);
   assert.equal(stayed.supply[0], 3);
   assert.equal(stayed.boards[0][1].card_id, 'xiao_yin');
@@ -318,7 +318,7 @@ check('full board, attachments, guard bypass, mend and burn', () => {
   const attacker = full.boards[0][6];
   attacker.sick = false;
   full.attack(0, attacker.iid, foe.iid);
-  assert.equal(foe.durability, 2);
+  assert.equal(foe.durability, 1);
   assert.equal(full.boards[1][0].durability, 5);
   const queued = JSON.stringify(full.view());
   unchanged(full, () => full.play(0, 'art_h024', null, null, 99), 'bad_index');
@@ -346,7 +346,7 @@ check('full board, attachments, guard bypass, mend and burn', () => {
   mend.supply[0] = 1;
   mend.play(0, 'bu_ji', 'xiao_yin', 'temp');
   assert.equal(unit.temp_attack, 1);
-  assert.equal(C.attackOf(mend.cards, unit), 2);
+  assert.equal(C.attackOf(mend.cards, unit), 3);
   mend.end_turn(0);
   assert.equal(unit.temp_attack, 0);
 
@@ -395,7 +395,7 @@ check('illegal plays do not spend, and game over locks the table', () => {
   knob.play(0, 'xuan_niu');
   assert.equal(knob.units(0)[0].sick, true);
   knob.knob(0, 'xuan_niu', 'xuan_niu');
-  assert.equal(knob.view().boards[0][0].attack, 4);
+  assert.equal(knob.view().boards[0][0].attack, 5);
   assert.equal(knob.supply[0], 0);
   unchanged(knob, () => knob.knob(0, 'xuan_niu', 'xuan_niu'), 'already_used_ability');
   const broke = empty();
@@ -447,10 +447,11 @@ check('illegal plays do not spend, and game over locks the table', () => {
   unchanged(guards, () => guards.attack(0, 'qiao_jian', 'art_h024'), 'guard_blocks');
   unchanged(guards, () => guards.attack(0, 'qiao_jian', 'base'), 'guard_blocks');
   guards.attack(0, 'qiao_jian', 'hou_ke');
-  assert.equal(guards.units(1).some(unit => unit.card_id === 'hou_ke'), true);
+  assert.equal(guards.units(1).some(unit => unit.card_id === 'hou_ke'), false);
+  assert.deepEqual(guards.graves[1], ['hou_ke']);
   guards.spawn(0, 'qiao_jian', guards.boards[0].length, null, false);
   guards.attack(0, guards.units(0).find(unit => !unit.attacked).iid, 'dian_zhen');
-  assert.deepEqual(guards.graves[1], ['dian_zhen']);
+  assert.deepEqual(guards.graves[1], ['hou_ke', 'dian_zhen']);
 });
 
 check('floors, recharge cap, mend on an enemy, and a drawn game', () => {
@@ -477,8 +478,8 @@ check('floors, recharge cap, mend on an enemy, and a drawn game', () => {
   const defender = zero.spawn(1, 'art_h024', 0, null, false);
   zero.attack(0, 'art_h024', 'art_h024');
   assert.equal(attacker.attacked, true);
-  assert.equal(attacker.durability, 3);
-  assert.equal(defender.durability, 3);
+  assert.equal(attacker.durability, 2);
+  assert.equal(defender.durability, 2);
 
   const mend = empty();
   mend.supply = [1, 0];
@@ -501,7 +502,7 @@ check('a newly entered unit may use the knob but may not attack', () => {
   game.hands = [['xuan_niu'], []];
   game.play(0, 'xuan_niu');
   game.knob(0, 'xuan_niu', 'xuan_niu');
-  assert.equal(game.view().boards[0][0].attack, 4);
+  assert.equal(game.view().boards[0][0].attack, 5);
   unchanged(game, () => game.attack(0, 'xuan_niu', 'base'), 'summoning_sickness');
 });
 
@@ -539,7 +540,7 @@ check('pack size is data, unknown effects and star ranks stay closed', () => {
   ranked.cards.art_h024 = read('content/clash/clash_roster_96.json').cards.find(card => card.template_id === 'art_h024');
   assert.equal(C.starOf(ranked.cards.xiao_yin), 2);
   assert.equal(C.familyOf(ranked.cards.xiao_yin), 'stamp-host');
-  assert.equal(C.attackOf(ranked.cards, { card_id: 'xiao_yin', attachments: [], temp_attack: 0 }), 1);
+  assert.equal(C.attackOf(ranked.cards, { card_id: 'xiao_yin', attachments: [], temp_attack: 0 }), 2);
   const played = new C.Game(ranked.cards, marked.decks.first, marked.decks.second, ranked.rules, ranked.tokenId, ranked.capabilities);
   played.start_turn();
   for (const step of lesson().lesson_steps.slice(1)) replayStep(played, step);

@@ -2,34 +2,34 @@
   "ruleset_id": "pcg.clash.v0",
   "prompt_repo": "https://github.com/zhuzhe1983/pulse_card_game_prompt",
   "prompt_pr": 3,
-  "prompt_commit": "ead309b68815998a49e58b3d2823b94d692e11d2",
+  "prompt_commit": "0309ed8334491c3f1693a42ad068be82f5bb46a7",
   "prompt_commit_merged": false,
-  "previous_playtest_commit": "7e4c56675a93dfe759b81daa8582003ddf579aec",
+  "previous_playtest_commit": "ead309b68815998a49e58b3d2823b94d692e11d2",
   "copied_from_handoff": {
     "HEAD.txt": "7ba58fb399956409ebc60323e2cca595c46112a0",
     "content/clash_playtest.json": {
       "repo_path": "content/clash/clash_playtest.json",
-      "sha256": "9f255b0eec050cd14cafafa9b5ae58a218db330dbde300f7d0545a074797248f"
+      "sha256": "96c8ee84b57c6a6d637a2abe09c8bdf2d2b3c01c66787434e61a5fc172668de5"
     },
     "fixtures/clash_v0_lesson.json": {
       "repo_path": "content/clash/clash_v0_lesson.json",
-      "sha256": "d417971d514a30d4e677abfc616f4c9a500a0b135c3eb7ab2042c1daad507476"
+      "sha256": "509f0c898d4806c6e3e8d5a32305eaaec22a1ff7b87489f54151829996b599c9"
     },
     "docs/01_GAMEPLAY.md": {
       "repo_path": "content/clash/01_GAMEPLAY.md",
-      "sha256": "10a526d14f24767a7e9603aae9e139ff71817ca6a64845960ee5a18f26050a7b"
+      "sha256": "be3f241011b2925e33d2edbe0a8a5e486608670fa84e5300d384b7ae2e78aba8"
     },
     "content/clash_roster_96.json": {
       "repo_path": "content/clash/clash_roster_96.json",
-      "sha256": "5b44b4b4334d7095c580f8ac93b840379d61b118ef601347d96728996e8b3406"
+      "sha256": "b8ebe6df6cff346d73a3583a7623dec0ce46afe5cafcc475f11336d83dd3a582"
     },
     "docs/18_ROSTER_AND_GROWTH.md": {
       "repo_path": "content/clash/18_ROSTER_AND_GROWTH.md",
-      "sha256": "75b0795aa474719e3051e98147a8b6a0eef5d4871869101a2b52c3057e0365b7"
+      "sha256": "6e8278d148a423a91a043b64dcfc0c6dcc92f3c049a248b39a1c957081f3b00d"
     },
     "WEB_IMPLEMENTATION_HANDOFF.md": {
       "repo_path": "content/clash/WEB_IMPLEMENTATION_HANDOFF.md",
-      "sha256": "de2dd1c0ce132c821f76357247f47edcd490c8175c873e14920f1b6fc42625c8"
+      "sha256": "0544cd78d65a6aa0e9bfe5d0b74ff3fea7c1d0b079d3315425d52f034c4b54c3"
     },
     "content/clash_services.json": {
       "repo_path": "content/clash/clash_services.json",
@@ -37,12 +37,12 @@
     },
     "docs/19_SYNERGY_AND_SERVICES.md": {
       "repo_path": "content/clash/19_SYNERGY_AND_SERVICES.md",
-      "sha256": "54dc15b94dfb8d387b46a87d1c342d2fd525d0b1d1433e29c56ba65f1a23f364"
+      "sha256": "ef11e1197d3fcdd7dc3d74e1e3356529929acb26b48b6d6caecde511cf3a839b"
     },
     "docs/20_POINTER_AND_MODES.md": {
       "repo_path": "content/clash/20_POINTER_AND_MODES.md",
       "sha256": "c822d56f24bf3cab474aa74d05511654877fd796a7429c9019f9c73e63d2682d"
     }
   },
-  "note": "模拟战改为每副 30 张。同名最多 2 张，成长链顶端最多 1 张。固定教学仍是 8 张短局和借一格电。后手自由对局另发备用电池。手牌上限 10。"
+  "note": "芯片档次只改 48 张主控里 37 张的攻击和耐久，费用不变。教学局小印攻击 2，领队 10% 打出 3。"
 }

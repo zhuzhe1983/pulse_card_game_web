@@ -39,15 +39,33 @@ Dial 仍是点名的 8 费整机档。StamPLC 仍是 6 费工控整机。StampFl
 |---:|---|---|
 | 2 | DinMeter、Air Quality | 官方写成 Stamp-S3 / StampS3 套装。一星按 2 费曲线重配 |
 | 3 | 这两台的二星、CoreMatrix | 套装二星 +1。灯墙按普通 Core 的 4 费减 1 |
-| 5 | M5GO IoT Kit、PowerHub | 套件比 Fire 高 1 费。电枢纽放中段，护卫，耐久 7 |
+| 5 | M5GO IoT Kit、PowerHub | 套件比 Fire 高 1 费。电枢纽是 S3，攻击 3，护卫胖墙耐久 7 |
 | 6 | StamPLC | 工控整机。壳里有邮票，不按邮票模块收 1 费 |
 | 10 | Cardputer Mesh Kit、CoreMP135 | 套件比掌机本体高 1 费。CoreMP135 是 Linux 整机，费用在最高档，仍然不能发动来自上位的爱 |
 
 只给攻击 +1、又不占链节标记的帽子和转接件留在 1 费。会改战斗规则的配件上调：只给护卫或普通链节标记到 3 费；护卫加链节、忽略护卫、攻击 +2 到 4 费；忽略护卫或攻击 +2 再加链节标记到 5 费。Chain 节点的硬件仍是辅助可编程单片机，游戏角色仍是配件。基线的链节留在 1 费，千里眼因为忽略护卫上调到 4 费，护罩仍是 1 费。
 
-1 费邮票的攻击封顶是 1。领队 10% 把这 1 点打成 2，不会打成 3。链节的 +1 才让攻击栏变成 2，再吃百分比。短印保留冲锋，但攻击也是 1。Stamp-P4 从 5 费 4/4 降到 1 费 1/2，因为体量仍是一枚邮票。C6LoRa 去掉入场伤害。
+1 费邮票的费用不按芯片加价。入门 C3、C5、C6 攻击 1；S3 攻击 2、耐久 2；P4 大印攻击 3、耐久 1。领队 10% 让攻击 1 打出 2，让攻击 2 打出 3。短印仍是冲锋，攻击 1、耐久 1。C6LoRa 仍没有入场伤害。Stamp-P4 的官方型号仍是一枚邮票，所以费用留在 1，攻击按高性能档抬高。
 
-夺舍仍是 7 费。拿 1 费邮票是亏的，拿 6 费厚壳或 9 到 10 费的整机才值。积木开工、记一笔、说人话的费用不动。来自上位的爱仍是 1 费，光环仍是不叠加的 +1。
+夺舍仍是 7 费。拿 1 费入门邮票是亏的；拿 1 费大印、6 费厚壳或 9 到 10 费的整机才值。积木开工、记一笔、说人话的费用不动。来自上位的爱仍是 1 费，光环仍是不叠加的 +1。
+
+## 0.1 芯片档次
+
+芯片型号抄官方规格，是硬件事实。下面的攻击和耐久是待试玩方案，试玩可以改，不改芯片栏。
+
+同系列、同费用时，攻击按档次递增：入门（ESP32-C3、C5、C6、C61）低于 S3，S3 低于 P4。高档可以少给耐久、多给攻击，同一费用的身材预算大致对齐。经典 ESP32（LX6、PICO）单列，不冒充 S3。CoreMP135 和 CardputerZero 是 Cortex-A 或 STM32MP，不放进这三档，攻耐保持原案。
+
+待试玩的裸身材，再按护卫减 1 攻、加 1 耐，冲锋或打出效果减 1 耐，攻击不超过 5。二星攻击至少比一星高 1，顶到 5 就不再加。电枢纽是例外：攻击按 S3 提到 3，耐久仍留在胖墙 7。
+
+| 费用 | 入门 | S3 | P4 |
+|---:|---|---|---|
+| 1 | 1/2，冲锋再减耐 | 2/2 | 3/1 |
+| 2 | 2/2 | 3/2 | 4/1 |
+| 3 | 2/3 | 3/2 | 4/2 |
+| 6 | 3/5 | 4/4 | 5/3 |
+| 10 | 4/6 | 5/5 | 5/5，攻击到顶可以持平 |
+
+1 费邮票的现案是：短印 1/1，直插印、快印、远印 1/2，小印和两种针距 2/2，大印 3/1。小印改是 2 费 S3，3/2，支援保留。
 
 上一轮费用张数是 1 费 36、2 费 28、3 费 5、4 费 2、5 费 3、6 费 6、7 费 3、8 费 3、9 费 5、10 费 5。这一轮把强技能配件和几台组合整机补进中段之后，是 1 费 24、2 费 21、3 费 17、4 费 10、5 费 7、6 费 6、7 费 2、8 费 1、9 费 3、10 费 5。3 到 5 费合计 34。8 费只剩 Dial 本体。前三回合仍打 1 费邮票、2 费 Atom 和 3 费 Stick。
 
@@ -80,12 +98,12 @@ Dial 仍是点名的 8 费整机档。StamPLC 仍是 6 费工控整机。StampFl
 | 点阵哨 | H027 Atom-Matrix | H027a v1.1 | 同一灯阵的修订。AtomS3 是另一代。 |
 | 敲键 | H031 Cardputer | H032 v1.1 | 同一掌机的修订。 |
 | 旋钮台 | H034 Dial | H034a v1.1 | 同一台表的修订。 |
-| 轨上表 | H036 DinMeter | H036a v1.1 | 同一邮票套装的修订。二星 3 费，更肉、更不锋利。 |
+| 轨上表 | H036 DinMeter | H036a v1.1 | 同一邮票套装的修订。二星 3 费，攻击 4、耐久 2。 |
 | 气表 | H037 Air Quality | H037a v1.1 | 同一邮票套装的修订。二星 3 费。 |
 | 小印 | H038 Stamp-S3 | H038a Stamp-S3A | 同一邮票的修订，支援技能延续。 |
 | 动座 | C004c Motion v1.1 | C004d v1.2 | 册内只有这两版，不发明 v1.0。 |
 
-二星不是全面碾压。敲键改用攻击换耐久；旋钮改更利也更脆；轨上表改同费换肉。
+二星不是全面碾压。敲键二星把耐久从 4 补到 5，攻击停在 5。旋钮二星攻击升到 5、耐久降到 4。轨上表和气表都是 S3，二星贵 1 费，攻击再高 1，耐久仍是 2。
 
 ## 3. 哪些是横向，不升星
 
@@ -129,7 +147,7 @@ Dial 仍是点名的 8 费整机档。StamPLC 仍是 6 费工控整机。StampFl
 
 ## 6. 全表
 
-费用、攻击和耐久按第 0 节的曲线。状态仍是待试玩。
+费用按第 0 节。攻击和耐久按第 0.1 节的芯片档次，状态仍是待试玩。芯片型号仍是官方事实。
 
 | rid | 中文名 | 官方英文 | 角色 | 费 | 攻 | 耐 | 效果 | 成长 | 星 |
 |---|---|---|---|---:|---:|---:|---|---|---:|
@@ -179,53 +197,53 @@ Dial 仍是点名的 8 费整机档。StamPLC 仍是 6 费工控整机。StampFl
 | C004r | 耳麦座 | Atomic Audio-3.5 Base | attachment | 1 | 0 | 0 | 攻击+1 | lateral | — |
 | C004z | 响座 | Atomic Voice Base | attachment | 1 | 0 | 0 | 攻击+1 | lateral | — |
 | C005 | 串线舵机 | Unit 8Servos2-Chain | attachment | 5 | 0 | 0 | 攻击+2 | lateral | — |
-| H003 | 火头 | Fire v2.7 | main | 4 | 3 | 3 | 冲锋 | solo | — |
-| H004 | 套装 | M5GO IoT Kit v2.7 | main | 5 | 2 | 6 | 护卫 | solo | — |
-| H005 | 二代壳 | Core2 | main | 5 | 3 | 6 | 护卫 | chain | 1 |
-| H007 | 二代壳改 | Core2 v1.3 | main | 6 | 3 | 7 | 护卫 | chain | 2 |
-| H008 | 云壳 | Core2 For AWS | main | 5 | 4 | 4 | 无 | chain | 1 |
-| H008a | 云壳改 | Core2 For AWS v1.3 | main | 6 | 3 | 5 | 无 | chain | 2 |
-| H010 | 简配三 | CoreS3-SE | main | 6 | 3 | 5 | 无 | lateral | — |
-| H011 | 轻三 | CoreS3-Lite | main | 6 | 3 | 4 | 无 | lateral | — |
-| H012 | 线三 | CoreS3 Thread BR | main | 6 | 3 | 5 | 入场抽1 | lateral | — |
-| H013 | 硬壳 | Tough | main | 7 | 3 | 7 | 护卫 | solo | — |
+| H003 | 火头 | Fire v2.7 | main | 4 | 3 | 2 | 冲锋 | solo | — |
+| H004 | 套装 | M5GO IoT Kit v2.7 | main | 5 | 2 | 5 | 护卫 | solo | — |
+| H005 | 二代壳 | Core2 | main | 5 | 2 | 5 | 护卫 | chain | 1 |
+| H007 | 二代壳改 | Core2 v1.3 | main | 6 | 3 | 6 | 护卫 | chain | 2 |
+| H008 | 云壳 | Core2 For AWS | main | 5 | 3 | 4 | 无 | chain | 1 |
+| H008a | 云壳改 | Core2 For AWS v1.3 | main | 6 | 4 | 5 | 无 | chain | 2 |
+| H010 | 简配三 | CoreS3-SE | main | 6 | 4 | 4 | 无 | lateral | — |
+| H011 | 轻三 | CoreS3-Lite | main | 6 | 4 | 4 | 无 | lateral | — |
+| H012 | 线三 | CoreS3 Thread BR | main | 6 | 4 | 3 | 入场抽1 | lateral | — |
+| H013 | 硬壳 | Tough | main | 7 | 2 | 7 | 护卫 | solo | — |
 | H014 | 硬壳远 | ToughC5 | main | 7 | 3 | 6 | 无 | solo | — |
-| H015 | 大平板 | Tab5 | main | 10 | 4 | 7 | 入场抽1 | solo | — |
+| H015 | 大平板 | Tab5 | main | 10 | 5 | 4 | 入场抽1 | solo | — |
 | H016 | 灯墙 | CoreMatrix | main | 3 | 1 | 4 | 护卫 | solo | — |
-| H017 | 电枢纽 | PowerHub | main | 5 | 2 | 7 | 护卫 | solo | — |
+| H017 | 电枢纽 | PowerHub | main | 5 | 3 | 7 | 护卫 | solo | — |
 | H018 | 另一块板 | CoreMP135 | main | 10 | 4 | 6 | 无 | solo | — |
-| H022 | 自带电 | StickC-Plus2 | main | 3 | 2 | 4 | 无 | lateral | — |
+| H022 | 自带电 | StickC-Plus2 | main | 3 | 2 | 3 | 无 | lateral | — |
 | H023 | 省电条 | StickC-Plus SE | main | 3 | 2 | 3 | 无 | lateral | — |
-| H024 | 新细条 | StickS3 | main | 3 | 2 | 3 | 无 | lateral | — |
-| H025 | 热眼睛 | StickT2 | main | 3 | 1 | 3 | 入场伤害1 | lateral | — |
-| H027 | 点阵哨 | Atom-Matrix | main | 2 | 1 | 3 | 护卫 | chain | 1 |
+| H024 | 新细条 | StickS3 | main | 3 | 3 | 2 | 无 | lateral | — |
+| H025 | 热眼睛 | StickT2 | main | 3 | 2 | 2 | 入场伤害1 | lateral | — |
+| H027 | 点阵哨 | Atom-Matrix | main | 2 | 1 | 4 | 护卫 | chain | 1 |
 | H027a | 点阵改 | Atom-Matrix v1.1 | main | 3 | 2 | 4 | 护卫 | chain | 2 |
-| H028 | 小三 | AtomS3 | main | 2 | 2 | 2 | 无 | lateral | — |
-| H029 | 小三精 | AtomS3R | main | 2 | 2 | 2 | 无 | lateral | — |
-| H029a | 小三眼 | AtomS3R-CAM | main | 2 | 1 | 2 | 入场伤害1 | lateral | — |
-| H029b | 小三长焦 | AtomS3R-M12 | main | 2 | 2 | 2 | 无 | lateral | — |
-| H029c | 小三扩 | AtomS3R-Ext | main | 2 | 1 | 3 | 无 | lateral | — |
-| H030a | 小三话 | Atom VoiceS3R | main | 2 | 2 | 2 | 无 | lateral | — |
-| H031 | 敲键 | Cardputer | main | 9 | 5 | 5 | 无 | chain | 1 |
-| H032 | 敲键改 | Cardputer v1.1 | main | 10 | 4 | 7 | 无 | chain | 2 |
+| H028 | 小三 | AtomS3 | main | 2 | 3 | 2 | 无 | lateral | — |
+| H029 | 小三精 | AtomS3R | main | 2 | 3 | 2 | 无 | lateral | — |
+| H029a | 小三眼 | AtomS3R-CAM | main | 2 | 3 | 1 | 入场伤害1 | lateral | — |
+| H029b | 小三长焦 | AtomS3R-M12 | main | 2 | 3 | 2 | 无 | lateral | — |
+| H029c | 小三扩 | AtomS3R-Ext | main | 2 | 3 | 2 | 无 | lateral | — |
+| H030a | 小三话 | Atom VoiceS3R | main | 2 | 3 | 2 | 无 | lateral | — |
+| H031 | 敲键 | Cardputer | main | 9 | 5 | 4 | 无 | chain | 1 |
+| H032 | 敲键改 | Cardputer v1.1 | main | 10 | 5 | 5 | 无 | chain | 2 |
 | H033 | 敲键进 | Cardputer-Adv | main | 9 | 5 | 4 | 无 | lateral | — |
-| H033a | 敲键组 | Cardputer Mesh Kit | main | 10 | 4 | 6 | 入场抽1 | lateral | — |
-| H034 | 旋钮台 | Dial | main | 8 | 3 | 6 | 旋钮 | chain | 1 |
-| H034a | 旋钮改 | Dial v1.1 | main | 9 | 4 | 5 | 旋钮 | chain | 2 |
-| H036 | 轨上表 | DinMeter | main | 2 | 2 | 2 | 无 | chain | 1 |
-| H036a | 轨上表改 | DinMeter v1.1 | main | 3 | 1 | 4 | 无 | chain | 2 |
-| H037 | 气表 | Air Quality | main | 2 | 1 | 3 | 无 | chain | 1 |
-| H037a | 气表改 | Air Quality v1.1 | main | 3 | 2 | 3 | 无 | chain | 2 |
-| H038 | 小印 | Stamp-S3 | main | 1 | 1 | 2 | 支援 | chain | 1 |
-| H038a | 小印改 | Stamp-S3A | main | 2 | 1 | 2 | 支援 | chain | 2 |
-| H038b | 宽脚印 | Stamp-S3A PIN2.54 | main | 1 | 1 | 2 | 无 | lateral | — |
-| H038c | 密脚印 | Stamp-S3A PIN1.27 | main | 1 | 1 | 1 | 无 | lateral | — |
+| H033a | 敲键组 | Cardputer Mesh Kit | main | 10 | 5 | 4 | 入场抽1 | lateral | — |
+| H034 | 旋钮台 | Dial | main | 8 | 4 | 5 | 旋钮 | chain | 1 |
+| H034a | 旋钮改 | Dial v1.1 | main | 9 | 5 | 4 | 旋钮 | chain | 2 |
+| H036 | 轨上表 | DinMeter | main | 2 | 3 | 2 | 无 | chain | 1 |
+| H036a | 轨上表改 | DinMeter v1.1 | main | 3 | 4 | 2 | 无 | chain | 2 |
+| H037 | 气表 | Air Quality | main | 2 | 3 | 2 | 无 | chain | 1 |
+| H037a | 气表改 | Air Quality v1.1 | main | 3 | 4 | 2 | 无 | chain | 2 |
+| H038 | 小印 | Stamp-S3 | main | 1 | 2 | 2 | 支援 | chain | 1 |
+| H038a | 小印改 | Stamp-S3A | main | 2 | 3 | 2 | 支援 | chain | 2 |
+| H038b | 宽脚印 | Stamp-S3A PIN2.54 | main | 1 | 2 | 2 | 无 | lateral | — |
+| H038c | 密脚印 | Stamp-S3A PIN1.27 | main | 1 | 2 | 2 | 无 | lateral | — |
 | H039a | 短印 | Stamp-C3 | main | 1 | 1 | 1 | 冲锋 | lateral | — |
 | H039b | 直插印 | Stamp-C3U | main | 1 | 1 | 2 | 无 | lateral | — |
 | H039c | 快印 | Stamp-C5 | main | 1 | 1 | 2 | 无 | lateral | — |
 | H039e | 远印 | Stamp C6LoRa | main | 1 | 1 | 2 | 无 | lateral | — |
-| H039f | 大印 | Stamp-P4 | main | 1 | 1 | 2 | 无 | lateral | — |
-| H041 | 厚壳工控 | StamPLC | main | 6 | 3 | 7 | 护卫 | solo | — |
+| H039f | 大印 | Stamp-P4 | main | 1 | 3 | 1 | 无 | lateral | — |
+| H041 | 厚壳工控 | StamPLC | main | 6 | 3 | 5 | 护卫 | solo | — |
 | H050 | 零键 | CardputerZero | main | 10 | 4 | 7 | 无 | lateral | — |
 | S001a | 星座 | Module GPS v2.1 | attachment | 4 | 0 | 0 | 忽略护卫 | solo | — |
 | U002a | 测距眼 | Unit ToF4M | attachment | 4 | 0 | 0 | 忽略护卫 | solo | — |

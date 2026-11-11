@@ -69,7 +69,7 @@
               "iid": "u1",
               "card_id": "xiao_yin",
               "durability": 2,
-              "attack": 1,
+              "attack": 2,
               "sick": true,
               "guard": false,
               "attachments": []
@@ -141,7 +141,7 @@
               "iid": "u1",
               "card_id": "xiao_yin",
               "durability": 2,
-              "attack": 1,
+              "attack": 2,
               "sick": true,
               "guard": false,
               "attachments": []
@@ -151,7 +151,7 @@
             {
               "iid": "u2",
               "card_id": "dian_zhen",
-              "durability": 3,
+              "durability": 4,
               "attack": 1,
               "sick": true,
               "guard": true,
@@ -307,7 +307,7 @@
               "iid": "u3",
               "card_id": "xiao_yin",
               "durability": 2,
-              "attack": 1,
+              "attack": 2,
               "sick": true,
               "guard": false,
               "attachments": []
@@ -374,8 +374,8 @@
             {
               "iid": "u4",
               "card_id": "art_h024",
-              "durability": 3,
-              "attack": 2,
+              "durability": 2,
+              "attack": 3,
               "sick": true,
               "guard": false,
               "attachments": []
@@ -395,7 +395,7 @@
               "iid": "u3",
               "card_id": "xiao_yin",
               "durability": 2,
-              "attack": 1,
+              "attack": 2,
               "sick": true,
               "guard": false,
               "attachments": []

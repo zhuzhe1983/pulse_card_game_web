@@ -137,7 +137,7 @@ async function main() {
     }
 
     eq(await attr('main.table', 'data-ruleset'), 'pcg.clash.v0', '规则编号');
-    eq(await attr('main.table', 'data-source-commit'), 'ead309b68815998a49e58b3d2823b94d692e11d2', '来源提交');
+    eq(await attr('main.table', 'data-source-commit'), '0309ed8334491c3f1693a42ad068be82f5bb46a7', '来源提交');
     eq(await attr('.nfc-entry', 'data-nfc'), 'off', '这台桌面浏览器不能刷卡');
     if (await value(`document.querySelector('.nfc-entry').disabled`) !== true) throw new Error('刷卡入口没有禁用');
     const nfcText = await text('.nfc-entry');
@@ -193,13 +193,13 @@ async function main() {
     eq(await attr('#turn-label', 'data-seat'), '0', '回到先手');
     eq(await cardsIn('[data-hand-seat="0"]'), 'art_h024,bu_ji,dian_zhen', '先手第二回合抽牌');
     await click('[data-board-seat="0"][data-card="xiao_yin"]');
-    eq(await text('[data-board-seat="0"][data-card="xiao_yin"] .atk'), '2', '卡面攻击等于实际伤害');
+    eq(await text('[data-board-seat="0"][data-card="xiao_yin"] .atk'), '3', '卡面攻击等于实际伤害');
     eq(await value(`document.querySelector('[data-board-seat="0"][data-card="xiao_yin"] .atk').classList.contains('boosted')`), true, '加成后攻击变绿');
     if (!(await attr('[data-board-seat="0"][data-card="xiao_yin"] .atk', 'title') || '').includes('领队 10%')) throw new Error('悬停没有写明领队来源');
-    eq(await text('.trade'), '受 2 · 反 2', '攻击预览写出双方伤害');
+    eq(await text('.trade'), '受 3 · 反 2', '攻击预览写出双方伤害');
     await click('[data-board-seat="1"][data-card="dian_zhen"]');
     eq(await cardsIn('[data-grave="0"]'), 'xiao_yin', '领队小印被反击打死');
-    if (!(await text('#action-log')).includes('小印 攻击 点阵哨，造成 2')) throw new Error('记录没有写清这一击');
+    if (!(await text('#action-log')).includes('小印 攻击 点阵哨，造成 3')) throw new Error('记录没有写清这一击');
     eq(await attr('[data-board-seat="1"][data-card="dian_zhen"]', 'data-durability'), '1', '点阵哨被打到 1');
     eq(await text('[data-seat="1"][data-stat="base"]'), '20', '这一击没有打基地');
     await click('[data-action="end-turn"]');
@@ -251,7 +251,7 @@ async function main() {
     eq(await text('[data-seat="0"][data-stat="supply"]'), '5', '支援扣 1');
     eq(await attr('[data-board-seat="0"][data-slot="0"]', 'data-card'), 'hou_ke', '厚壳插到最左');
     eq(await attr('[data-board-seat="0"][data-slot="1"]', 'data-card'), 'xiao_yin', '小印被挤到右边');
-    eq(await attr('[data-board-seat="0"][data-slot="0"]', 'data-durability'), '7', '厚壳满耐久');
+    eq(await attr('[data-board-seat="0"][data-slot="0"]', 'data-durability'), '5', '厚壳满耐久');
     eq(await attr('[data-board-seat="0"][data-slot="0"]', 'data-guard'), 'true', '厚壳护卫');
     eq(await attr('[data-board-seat="0"][data-slot="0"]', 'data-sick'), 'true', '厚壳新入场');
     eq(await cardsIn('[data-grave="0"]'), '', '厚壳离开墓地');
@@ -265,7 +265,7 @@ async function main() {
     await click('[data-board-seat="0"][data-card="hou_ke"]');
     await click('[data-board-seat="1"][data-card="dian_zhen"]');
     eq(await attr('#last-error', 'data-code'), 'summoning_sickness', '复活单位不能立刻攻击');
-    eq(await attr('[data-board-seat="1"][data-card="dian_zhen"]', 'data-durability'), '3', '非法攻击不掉耐久');
+    eq(await attr('[data-board-seat="1"][data-card="dian_zhen"]', 'data-durability'), '4', '非法攻击不掉耐久');
     await click('[data-board-seat="0"][data-card="xiao_yin"]');
     await click('[data-action="attack-base"]');
     eq(await attr('#last-error', 'data-code'), 'guard_blocks', '护卫挡基地');
@@ -273,11 +273,11 @@ async function main() {
     await click('[data-action="select-hand"][data-card="bu_ji"]');
     await click('[data-board-seat="0"][data-card="hou_ke"]');
     await click('[data-action="mend-heal"]');
-    eq(await attr('[data-board-seat="0"][data-card="hou_ke"]', 'data-durability'), '7', '治疗不超过卡面');
+    eq(await attr('[data-board-seat="0"][data-card="hou_ke"]', 'data-durability'), '5', '治疗不超过卡面');
     eq(await text('[data-seat="0"][data-stat="supply"]'), '4', '补给扣费');
     await click('[data-action="select-hand"][data-card="gan_rao"]');
     await click('[data-board-seat="1"][data-card="dian_zhen"]');
-    eq(await attr('[data-board-seat="1"][data-card="dian_zhen"]', 'data-durability'), '1', '干扰无视护卫');
+    eq(await attr('[data-board-seat="1"][data-card="dian_zhen"]', 'data-durability'), '2', '干扰无视护卫');
     eq(await text('[data-seat="0"][data-stat="supply"]'), '2', '干扰扣费');
     await shot('05-support-present');
 
@@ -314,7 +314,7 @@ async function main() {
     await click('[data-board-seat="0"][data-card="xiao_yin"]');
     await click('[data-action="support"]');
     eq(await attr('[data-board-seat="0"][data-slot="0"]', 'data-card'), 'hou_ke', '厚壳回到最左空位');
-    eq(await attr('[data-board-seat="0"][data-slot="0"]', 'data-durability'), '7', '再次满耐久');
+    eq(await attr('[data-board-seat="0"][data-slot="0"]', 'data-durability'), '5', '再次满耐久');
     eq(await attr('[data-board-seat="0"][data-slot="1"]', 'data-card'), 'xiao_yin', '小印仍在位置 1');
     eq(await text('[data-seat="0"][data-stat="supply"]'), '3', '再次支援扣 1');
     await shot('07-support-again');
@@ -357,7 +357,7 @@ async function main() {
     eq(await attr('[data-board-seat="0"][data-slot="1"]', 'data-iid'), kept, '原来的最左只是右移');
     await click(`[data-iid="${kept}"]`);
     await click('[data-board-seat="1"][data-card="hou_ke"]');
-    eq(await attr('[data-board-seat="1"][data-card="hou_ke"]', 'data-durability'), '2', '打中指定的厚壳');
+    eq(await attr('[data-board-seat="1"][data-card="hou_ke"]', 'data-durability'), '1', '打中指定的厚壳');
     eq(await attr('[data-board-seat="1"][data-card="art_h024"]', 'data-durability'), '4', '旁边的细条没有被误伤');
     if (await value(`document.querySelectorAll('.socket').length`) !== 0) throw new Error('还在画固定空槽');
     await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });

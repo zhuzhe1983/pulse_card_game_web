@@ -90,4 +90,24 @@ check('the five refusal sentences stay distinct', () => {
   assert.equal(texts.includes('本回合这个技能已经用过'), false);
 });
 
+check('same cost prefers the higher chip body', () => {
+  const view = {
+    supply: 2, baseSelf: 20, usedSupport: false, own: [], opp: [], ownGrave: [],
+    hand: [
+      { id: 'entry', cost: 2, kind: 'main', effect: null, amount: 0, grants_guard: false, attack: 2, durability: 2 },
+      { id: 'p4', cost: 2, kind: 'main', effect: null, amount: 0, grants_guard: false, attack: 4, durability: 1 }
+    ]
+  };
+  assert.equal(C.planAi(view, new Set()).card, 'p4');
+  const seize = {
+    supply: 7, baseSelf: 20, usedSupport: false, own: [], ownGrave: [],
+    hand: [{ id: 'burner_seize', cost: 7, kind: 'spell', effect: 'seize', amount: 0, grants_guard: false, attack: 0, durability: 0 }],
+    opp: [
+      { iid: 'fat', attack: 1, durability: 4, guard: false },
+      { iid: 'sharp', attack: 4, durability: 2, guard: false }
+    ]
+  };
+  assert.equal(C.planAi(seize, new Set()).target, 'sharp');
+});
+
 console.log('PASS', passed, 'ai');

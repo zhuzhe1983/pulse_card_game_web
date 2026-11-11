@@ -1,12 +1,12 @@
 /* pcg.clash.v0 table rules.
- * Bound to prompt commit ead309b68815998a49e58b3d2823b94d692e11d2.
+ * Bound to prompt commit 0309ed8334491c3f1693a42ad068be82f5bb46a7.
  * Card numbers come from the playtest JSON. Combat reads kind, cost, attack,
  * durability, guard, bonuses and the closed effect list only.
  * star, family and version are stored when a pack supplies them and are not read here. */
 (function (root) {
   'use strict';
   const RULESET = 'pcg.clash.v0';
-  const SOURCE_COMMIT = 'ead309b68815998a49e58b3d2823b94d692e11d2';
+  const SOURCE_COMMIT = '0309ed8334491c3f1693a42ad068be82f5bb46a7';
   const IMPLEMENTED_EFFECTS = Object.freeze(['support', 'knob', 'mend', 'damage', 'heal_base', 'supply', 'play_draw', 'play_damage', 'draw_one', 'retrieve_grave', 'arm_aiflow', 'seize']);
   const IMPLEMENTED = new Set(IMPLEMENTED_EFFECTS);
   const REASON_TEXT = Object.freeze({
@@ -838,7 +838,8 @@
         const card = game.cards[id];
         return {
           id, cost: card.cost, kind: card.kind, effect: card.effect || null,
-          amount: card.amount || 0, grants_guard: !!card.grants_guard
+          amount: card.amount || 0, grants_guard: !!card.grants_guard,
+          attack: card.attack || 0, durability: card.durability || 0
         };
       }),
       own: game.units(seat).map(show),
@@ -855,15 +856,16 @@
       const key = 'support';
       if (!blocked(key)) return { type: 'support', key };
     }
+    const body = card => (card.attack || 0) + (card.durability || 0);
     const mains = view.hand.filter(card => card.kind === 'main' && card.cost <= view.supply);
-    mains.sort((a, b) => b.cost - a.cost || a.id.localeCompare(b.id));
+    mains.sort((a, b) => b.cost - a.cost || body(b) - body(a) || (b.attack || 0) - (a.attack || 0) || a.id.localeCompare(b.id));
     for (const card of mains) {
       const key = 'play:' + card.id;
       if (!blocked(key)) return { type: 'play', card: card.id, target: null, key };
     }
     const seize = view.hand.find(card => card.effect === 'seize' && card.cost <= view.supply);
     if (seize && view.opp.length) {
-      const target = view.opp.slice().sort((a, b) => b.durability - a.durability || a.iid.localeCompare(b.iid))[0];
+      const target = view.opp.slice().sort((a, b) => ((b.attack || 0) + b.durability) - ((a.attack || 0) + a.durability) || b.durability - a.durability || a.iid.localeCompare(b.iid))[0];
       const key = 'play:' + seize.id + ':' + target.iid;
       if (!blocked(key)) return { type: 'play', card: seize.id, target: target.iid, key };
     }
@@ -883,7 +885,8 @@
       const key = 'play:' + part.id + ':' + host.iid;
       if (!blocked(key)) return { type: 'play', card: part.id, target: host.iid, key };
     }
-    const ready = view.own.filter(unit => !unit.sick && !unit.attacked && !unit.lock);
+    const ready = view.own.filter(unit => !unit.sick && !unit.attacked && !unit.lock)
+      .slice().sort((a, b) => (b.attack || 0) - (a.attack || 0) || a.iid.localeCompare(b.iid));
     for (const unit of ready) {
       const guards = view.opp.filter(enemy => enemy.guard);
       const target = guards.length
