@@ -125,12 +125,12 @@ button { border: 0; color: inherit; background: none; }
 .rail.tools { position: absolute; left: 84.2%; top: 30%; width: 13.5%; height: 28%; z-index: 3; display: flex; align-items: center; justify-content: center; }
 .core-slot { position: absolute; z-index: 3; display: grid; place-items: center; }
 .core-slot.foe { left: 43.5%; top: 4.2%; width: 13%; height: 18%; }
-.core-slot.mine { left: 43%; top: 63%; width: 14%; height: 15%; }
-.slots { position: absolute; z-index: 2; display: flex; align-items: flex-end; justify-content: safe center; gap: 0.6%; overflow-x: auto; }
-.slots.foe { left: 21.9%; top: 21.5%; width: 56.2%; height: 20%; }
-.slots.mine { left: 21.9%; top: 43%; width: 56.2%; height: 16%; }
-.midline { position: absolute; left: 28%; top: 41.2%; width: 44%; z-index: 2; text-align: center; pointer-events: none; }
-.hand-dock { position: absolute; left: 18%; top: 82%; width: 64%; height: 15%; z-index: 4; }
+.core-slot.mine { left: 43%; top: 66%; width: 14%; height: 13%; }
+.slots { position: absolute; z-index: 2; display: flex; align-items: flex-start; justify-content: safe center; gap: 8px; overflow-x: auto; padding-bottom: 6px; }
+.slots.foe { left: 18%; top: 17%; width: 64%; height: 28%; }
+.slots.mine { left: 18%; top: 46%; width: 64%; height: 24%; }
+.midline { position: absolute; left: 20%; top: 8px; width: 22%; height: 22px; z-index: 6; text-align: left; pointer-events: none; }
+.hand-dock { position: absolute; left: 16%; bottom: 2%; width: 62%; height: 150px; z-index: 4; }
 .core-wrap { width: 100%; height: 100%; text-align: center; }
 .base-btn.core {
   position: relative; width: 100%; height: 86%; border-radius: 0; padding: 0;
@@ -167,12 +167,12 @@ button { border: 0; color: inherit; background: none; }
   position: relative; border: 0; background: transparent; box-shadow: none; color: #f4f7f8;
   text-align: center;
 }
-.minion { flex: 0 0 15%; width: 15%; min-width: 64px; height: 92%; padding: 12% 8% 18%; }
+.minion { flex: 0 0 136px; width: 136px; height: 176px; padding: 24px 8px 32px; overflow: hidden; }
 .playcard {
-  height: 100%; width: 78px; flex: 0 0 78px; margin: 0 -10px;
-  padding: 16px 6px 20px;
-  transform-origin: center 120%;
-  transform: rotate(calc((var(--i) - (var(--n) - 1) / 2) * 5deg));
+  width: 118px; flex: 0 0 118px; height: 142px; margin: 0 -6px;
+  padding: 28px 10px 36px; overflow: hidden;
+  transform-origin: center 130%;
+  transform: rotate(calc((var(--i) - (var(--n) - 1) / 2) * 4deg));
 }
 .minion::before, .playcard::before {
   content: ""; position: absolute; inset: 0; pointer-events: none;
@@ -194,22 +194,35 @@ button { border: 0; color: inherit; background: none; }
 .playcard .cost { left: 6px; top: 8px; background-image: url("scene/ui/lamp-cost-cyan.webp"); }
 .playcard .star { right: 6px; top: 8px; background-image: url("scene/ui/lamp-attack-amber.webp"); color: #2a1a08; font-size: 11px; }
 .minion .mname, .playcard .cname {
-  position: absolute; left: 18%; right: 18%; bottom: 24%; font-size: 11px; font-weight: 750;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 2px #000;
+  position: absolute; left: 8px; right: 8px; bottom: 32px; height: 18px; line-height: 18px;
+  font-size: 13px; font-weight: 750; background: #10161acc; border-radius: 4px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.playcard:hover, .playcard.selected { transform: translateY(-18px) scale(1.06) rotate(0deg); z-index: 5; }
+.playcard .detail {
+  display: none; position: absolute; left: 10px; right: 10px; top: 58px;
+  font-size: 13px; line-height: 1.3; color: #f4f7f8; text-align: left;
+  max-height: 5.2em; overflow: hidden;
+}
+.playcard:hover, .playcard.selected {
+  transform: translateY(-46px) scale(1.22) rotate(0deg); z-index: 5; overflow: visible;
+}
+.playcard:hover .detail, .playcard.selected .detail { display: block; }
 .minion.selected { transform: translateY(-8px); filter: drop-shadow(0 0 6px #7dfff0); }
 .minion.hot { filter: drop-shadow(0 0 6px #ff5a3c); }
 .minion.guard { filter: drop-shadow(0 0 5px #ffb020); }
-.ribbon { display: block; min-height: 12px; color: #ffd27a; font-size: 10px; }
+.ribbon {
+  position: absolute; top: 8px; left: 8px; right: 8px; color: #ffd27a; font-size: 11px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
 .glyph { width: 42px; height: 42px; margin: 0 auto; display: grid; place-items: center; color: #ffd27a; font-size: 20px; font-weight: 800; }
 .midline h3 { margin: 0; font-size: 12px; letter-spacing: .08em; color: #d7e2c8; }
-#coach, #last-error { margin: 0; font-size: 11px; color: #d5ddd8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#coach { display: none; }
+#last-error { margin: 0; font-size: 12px; color: #ffb0a4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 #last-error[data-code]:not([data-code=""]) { color: #ffb0a4; font-weight: 700; }
 .end-turn {
-  width: 100%; height: 100%; min-height: 0; border-radius: 50%;
+  width: 148px; height: 148px; border-radius: 50%; white-space: nowrap;
   background: url("scene/ui/end-turn-button-primary.webp") center / contain no-repeat;
-  color: #fff8f2; font-size: clamp(12px, 1.2vw, 18px); font-weight: 900;
+  color: #fff8f2; font-size: 18px; font-weight: 900; line-height: 1;
   text-shadow: 0 1px 2px #5a2408; box-shadow: none;
 }
 .hands.fan { height: 100%; display: flex; justify-content: center; align-items: flex-end; overflow: visible; }
@@ -229,17 +242,40 @@ button { border: 0; color: inherit; background: none; }
 .pool button { text-align: left; padding: 8px; border-radius: 12px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); }
 .pool button.picked { outline: 2px solid var(--accent); }
 @media (max-width: 800px) {
-  .table-page .pulse-top { height: auto; min-height: 36px; flex-wrap: wrap; padding: 4px 8px; }
-  .table-page .pulse-sub { display: none; }
-  .table-page .pulse-nav a { padding: 2px 0; font-size: 12px; }
-  .orient { display: block; position: absolute; z-index: 6; top: 36px; left: 8px; color: #d5ddd8; font-size: 11px; }
-  .playcard { width: 54px; flex-basis: 54px; margin: 0 -6px; padding: 10px 4px 14px; }
-  .playcard:hover, .playcard.selected { transform: translateY(-8px) scale(1.03) rotate(0deg); }
-  .minion { min-width: 54px; padding: 10% 6% 20%; }
-  .minion .atk, .minion .hp, .playcard .patk, .playcard .php, .playcard .cost, .playcard .star { width: 20px; height: 20px; font-size: 11px; }
-  .end-turn { font-size: 11px; background-image: url("scene/ui/end-turn-button-compact.webp"); }
-  .rail.side .silk { display: none; }
-  .deck-stack, .grave-stack { width: 28px; height: 22px; font-size: 12px; }
+  .table-page { display: block; }
+  .table-page .pulse-top { height: 40px; min-height: 0; flex-wrap: nowrap; padding: 0 8px; overflow: hidden; }
+  .table-page .pulse-sub, .orient { display: none; }
+  .table-page .pulse-nav { gap: 8px; }
+  .top-actions, .table-page .pulse-nav a[data-nav="legacy"] { display: none; }
+  .table-page .pulse-nav a { padding: 0; font-size: 13px; white-space: nowrap; flex-shrink: 0; }
+  .arena {
+    width: 100%; height: calc(100vh - 40px); margin-top: 40px; aspect-ratio: auto;
+    background-size: cover; background-position: center 46%;
+  }
+  .core-slot.foe, .core-slot.mine { width: 76px; height: 76px; left: 50%; transform: translateX(-50%); }
+  .midline { top: 6px; right: 8px; left: auto; width: auto; text-align: right; }
+  .core-slot.foe { top: 4px; }
+  .core-slot.mine { top: auto; bottom: 168px; }
+  .base-btn .hp { font-size: 22px; }
+  .slots.foe, .slots.mine { left: 8px; width: calc(100% - 16px); height: 128px; }
+  .slots.foe { top: 84px; }
+  .slots.mine { top: 42%; }
+  .minion { width: 92px; height: 124px; flex-basis: 92px; padding: 22px 6px 28px; }
+  .minion .mname, .playcard .cname { font-size: 13px; bottom: 30px; }
+  .hand-dock { left: 8px; right: 8px; bottom: 6px; width: auto; height: 156px; }
+  .hands.fan { overflow-x: auto; overflow-y: hidden; }
+  .playcard { width: 108px; flex-basis: 108px; height: 148px; margin: 0 4px; padding: 22px 8px 30px; }
+  .playcard:hover, .playcard.selected { transform: translateY(-6px) scale(1.06) rotate(0deg); }
+  .minion .atk, .minion .hp, .playcard .patk, .playcard .php, .playcard .cost, .playcard .star { width: 26px; height: 26px; font-size: 14px; }
+  .rail.tools { left: auto; right: 8px; top: auto; bottom: 168px; width: 132px; height: 52px; }
+  .end-turn {
+    width: 132px; height: 48px; border-radius: 24px; font-size: 16px;
+    background-image: url("scene/ui/end-turn-button-primary.webp");
+    background-size: 100% 100%;
+  }
+  .battery { top: auto; bottom: 54px; }
+  .deck-stack, .grave-stack { width: 32px; height: 26px; font-size: 14px; }
+  .rail.side { top: 88px; height: 72px; width: 42px; }
 }
 </style>
 </head>
@@ -1119,8 +1155,8 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
       const star = C.starOf(card);
       const nums = card.kind === 'main'
         ? `<span class="patk">${card.attack}</span><span class="php">${card.durability}</span>`
-        : `<span class="statsline">${esc(blurb(card))}</span>`;
-      const body = `<span class="cost">${card.cost}</span>${star ? `<span class="star">${star}星</span>` : ''}<span class="art">${picture(card, 'board')}</span><span class="cname">${esc(card.name)}</span>${nums}`;
+        : '';
+      const body = `<span class="cost">${card.cost}</span>${star ? `<span class="star">${star}星</span>` : ''}<span class="art">${picture(card, 'board')}</span><span class="cname">${esc(card.name)}</span>${nums}<span class="detail">${esc(blurb(card))}</span>`;
       const fan = ` style="--i:${index};--n:${count}"`;
       if (seat !== game.seat) return `<div class="playcard" ${sceneAttr('hand_frame')} data-card="${esc(id)}"${fan}>${body}<span class="statsline">教学明牌</span></div>`;
       return `<button type="button" class="playcard${selected ? ' selected' : ''}" ${sceneAttr('hand_frame')} data-action="select-hand" data-hand-index="${index}" data-card="${esc(id)}"${fan}>${body}</button>`;
