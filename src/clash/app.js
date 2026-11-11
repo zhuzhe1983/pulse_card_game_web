@@ -117,6 +117,11 @@
     return id ? cards[id] : null;
   }
 
+  function canDeploy() {
+    const card = selectedCard();
+    return !!(card && (card.kind === 'main' || card.effect === 'supply' || card.effect === 'heal_base'));
+  }
+
   function coach() {
     if (game.winner != null) return '终局已锁定。出牌、攻击、支援、旋钮和结束回合都会被拒绝。';
     if (ui.knob) return '旋钮已准备。点一台己方单位，本回合攻击 +1。可以点旋钮台自己。新入场也能用。';
@@ -151,8 +156,9 @@
     const show = ui.reveal || seat === game.seat;
     if (!show) {
       const backs = game.hands[seat].map(() => '<div class="back" aria-hidden="true"></div>').join('');
-      return `<div class="${dock ? 'hands' : 'opp-hand'}" data-hand-seat="${seat}" data-hidden="1">${backs}<span>手牌 ${game.hands[seat].length}</span></div>`;
+      return `<div class="${dock ? 'hands' : 'opp-hand'}" data-hand-seat="${seat}" data-hidden="1">${backs}<span class="silk">手牌 ${game.hands[seat].length}</span></div>`;
     }
+    const count = game.hands[seat].length;
     const open = game.hands[seat].map((id, index) => {
       const card = cards[id];
       const selected = seat === game.seat && ui.handIndex === index;
@@ -161,22 +167,27 @@
         ? `<span class="patk">${card.attack}</span><span class="php">${card.durability}</span>`
         : `<span class="statsline">${esc(blurb(card))}</span>`;
       const body = `<span class="cost">${card.cost}</span>${star ? `<span class="star">${star}星</span>` : ''}<span class="art">${picture(card, 'board')}</span><span class="cname">${esc(card.name)}</span>${nums}`;
-      if (seat !== game.seat) return `<div class="playcard" data-card="${esc(id)}">${body}<span class="statsline">教学明牌</span></div>`;
-      return `<button type="button" class="playcard${selected ? ' selected' : ''}" data-action="select-hand" data-hand-index="${index}" data-card="${esc(id)}">${body}</button>`;
+      const fan = ` style="--i:${index};--n:${count}"`;
+      if (seat !== game.seat) return `<div class="playcard" data-card="${esc(id)}"${fan}>${body}<span class="statsline">教学明牌</span></div>`;
+      return `<button type="button" class="playcard${selected ? ' selected' : ''}" data-action="select-hand" data-hand-index="${index}" data-card="${esc(id)}"${fan}>${body}</button>`;
     }).join('');
-    return `<div class="${dock ? 'hands' : 'opp-hand'}" data-hand-seat="${seat}" data-hidden="0">${open || '<span>没有手牌</span>'}</div>`;
+    return `<div class="${dock ? 'hands fan' : 'opp-hand'}" data-hand-seat="${seat}" data-hidden="0">${open || '<span class="silk">没有手牌</span>'}</div>`;
   }
   function unitHtml(seat, slot, unit) {
-    if (!unit) return `<div class="slot empty" data-board-seat="${seat}" data-slot="${slot}" data-card="">空位</div>`;
+    if (!unit) {
+      const drop = seat === game.seat && canDeploy();
+      return `<div class="slot empty socket${drop ? ' ready' : ''}" data-board-seat="${seat}" data-slot="${slot}" data-card=""${drop ? ' data-action="play"' : ''}><span class="pins"></span><span class="silk">座 ${slot + 1}</span></div>`;
+    }
     const card = cards[unit.card_id];
     const selected = ui.attacker === unit.iid;
+    const hot = ui.attacker && seat !== game.seat;
     const ribbons = [
       unit.sick ? '新入场' : '',
       unit.attacked ? '已攻击' : '',
       C.hasGuard(cards, unit) ? '护卫' : '',
       unit.attachments.map(id => cards[id].name).join(' ')
     ].filter(Boolean).join(' · ');
-    return `<button type="button" class="minion${selected ? ' selected' : ''}${C.hasGuard(cards, unit) ? ' guard' : ''}${unit.sick ? ' sick' : ''}${unit.attacked ? ' spent' : ''}" data-action="select-unit" data-board-seat="${seat}" data-slot="${slot}" data-seat="${seat}" data-iid="${esc(unit.iid)}" data-card="${esc(unit.card_id)}" data-sick="${unit.sick}" data-guard="${C.hasGuard(cards, unit)}" data-attack="${C.attackOf(cards, unit)}" data-durability="${unit.durability}">
+    return `<button type="button" class="minion${selected ? ' selected' : ''}${hot ? ' hot' : ''}${C.hasGuard(cards, unit) ? ' guard' : ''}${unit.sick ? ' sick' : ''}${unit.attacked ? ' spent' : ''}" data-action="select-unit" data-board-seat="${seat}" data-slot="${slot}" data-seat="${seat}" data-iid="${esc(unit.iid)}" data-card="${esc(unit.card_id)}" data-sick="${unit.sick}" data-guard="${C.hasGuard(cards, unit)}" data-attack="${C.attackOf(cards, unit)}" data-durability="${unit.durability}">
       <span class="portrait">${picture(card, 'board')}</span>
       <span class="atk">${C.attackOf(cards, unit)}</span>
       <span class="hp">${unit.durability}</span>
@@ -184,21 +195,45 @@
       ${ribbons ? `<span class="ribbon">${esc(ribbons)}</span>` : ''}
     </button>`;
   }
-  function hero(seat) {
+  function coreSvg() {
+    return `<svg class="core-art" viewBox="0 0 86 86" aria-hidden="true">
+      <circle cx="43" cy="43" r="38" fill="#10281c" stroke="currentColor" stroke-width="3"/>
+      <circle cx="43" cy="43" r="30" fill="none" stroke="#8a5a32" stroke-width="1" stroke-dasharray="2 3"/>
+      <rect x="28" y="30" width="30" height="24" rx="4" fill="#0b1c14" stroke="#9dcec4"/>
+      <circle cx="36" cy="40" r="3.2" fill="#39f3d4"/>
+      <circle cx="50" cy="40" r="3.2" fill="#ffb020"/>
+      <rect x="36" y="47" width="14" height="2.4" rx="1" fill="#e8a56a"/>
+      <path d="M43 30 V16" stroke="#e8a56a" stroke-width="2"/>
+      <circle cx="43" cy="13" r="3" fill="#ff4d3a"/>
+      <circle cx="16" cy="43" r="2" fill="#d7e2c8"/><circle cx="70" cy="43" r="2" fill="#d7e2c8"/>
+      <circle cx="43" cy="72" r="2" fill="#d7e2c8"/>
+    </svg>`;
+  }
+  function core(seat) {
     const active = game.seat === seat && game.phase === 'main';
-    const top = game.graves[seat].at(-1);
-    return `<aside class="hero${active ? ' active' : ''}">
-      <h2>${seatName(seat)}</h2>
-      <button type="button" class="base-btn" data-action="hit-base" data-seat="${seat}" aria-label="${seatName(seat)}基地"><span class="hp" data-seat="${seat}" data-stat="base">${game.bases[seat]}</span></button>
-      ${mana(seat)}
-      <div class="supply-read">供电 <b data-seat="${seat}" data-stat="supply">${game.supply[seat]}</b> / <b data-seat="${seat}" data-stat="max-supply">${game.max_supply[seat]}</b></div>
-      <div class="pile">
-        <div class="deck-stack" data-seat="${seat}" data-stat="deck">${game.decks[seat].length}</div>
-        <div class="grave-stack">${top ? esc(cards[top].name) : '墓'}</div>
-      </div>
-      <div class="pile">疲劳 <b data-seat="${seat}" data-stat="fatigue">${game.fatigue[seat]}</b> · 手牌 <b data-seat="${seat}" data-stat="hand">${game.hands[seat].length}</b></div>
+    const hot = ui.attacker && seat !== game.seat;
+    return `<div class="core-wrap${active ? ' active' : ''}${hot ? ' hot' : ''}">
+      <button type="button" class="base-btn core" data-action="hit-base" data-seat="${seat}" aria-label="${seatName(seat)}基地">
+        ${coreSvg()}
+        <span class="hp" data-seat="${seat}" data-stat="base">${game.bases[seat]}</span>
+      </button>
+      <div class="silk">${seatName(seat)}核心</div>
+      ${seat === game.seat ? '' : supply(seat)}
+    </div>`;
+  }
+  function supply(seat) {
+    return `<div class="battery">${mana(seat)}<div class="supply-read">供电 <b data-seat="${seat}" data-stat="supply">${game.supply[seat]}</b> / <b data-seat="${seat}" data-stat="max-supply">${game.max_supply[seat]}</b></div></div>`;
+  }
+  function stack(seat) {
+    return `<div class="stack">
+      <div class="deck-stack" data-seat="${seat}" data-stat="deck" title="${seatName(seat)}牌库">${game.decks[seat].length}</div>
+      <div class="silk">库</div>
+      <div class="grave-stack" title="${seatName(seat)}墓地">${game.graves[seat].length}</div>
+      <div class="silk">墓</div>
+      <div class="silk">疲劳 <b data-seat="${seat}" data-stat="fatigue">${game.fatigue[seat]}</b></div>
+      <div class="silk">手 <b data-seat="${seat}" data-stat="hand">${game.hands[seat].length}</b></div>
       <ol class="grave" data-grave="${seat}" hidden>${game.graves[seat].map(id => `<li data-card="${esc(id)}">${esc(cards[id].name)}</li>`).join('')}</ol>
-    </aside>`;
+    </div>`;
   }
 
   function catalog() {
@@ -219,17 +254,17 @@
     const card = selectedCard();
     const bits = [];
     if (card && (card.kind === 'main' || card.effect === 'supply' || card.effect === 'heal_base')) {
-      const label = card.effect === 'play_damage' ? '不造成伤害，直接打出' : card.kind === 'main' ? '打出到最左空位' : '打出';
-      bits.push(`<button type="button" class="primary" data-action="play">${label}</button>`);
+      const label = card.effect === 'play_damage' ? '直接焊装' : '焊装';
+      bits.push(`<button type="button" class="pad live" data-action="play">${label}</button>`);
     }
     if (card && card.effect === 'mend' && ui.target) {
-      bits.push('<button type="button" class="primary" data-action="mend-heal">修复 2 点耐久</button>');
-      bits.push('<button type="button" class="primary" data-action="mend-temp">本回合攻击 +1</button>');
+      bits.push('<button type="button" class="pad live" data-action="mend-heal">修复耐久</button>');
+      bits.push('<button type="button" class="pad live" data-action="mend-temp">攻击 +1</button>');
     }
-    bits.push('<button type="button" data-action="attack-base">攻击对方基地</button>');
+    bits.push(`<button type="button" class="pad${ui.attacker ? ' live' : ''}" data-action="attack-base">打核心</button>`);
     bits.push(promoteButtons());
-    bits.push('<button type="button" data-action="support">小印支援厚壳</button>');
-    bits.push('<button type="button" data-action="arm-knob">旋钮强化</button>');
+    bits.push('<button type="button" class="pad" data-action="support">支援</button>');
+    bits.push(`<button type="button" class="pad${ui.knob ? ' live' : ''}" data-action="arm-knob">旋钮</button>`);
     return bits.join('');
   }
 
@@ -258,7 +293,7 @@
       const next = cards[current.next_template_id];
       const cost = Math.max(1, next.cost - current.cost);
       const short = game.supply[game.seat] < cost ? '，电不够' : '';
-      return `<button type="button" class="primary" data-action="promote" data-current="${esc(choice.currentId)}">升到${esc(next.name)}，需要 ${cost} 电${short}（${esc(choice.where)}）</button>`;
+      return `<button type="button" class="pad live" data-action="promote" data-current="${esc(choice.currentId)}">升到${esc(next.name)} ${cost}电${short}</button>`;
     }).join('');
   }
 
@@ -323,40 +358,46 @@
         <button type="button" data-action="restart">重新开局</button>
       </div>
     </header>
+    <p class="orient">竖屏可以操作。横过来能一次看完这块开发板。</p>
     ${ui.reveal ? '<div class="banner" id="reveal-banner">教学明牌 · 双方手牌都看得见 · 牌库仍只显示张数</div>' : '<div id="reveal-banner" hidden></div>'}
-    <main class="table felt" data-scenario="${esc(ui.scenario)}" data-ruleset="${esc(content.ruleset_id)}" data-source-commit="${esc(C.SOURCE_COMMIT)}">
-      <div class="seatline">
-        <div class="cluster">${active === other ? '' : handHtml(other, false)}</div>
-        ${hero(other)}
-        <div class="cluster right"></div>
+    <main class="arena table${ui.attacker ? ' aiming' : ''}${canDeploy() ? ' holding' : ''}" data-scenario="${esc(ui.scenario)}" data-ruleset="${esc(content.ruleset_id)}" data-source-commit="${esc(C.SOURCE_COMMIT)}">
+      <svg class="traces" viewBox="0 0 1200 800" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M70 36 H1130 V764 H70 Z" fill="none" stroke="#c47a45" stroke-width="3"/>
+        <path d="M90 70 H1110 M90 730 H1110 M210 90 V710 M990 90 V710" fill="none" stroke="#e8a56a" stroke-width="1.4" opacity=".45"/>
+        <path d="M230 180 H970 M230 400 H970 M230 620 H970" fill="none" stroke="#39f3d4" stroke-width="1.2" opacity=".28"/>
+        <g fill="#d7e2c8">${[120, 240, 360, 520, 760, 980].map(x => [150, 390, 640].map(y => `<circle cx="${x}" cy="${y}" r="3.2"/>`).join('')).join('')}</g>
+        <g fill="none" stroke="#8a5a32" stroke-width="2">${[[40, 24], [1168, 24], [40, 776], [1168, 776]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="7"/>`).join('')}</g>
+      </svg>
+      <aside class="rail side">
+        ${handHtml(other, false)}
+        ${stack(other)}
+        ${stack(active)}
+        <details class="teach"><summary>教学</summary><div class="scenario-row">
+          <button type="button" data-action="scenario" data-scenario="lesson">教学局</button>
+          <button type="button" data-action="scenario" data-scenario="support-present">小印已在场</button>
+          <button type="button" data-action="scenario" data-scenario="support-deploy">先打出小印</button>
+          <button type="button" data-action="scenario" data-scenario="support-again">厚壳再死</button>
+          <button type="button" data-action="scenario" data-scenario="promote-stamp">小印升星</button>
+          <button type="button" data-action="scenario" data-scenario="builder">扩展组牌</button>
+        </div></details>
+        <details class="quiet-log"><summary>记录</summary><ol id="action-log" class="log">${ui.log.slice(-6).reverse().map(item => `<li${item.code ? ` class="bad" data-error-code="${esc(item.code)}"` : ''}>${esc(item.text)}</li>`).join('')}</ol></details>
+      </aside>
+      <div class="core-slot foe">${core(other)}</div>
+      <div class="slots foe">${game.boards[other].map((unit, slot) => unitHtml(other, slot, unit)).join('')}</div>
+      <div class="midline">
+        <h3 id="turn-label" data-seat="${game.seat}">${over || seatName(active) + '的回合'}</h3>
+        <p id="coach">${esc(coach())}</p>
+        <p id="last-error" data-code="${esc(ui.error ? ui.error.code : '')}">${ui.error ? esc(ui.error.message) : ''}</p>
       </div>
-      <div class="battlefield">
-        <div class="slots">${game.boards[other].map((unit, slot) => unitHtml(other, slot, unit)).join('')}</div>
-        <div class="midline">
-          <h3 id="turn-label" data-seat="${game.seat}">${over || seatName(active) + '的回合'}</h3>
-          <p id="coach">${esc(coach())}</p>
-          <p id="last-error" data-code="${esc(ui.error ? ui.error.code : '')}">${ui.error ? esc(ui.error.message) + '（' + esc(ui.error.code) + '）' : ''}</p>
-        </div>
-        <div class="slots">${game.boards[active].map((unit, slot) => unitHtml(active, slot, unit)).join('')}</div>
-      </div>
-      <div class="seatline">
-        <div class="cluster"></div>
-        ${hero(active)}
-        <div class="cluster right"><button type="button" class="end-turn" data-action="end-turn">结束回合</button></div>
-      </div>
+      <div class="slots mine">${game.boards[active].map((unit, slot) => unitHtml(active, slot, unit)).join('')}</div>
+      <div class="core-slot mine">${core(active)}</div>
+      <section class="hand-dock" aria-label="当前手牌">${handHtml(active, true)}</section>
+      <aside class="rail tools">
+        <button type="button" class="end-turn" data-action="end-turn">结束回合</button>
+        ${supply(active)}
+        <div class="pads">${actions()}</div>
+      </aside>
     </main>
-    <section class="hand-dock" aria-label="当前手牌">${handHtml(active, true)}</section>
-    <div class="edge-actions">${actions()}</div>
-    <details class="teach"><summary>教学与战例</summary><div class="scenario-row">
-      <button type="button" data-action="scenario" data-scenario="lesson">教学局</button>
-      <button type="button" data-action="scenario" data-scenario="support-present">战例：小印已在场</button>
-      <button type="button" data-action="scenario" data-scenario="support-deploy">战例：先打出小印</button>
-      <button type="button" data-action="scenario" data-scenario="support-again">战例：厚壳再死</button>
-      <button type="button" data-action="scenario" data-scenario="promote-stamp">战例：小印升星</button>
-      <button type="button" data-action="scenario" data-scenario="builder">扩展组牌</button>
-    </div></details>
-    <details class="quiet-log"><summary>记录</summary><ol id="action-log" class="log">${ui.log.slice(-6).reverse().map(item => `<li${item.code ? ` class="bad" data-error-code="${esc(item.code)}"` : ''}>${esc(item.text)}</li>`).join('')}</ol></details>
-    <p class="foot">待试玩数值。牌桌用图鉴主体图和游戏牌框，整卡印刷图留在图鉴详情。没有图的基线牌用字标。</p>
     </div>`;
     document.body.dataset.ready = '1';
     document.body.dataset.ruleset = content.ruleset_id;
