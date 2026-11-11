@@ -13,11 +13,22 @@ def embed(path):
     text = json.dumps(json.loads((root / path).read_text()), ensure_ascii=False, separators=(',', ':'))
     return text.replace('<', '\\u003c')
 
+def art_map():
+    data = json.loads((root / 'wiki/data/cards.json').read_text())
+    out = {}
+    for card in data['cards']:
+        web = card['assets']['web']
+        out[card['rid']] = {
+            'card': '../../wiki/' + web['card_webp']['path'],
+            'char': '../../wiki/' + web['char_webp']['path'],
+        }
+    return json.dumps(out, ensure_ascii=False, separators=(',', ':')).replace('<', '\\u003c')
+
 replacements = {
-    '/*__CLASH_CSS__*/': (root / 'src/clash/style.css').read_text(),
+    '/*__CLASH_CSS__*/': (root / 'shared/pulse.css').read_text() + '\n' + (root / 'src/clash/style.css').read_text(),
     '/*__CLASH_CONTENT__*/': 'globalThis.PCGClashContent=' + embed('content/clash/clash_playtest.json') + ';\n',
     '/*__CLASH_CAPABILITIES__*/': 'globalThis.PCGClashCapabilities=' + embed('content/clash/capabilities.json') + ';\n',
-    '/*__CLASH_ROSTER__*/': 'globalThis.PCGClashRoster=' + embed('content/clash/clash_roster_96.json') + ';\n',
+    '/*__CLASH_ROSTER__*/': 'globalThis.PCGClashRoster=' + embed('content/clash/clash_roster_96.json') + ';\n' + 'globalThis.PCGClashArt=' + art_map() + ';\n',
     '/*__CLASH_ENGINE__*/': script((root / 'src/clash/engine.js').read_text()),
     '/*__CLASH_APP__*/': script((root / 'src/clash/app.js').read_text()),
 }

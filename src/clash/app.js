@@ -135,57 +135,67 @@
     return '点手牌出牌，点己方单位后再选攻击目标。场上的小印可以支援自己墓地里的厚壳，小印不会离场。';
   }
 
-  function art(card) {
-    const series = esc(card.series || card.product_series || '');
-    return `<span class="no-art">无图 · 系列 ${series}</span><img class="series-art" alt="" hidden data-series="${series}" src="series/${series}.png" onload="this.hidden=false;this.previousElementSibling.hidden=true" onerror="this.remove()">`;
+  const artbook = root.PCGClashArt || {};
+  function picture(card, kind) {
+    const shot = card && artbook[card.rid];
+    if (!shot) return `<span class="glyph" aria-hidden="true">${esc((card && card.name || '?').slice(0, 1))}</span>`;
+    return `<img src="${esc(kind === 'board' ? shot.char : shot.card)}" alt="" draggable="false">`;
   }
-
-  function handHtml(seat) {
+  function mana(seat) {
+    const max = game.max_supply[seat];
+    const cur = game.supply[seat];
+    const count = Math.max(max, Math.min(cur, 10));
+    return `<div class="mana">${Array.from({length: count}, (_, i) => `<i class="${i < cur ? 'on' : ''}"></i>`).join('')}</div>`;
+  }
+  function handHtml(seat, dock) {
     const show = ui.reveal || seat === game.seat;
     if (!show) {
       const backs = game.hands[seat].map(() => '<div class="back" aria-hidden="true"></div>').join('');
-      return `<div class="hands" data-hand-seat="${seat}" data-hidden="1">${backs}<span class="hint">手牌 ${game.hands[seat].length} 张，牌面已遮住</span></div>`;
+      return `<div class="${dock ? 'hands' : 'opp-hand'}" data-hand-seat="${seat}" data-hidden="1">${backs}<span>手牌 ${game.hands[seat].length}</span></div>`;
     }
     const open = game.hands[seat].map((id, index) => {
       const card = cards[id];
       const selected = seat === game.seat && ui.handIndex === index;
-      const body = `${art(card)}<span class="cost">${card.cost}</span><div class="name">${esc(card.name)}</div><div class="hint">${esc(blurb(card))}</div>`;
-      if (seat !== game.seat) return `<div class="card" data-card="${esc(id)}">${body}<div class="tag">教学明牌</div></div>`;
-      return `<button type="button" class="card${selected ? ' selected' : ''}" data-action="select-hand" data-hand-index="${index}" data-card="${esc(id)}">${body}</button>`;
+      const star = C.starOf(card);
+      const body = `${picture(card, 'hand')}<span class="cost">${card.cost}</span>${star ? `<span class="star">${star}</span>` : ''}<span class="cname">${esc(card.name)}</span><span class="statsline">${esc(blurb(card))}</span>`;
+      if (seat !== game.seat) return `<div class="playcard" data-card="${esc(id)}">${body}<span class="statsline">教学明牌</span></div>`;
+      return `<button type="button" class="playcard${selected ? ' selected' : ''}" data-action="select-hand" data-hand-index="${index}" data-card="${esc(id)}">${body}</button>`;
     }).join('');
-    return `<div class="hands" data-hand-seat="${seat}" data-hidden="0">${open || '<span class="hint">没有手牌</span>'}</div>`;
+    return `<div class="${dock ? 'hands' : 'opp-hand'}" data-hand-seat="${seat}" data-hidden="0">${open || '<span>没有手牌</span>'}</div>`;
   }
-
   function unitHtml(seat, slot, unit) {
-    if (!unit) return `<div class="slot empty" data-board-seat="${seat}" data-slot="${slot}" data-card="">空位 ${slot}</div>`;
+    if (!unit) return `<div class="slot empty" data-board-seat="${seat}" data-slot="${slot}" data-card="">空位</div>`;
     const card = cards[unit.card_id];
-    const tags = [
-      unit.sick ? '<span class="tag sick">新入场</span>' : '',
-      unit.attacked ? '<span class="tag">已攻击</span>' : '',
-      C.hasGuard(cards, unit) ? '<span class="tag guard">护卫</span>' : '',
-      unit.temp_attack ? `<span class="tag att">临时 +${unit.temp_attack}</span>` : '',
-      unit.attachments.map(id => `<span class="tag att">配件 ${esc(cards[id].name)}</span>`).join('')
-    ].join('');
-    return `<button type="button" class="unit" data-action="select-unit" data-board-seat="${seat}" data-slot="${slot}" data-seat="${seat}" data-iid="${esc(unit.iid)}" data-card="${esc(unit.card_id)}" data-sick="${unit.sick}" data-guard="${C.hasGuard(cards, unit)}" data-attack="${C.attackOf(cards, unit)}" data-durability="${unit.durability}">
-      <div class="slot-label"><b>${slot}</b><span class="name">${esc(card.name)}</span></div>
-      <div class="nums">攻 ${C.attackOf(cards, unit)} · 耐 ${unit.durability}/${card.durability}</div>
-      ${tags || '<span class="tag">可行动</span>'}
+    const selected = ui.attacker === unit.iid;
+    const ribbons = [
+      unit.sick ? '新入场' : '',
+      unit.attacked ? '已攻击' : '',
+      C.hasGuard(cards, unit) ? '护卫' : '',
+      unit.attachments.map(id => cards[id].name).join(' ')
+    ].filter(Boolean).join(' · ');
+    return `<button type="button" class="minion${selected ? ' selected' : ''}${C.hasGuard(cards, unit) ? ' guard' : ''}${unit.sick ? ' sick' : ''}${unit.attacked ? ' spent' : ''}" data-action="select-unit" data-board-seat="${seat}" data-slot="${slot}" data-seat="${seat}" data-iid="${esc(unit.iid)}" data-card="${esc(unit.card_id)}" data-sick="${unit.sick}" data-guard="${C.hasGuard(cards, unit)}" data-attack="${C.attackOf(cards, unit)}" data-durability="${unit.durability}">
+      <span class="portrait">${picture(card, 'board')}</span>
+      <span class="atk">${C.attackOf(cards, unit)}</span>
+      <span class="hp">${unit.durability}</span>
+      <span class="mname">${esc(card.name)}</span>
+      ${ribbons ? `<span class="ribbon">${esc(ribbons)}</span>` : ''}
     </button>`;
   }
-
-  function side(seat) {
+  function hero(seat) {
     const active = game.seat === seat && game.phase === 'main';
-    return `<section class="side${active ? ' active' : ''}" data-player="${seat}">
-      <div class="side-head">
-        <h2>${seatName(seat)}${active ? ' · 当前回合' : ''}</h2>
-        <button type="button" class="base-btn" data-action="hit-base" data-seat="${seat}">基地 <span class="hp" data-seat="${seat}" data-stat="base">${game.bases[seat]}</span></button>
-        <div class="stats">供电 <b data-seat="${seat}" data-stat="supply">${game.supply[seat]}</b> / 上限 <b data-seat="${seat}" data-stat="max-supply">${game.max_supply[seat]}</b>${game.supply[seat] > game.max_supply[seat] ? ' · 高于上限' : ''}</div>
-        <div class="stats">牌库 <b data-seat="${seat}" data-stat="deck">${game.decks[seat].length}</b> · 疲劳 <b data-seat="${seat}" data-stat="fatigue">${game.fatigue[seat]}</b> · 手牌 <b data-seat="${seat}" data-stat="hand">${game.hands[seat].length}</b></div>
+    const top = game.graves[seat].at(-1);
+    return `<aside class="hero${active ? ' active' : ''}">
+      <h2>${seatName(seat)}</h2>
+      <button type="button" class="base-btn" data-action="hit-base" data-seat="${seat}" aria-label="${seatName(seat)}基地"><span class="hp" data-seat="${seat}" data-stat="base">${game.bases[seat]}</span></button>
+      ${mana(seat)}
+      <div class="pile"><span>供电 <b data-seat="${seat}" data-stat="supply">${game.supply[seat]}</b>/<b data-seat="${seat}" data-stat="max-supply">${game.max_supply[seat]}</b></span></div>
+      <div class="pile">
+        <div class="deck-stack" data-seat="${seat}" data-stat="deck">${game.decks[seat].length}</div>
+        <div class="grave-stack">${top ? esc(cards[top].name) : '墓'}</div>
       </div>
-      <div class="slots">${game.boards[seat].map((unit, slot) => unitHtml(seat, slot, unit)).join('')}</div>
-      ${handHtml(seat)}
-      <ol class="grave" data-grave="${seat}">${game.graves[seat].map(id => `<li data-card="${esc(id)}">${esc(cards[id].name)}</li>`).join('') || '<li>墓地是空的</li>'}</ol>
-    </section>`;
+      <div class="pile">疲劳 <b data-seat="${seat}" data-stat="fatigue">${game.fatigue[seat]}</b> · 手牌 <b data-seat="${seat}" data-stat="hand">${game.hands[seat].length}</b></div>
+      <ol class="grave" data-grave="${seat}" hidden>${game.graves[seat].map(id => `<li data-card="${esc(id)}">${esc(cards[id].name)}</li>`).join('')}</ol>
+    </aside>`;
   }
 
   function catalog() {
@@ -217,7 +227,6 @@
     bits.push(promoteButtons());
     bits.push('<button type="button" data-action="support">小印支援厚壳</button>');
     bits.push('<button type="button" data-action="arm-knob">旋钮强化</button>');
-    bits.push('<button type="button" class="primary" data-action="end-turn">结束回合</button>');
     return bits.join('');
   }
 
@@ -268,7 +277,7 @@
     }).sort((a, b) => a.name.localeCompare(b.name, 'zh'));
     $('#app').innerHTML = `<header class="top">
       <div class="brand"><b>PULSE</b><span>扩展组牌</span></div>
-      <nav data-shared-entry="clash-home"><a data-nav="clash" href="./index.html">回合战</a><a data-nav="legacy" href="../index.html">旧版点数对局</a><span data-nav="wiki" data-wiki-slot="pending">图鉴</span></nav>
+      <nav class="pulse-nav" data-shared-entry="clash-home"><a href="../../index.html">大厅</a><a href="../../wiki/index.html">图鉴</a><a href="../index.html">旧版点数</a></nav>
       <button type="button" class="btn" data-action="scenario" data-scenario="lesson">返回教学局</button>
     </header>
     <main class="builder" data-scenario="builder" data-ruleset="${esc(content.ruleset_id)}">
@@ -295,43 +304,49 @@
   function render() {
     if (ui.scenario === 'builder') return renderBuilder();
     const over = game.winner == null ? '' : game.winner === 'draw' ? '平局' : `${seatName(game.winner)}获胜`;
-    $('#app').innerHTML = `<header class="top">
-      <div class="brand"><b>PULSE</b><span>脉冲对决 · 回合战</span></div>
-      <nav data-shared-entry="clash-home" aria-label="站点入口">
+    const active = game.seat;
+    $('#app').innerHTML = `<div class="table-page">
+    <header class="pulse-top">
+      <a class="pulse-brand" data-nav="lobby" href="../../index.html"><span class="pulse-mark">P</span><span><span class="pulse-name">PULSE</span><div class="pulse-sub">脉冲对决</div></span></a>
+      <nav class="pulse-nav" data-shared-entry="clash-home" aria-label="站点入口">
+        <a data-nav="lobby" href="../../index.html">大厅</a>
         <a data-nav="clash" href="./index.html" aria-current="page">回合战</a>
-        <a data-nav="legacy" href="../index.html" title="旧版点数对局在上一级页面。只发回合战压缩包时，这个链接不在包内。">旧版点数对局</a>
-        <!-- wiki-slot: 图鉴分支把下一行换成 <a data-nav="wiki" href="../wiki/">卡片图鉴</a>。不要把图鉴元数据当玩法数据。 -->
-        <span data-nav="wiki" data-wiki-slot="pending" title="图鉴由另一条分支接入。玩法数据只认卡表，不认图鉴，也不从版本号推星级。">图鉴</span>
+        <a data-nav="wiki" href="../../wiki/index.html">图鉴</a>
+        <a data-nav="legacy" href="../index.html">旧版点数</a>
       </nav>
       <div class="top-actions">
-        <button type="button" class="btn" data-action="toggle-reveal" aria-pressed="${ui.reveal}">${ui.reveal ? '遮住对方手牌' : '教学明牌'}</button>
-        <button type="button" class="btn" data-action="toggle-catalog">${ui.catalog ? '收起卡表' : '卡表 ' + roster.cards.length}</button>
-        <button type="button" class="btn" data-action="restart">重新开局</button>
+        <button type="button" data-action="toggle-reveal" aria-pressed="${ui.reveal}">${ui.reveal ? '遮住对方手牌' : '教学明牌'}</button>
+        <button type="button" data-action="restart">重新开局</button>
       </div>
     </header>
     ${ui.reveal ? '<div class="banner" id="reveal-banner">教学明牌 · 双方手牌都看得见 · 牌库仍只显示张数</div>' : '<div id="reveal-banner" hidden></div>'}
-    <p class="balance">首版数值，待试玩平衡。基地 20，供电上限 10，手牌 8，场位 5。鼠标本地双人，没有联网，也没有电脑对手。</p>
-    <main class="table" data-scenario="${esc(ui.scenario)}" data-ruleset="${esc(content.ruleset_id)}" data-source-commit="${esc(C.SOURCE_COMMIT)}">
-      <div class="scenario-row">
-        <button type="button" data-action="scenario" data-scenario="lesson">教学局</button>
-        <button type="button" data-action="scenario" data-scenario="support-present">战例：小印已在场</button>
-        <button type="button" data-action="scenario" data-scenario="support-deploy">战例：先打出小印</button>
-        <button type="button" data-action="scenario" data-scenario="support-again">战例：厚壳再死</button>
-        <button type="button" data-action="scenario" data-scenario="promote-stamp">战例：小印升星</button>
-        <button type="button" data-action="scenario" data-scenario="builder">扩展组牌</button>
+    <div class="scenario-row">
+      <button type="button" data-action="scenario" data-scenario="lesson">教学局</button>
+      <button type="button" data-action="scenario" data-scenario="support-present">战例：小印已在场</button>
+      <button type="button" data-action="scenario" data-scenario="support-deploy">战例：先打出小印</button>
+      <button type="button" data-action="scenario" data-scenario="support-again">战例：厚壳再死</button>
+      <button type="button" data-action="scenario" data-scenario="promote-stamp">战例：小印升星</button>
+      <button type="button" data-action="scenario" data-scenario="builder">扩展组牌</button>
+    </div>
+    <main class="table felt" data-scenario="${esc(ui.scenario)}" data-ruleset="${esc(content.ruleset_id)}" data-source-commit="${esc(C.SOURCE_COMMIT)}">
+      <div class="lanes">
+        <section class="half foe">${hero(1)}<div class="board-wrap"><div class="slots">${game.boards[1].map((unit, slot) => unitHtml(1, slot, unit)).join('')}</div>${active === 1 ? '' : handHtml(1, false)}</div></section>
+        <section class="half mine">${hero(0)}<div class="board-wrap"><div class="slots">${game.boards[0].map((unit, slot) => unitHtml(0, slot, unit)).join('')}</div>${active === 0 ? '' : handHtml(0, false)}</div></section>
       </div>
-      ${side(1)}
-      <section class="center">
-        <h3 id="turn-label" data-seat="${game.seat}">${over || seatName(game.seat) + '的回合'}</h3>
-        <p id="coach">${esc(coach())}</p>
-        <p id="last-error" data-code="${esc(ui.error ? ui.error.code : '')}">${ui.error ? esc(ui.error.message) + '（' + esc(ui.error.code) + '）' : '没有待处理的非法操作'}</p>
+      <aside class="mid">
+        <div class="turn-box">
+          <h3 id="turn-label" data-seat="${game.seat}">${over || seatName(game.seat) + '的回合'}</h3>
+          <p id="coach">${esc(coach())}</p>
+          <p id="last-error" data-code="${esc(ui.error ? ui.error.code : '')}">${ui.error ? esc(ui.error.message) + '（' + esc(ui.error.code) + '）' : ''}</p>
+        </div>
+        <button type="button" class="end-turn" data-action="end-turn">结束回合</button>
         <div class="action-row">${actions()}</div>
-        <ol id="action-log" class="log">${ui.log.slice().reverse().map(item => `<li${item.code ? ` class="bad" data-error-code="${esc(item.code)}"` : ''}>${esc(item.text)}</li>`).join('')}</ol>
-      </section>
-      ${side(0)}
-      ${catalog()}
-      <p class="foot">规则 ${esc(content.ruleset_id)} · 来源提交 ${esc(C.SOURCE_COMMIT)} · 教学 ${content.cards.length} 张，扩展 ${roster.cards.length} 张，另有没有对应图的基线牌。星级只认卡上的数字，版本号不算星。缺图用文字，不借别的卡图。数值待试玩。结算不看阵营和硬件型号。</p>
-    </main>`;
+        <ol id="action-log" class="log">${ui.log.slice(-4).reverse().map(item => `<li${item.code ? ` class="bad" data-error-code="${esc(item.code)}"` : ''}>${esc(item.text)}</li>`).join('')}</ol>
+      </aside>
+    </main>
+    <section class="hand-dock" aria-label="当前手牌"><h3>${seatName(active)}的手牌</h3>${handHtml(active, true)}</section>
+    <p class="foot">待试玩数值。有图的牌用图鉴里的对应 rid，没有图的基线牌用字标。版本号不算星级。</p>
+    </div>`;
     document.body.dataset.ready = '1';
     document.body.dataset.ruleset = content.ruleset_id;
   }

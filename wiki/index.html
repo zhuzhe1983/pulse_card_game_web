@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="PULSE 卡牌图鉴。96 张待验收美术、官方硬件资料，以及 pcg.clash.v0 待试玩设计。">
+<title>PULSE 卡牌图鉴</title>
+<link rel="stylesheet" href="../shared/pulse.css">
+<link rel="stylesheet" href="wiki.css">
+</head>
+<body>
+<a class="skip" href="#grid">跳到卡片</a>
+<header class="top">
+  <a class="pulse-brand brand" href="../index.html"><span class="pulse-mark">P</span><span><span class="pulse-name">PULSE</span><div class="pulse-sub">卡牌图鉴</div></span></a>
+  <div class="titles">
+    <p class="kicker">待试玩设计 · 美术未验收</p>
+    <h1>卡牌图鉴</h1>
+  </div>
+  <nav class="pulse-nav" aria-label="站点入口">
+    <a href="../index.html">大厅</a>
+    <a href="../dist/clash/index.html">回合战</a>
+    <a href="./index.html" aria-current="page">图鉴</a>
+    <a href="../dist/index.html">旧版点数</a>
+  </nav>
+  <p class="total-pill" id="total-pill">读取中</p>
+</header>
+<div class="banners">
+  <p class="banner art" id="art-banner">美术预览，尚未验收。页面上的出卡图不是已经能进对战的卡。</p>
+  <p class="banner wait" id="design-banner">设计状态是 playtest_draft。中文名和技能不是官方规格，网页对战是否已经接入以实际引擎为准。</p>
+</div>
+<div class="layout">
+  <form id="filters" role="search">
+    <label class="search" for="q">搜索中文名、官方型号或 rid
+      <input id="q" name="q" type="search" autocomplete="off" placeholder="例如 Stamp、H015、小喇叭" enterkeyhint="search">
+    </label>
+    <fieldset>
+      <legend>硬件 type</legend>
+      <p class="hint">按官方规格里有没有可编程主控划分，不是游戏角色或职业。</p>
+      <div class="chips" id="type-chips"></div>
+    </fieldset>
+    <fieldset>
+      <legend>官方系列</legend>
+      <p class="hint">取自文档路径，原样显示。没有系列的卡标成未归类，不猜测。</p>
+      <div class="chips" id="series-chips"></div>
+    </fieldset>
+    <fieldset>
+      <legend>型号前缀</legend>
+      <p class="hint">只方便浏览。不是新的官方分类，也不是成长家族。</p>
+      <div class="chips" id="group-chips"></div>
+    </fieldset>
+    <fieldset>
+      <legend>升星链</legend>
+      <p class="hint">只有设计包写明的修订才升星。星级画在卡图外面。</p>
+      <div class="chips" id="chain-chips"></div>
+    </fieldset>
+    <fieldset>
+      <legend>横向家族</legend>
+      <p class="hint">同族不同用途，不是上一级或下一级。</p>
+      <div class="chips" id="lateral-chips"></div>
+    </fieldset>
+    <fieldset>
+      <legend>星级</legend>
+      <div class="chips" id="star-chips"></div>
+    </fieldset>
+    <p class="keys" id="rules-note"></p>
+    <p class="keys">按 <kbd>/</kbd> 聚焦搜索。打开卡片后 <kbd>Esc</kbd> 或浏览器返回关闭，<kbd>←</kbd><kbd>→</kbd> 在当前结果里换卡。</p>
+    <p class="keys" id="source-line"></p>
+  </form>
+  <main>
+    <p class="result-line" aria-live="polite">显示 <strong id="result-count">0</strong> 张</p>
+    <div id="grid" class="grid"></div>
+  </main>
+</div>
+<dialog id="detail" aria-labelledby="detail-title"></dialog>
+<script src="catalog.js"></script>
+<script src="wiki.js"></script>
+</body>
+</html>

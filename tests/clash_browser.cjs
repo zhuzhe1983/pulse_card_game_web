@@ -62,7 +62,7 @@ async function connect(debuggerUrl) {
 
 async function main() {
   const server = spawn('python3', ['-m', 'http.server', String(port), '--bind', '127.0.0.1'], {
-    cwd: path.join(root, 'dist/clash'), stdio: ['ignore', 'pipe', 'pipe']
+    cwd: root, stdio: ['ignore', 'pipe', 'pipe']
   });
   const chrome = spawn(chromeBin, [
     '--headless=new', '--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage',
@@ -71,7 +71,7 @@ async function main() {
   ], { stdio: ['ignore', 'pipe', 'pipe'] });
   try {
     await waitFor(async () => {
-      const res = await get(`http://127.0.0.1:${port}/`);
+      const res = await get(`http://127.0.0.1:${port}/dist/clash/`);
       if (res.status !== 200 || !res.body.includes('pcg.clash.v0')) throw new Error('page not ready');
     }, 'static server');
     const pages = await waitFor(async () => {
@@ -87,7 +87,7 @@ async function main() {
       source: 'window.__errors=[];addEventListener("error",event=>window.__errors.push(String(event.message)));'
     });
     await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1100, deviceScaleFactor: 1, mobile: false });
-    await send('Page.navigate', { url: `http://127.0.0.1:${port}/` });
+    await send('Page.navigate', { url: `http://127.0.0.1:${port}/dist/clash/` });
     await waitFor(async () => {
       if (await value('document.body && document.body.dataset.ready') !== '1') throw new Error('not ready');
     }, 'app render');
@@ -281,6 +281,27 @@ async function main() {
     await click('[data-action="attack-base"]');
     eq(await text('[data-seat="1"][data-stat="base"]'), '18', '扩展对局里的牌能造成伤害');
     await shot('10-roster-play');
+    await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+    await shot('11-narrow-table');
+    const narrowOverflow = await value(`(() => {
+      const nodes = [...document.querySelectorAll('.end-turn, .playcard, .minion, .base-btn, .slot, .back')];
+      return nodes.some(node => { const r = node.getBoundingClientRect(); return r.width > 8 && (r.right > window.innerWidth + 4 || r.left < -4); });
+    })()`);
+    if (narrowOverflow) throw new Error('窄屏牌桌有控件伸出屏幕');
+    await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
+    await send('Page.navigate', { url: `http://127.0.0.1:${port}/` });
+    await waitFor(async () => { if (!(await value('document.body && document.body.innerText')).includes('同一套牌')) throw new Error('lobby'); }, 'lobby');
+    await shot('12-lobby');
+    await send('Page.navigate', { url: `http://127.0.0.1:${port}/wiki/` });
+    await waitFor(async () => { if ((await value('document.querySelector("#result-count") && document.querySelector("#result-count").textContent')) !== '96') throw new Error('wiki count'); }, 'wiki');
+    await shot('13-wiki-desktop');
+    await value(`document.querySelector('#q').value = '二代壳'; document.querySelector('#q').dispatchEvent(new Event('input', {bubbles:true}));`);
+    await waitFor(async () => { if ((await value('document.querySelector("#result-count").textContent')) !== '2') throw new Error('search'); }, 'wiki search');
+    await shot('14-wiki-search');
+    await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+    await send('Page.navigate', { url: `http://127.0.0.1:${port}/wiki/` });
+    await waitFor(async () => { if ((await value('document.querySelector("#result-count") && document.querySelector("#result-count").textContent')) !== '96') throw new Error('wiki narrow'); }, 'wiki narrow');
+    await shot('15-wiki-narrow');
     await errors();
     console.log('PASS browser lesson, support, promote and roster play');
   } finally {

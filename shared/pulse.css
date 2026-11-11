@@ -1,0 +1,90 @@
+/* Shared PULSE visual language. Same tokens as the original web client. */
+:root {
+  --bg: #f5f3ec;
+  --paper: #fffcf5;
+  --ink: #202934;
+  --muted: #788080;
+  --line: #dddcd2;
+  --accent: #da5c38;
+  --mint: #2c7665;
+  --gold: #d4a83e;
+  --dark: #19222c;
+  --radius: 14px;
+  font-family: Inter, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+  font-synthesis: none;
+}
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; }
+button, input, select, textarea { font: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: .42; }
+a { color: var(--mint); }
+img { max-width: 100%; }
+.pulse-top {
+  height: 72px;
+  padding: 0 max(18px, calc((100vw - 1320px) / 2));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(245, 243, 236, .97);
+}
+.pulse-brand {
+  display: flex;
+  gap: 11px;
+  align-items: center;
+  color: inherit;
+  text-decoration: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+.pulse-mark {
+  width: 34px;
+  height: 34px;
+  background: var(--ink);
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  color: #eae8db;
+  font-weight: 800;
+}
+.pulse-name { font-size: 22px; font-weight: 900; letter-spacing: .07em; line-height: 1; }
+.pulse-sub { font-size: 10px; letter-spacing: .16em; margin-top: 4px; color: var(--muted); }
+.pulse-nav { display: flex; align-items: center; gap: 22px; }
+.pulse-nav a {
+  color: #6d7475;
+  text-decoration: none;
+  font-size: 13px;
+  padding: 24px 0;
+  border-bottom: 2px solid transparent;
+}
+.pulse-nav a[aria-current="page"] { color: var(--ink); border-color: var(--accent); font-weight: 700; }
+.pulse-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 0;
+  background: var(--ink);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 650;
+  text-decoration: none;
+}
+.pulse-btn.primary { background: var(--accent); color: #fff; }
+.pulse-btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+.pulse-btn.light { background: #eeede5; color: var(--ink); border: 1px solid #dbdbd1; }
+button:focus-visible, a:focus-visible { outline: 3px solid #eea03d; outline-offset: 3px; }
+@media (max-width: 720px) {
+  .pulse-top { height: auto; min-height: 64px; padding: 10px 14px; flex-wrap: wrap; }
+  .pulse-sub { display: none; }
+  .pulse-nav { gap: 14px; width: 100%; }
+  .pulse-nav a { padding: 8px 0; }
+}
