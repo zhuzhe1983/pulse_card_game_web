@@ -2,22 +2,22 @@
   "ruleset_id": "pcg.clash.v0",
   "prompt_repo": "https://github.com/zhuzhe1983/pulse_card_game_prompt",
   "prompt_pr": 3,
-  "prompt_commit": "704411fcb6138a05f9fdf8c168a366b7a2bb8237",
+  "prompt_commit": "2752e13b584c184bd073cc31f139802237cb5f66",
   "prompt_commit_merged": false,
   "previous_playtest_commit": "5b85cc15305d3fcb1585d1096aa03b7c1766e3fe",
   "copied_from_handoff": {
-    "HEAD.txt": "704411fcb6138a05f9fdf8c168a366b7a2bb8237",
+    "HEAD.txt": "2752e13b584c184bd073cc31f139802237cb5f66",
     "content/clash_playtest.json": {
       "repo_path": "content/clash/clash_playtest.json",
-      "sha256": "5dbcd4692c6846891bcc530eef2ce060a8fc664d5a45bb82a6002dccac895909"
+      "sha256": "7011dfb45290a60b2274f5ea72f9dee4537e85f7a277ac3c6d862ed6f870fd17"
     },
     "fixtures/clash_v0_lesson.json": {
       "repo_path": "content/clash/clash_v0_lesson.json",
-      "sha256": "0acce84683c82c1e88f3009a41a083cbda48d28ff9b748a57831e199ca6b3b18"
+      "sha256": "856c6c9317953fbf8d4ab7137977680546e7d253a4ea251934cadfe00603e1a8"
     },
     "docs/01_GAMEPLAY.md": {
       "repo_path": "content/clash/01_GAMEPLAY.md",
-      "sha256": "dd1d5b48e8dbb39b48da6ea51b1b9af94a0075969aa1627e19f152541d47944d"
+      "sha256": "996e2ef51cbc7be9f514b10bc3dbb6db284634db2402a030fcfd1fc2362c3787"
     },
     "content/clash_roster_96.json": {
       "repo_path": "content/clash/clash_roster_96.json",
@@ -25,12 +25,12 @@
     },
     "docs/18_ROSTER_AND_GROWTH.md": {
       "repo_path": "content/clash/18_ROSTER_AND_GROWTH.md",
-      "sha256": "c4247c54aff064587ea8e215064e49d10336f84b5ed6a7771e5b9d193ee5c13f"
+      "sha256": "9fa9aa80fb5dbbc62d8705ca08a02bfe60bd29075ab1d970a91982700238cadb"
     },
     "WEB_IMPLEMENTATION_HANDOFF.md": {
       "repo_path": "content/clash/WEB_IMPLEMENTATION_HANDOFF.md",
-      "sha256": "981adf8b5460944564ee6ce46177a727d27b991985998c5292fab51df5b28969"
+      "sha256": "ebe70f017305fd188a49a17086267a96ca1a2a49973d96c5dca428ff4158cafa"
     }
   },
-  "note": "教学 12 张仍是上一份交接的原字节。96 张扩展、升星和入场效果以 704411fc 为准。结算不读阵营、美术 type、硬件型号或版本号。"
+  "note": "战场是有序队列，没有固定张数。96 张扩展和升星链的数值没有改。结算不读阵营、美术 type、硬件型号或版本号。"
 }

@@ -6,13 +6,13 @@
     "base_life": 20,
     "max_supply": 10,
     "hand_limit": 8,
-    "board_limit": 5,
+    "board_limit": null,
     "opening_hand": [
       3,
       4
     ]
   },
-  "note": "教学局不洗牌。牌库列表第 0 张在顶。结束回合后必须立刻开始对方回合，中间不能行动。非法行动不改变局面。",
+  "note": "教学局不洗牌。牌库列表第 0 张在顶。战场是有序队列，没有固定张数。结束回合后必须立刻开始对方回合。非法行动不改变局面。",
   "lesson_steps": [
     {
       "name": "t1_start",
@@ -73,19 +73,9 @@
               "sick": true,
               "guard": false,
               "attachments": []
-            },
-            null,
-            null,
-            null,
-            null
+            }
           ],
-          [
-            null,
-            null,
-            null,
-            null,
-            null
-          ]
+          []
         ]
       }
     },
@@ -145,19 +135,9 @@
               "sick": true,
               "guard": false,
               "attachments": []
-            },
-            null,
-            null,
-            null,
-            null
+            }
           ],
-          [
-            null,
-            null,
-            null,
-            null,
-            null
-          ]
+          []
         ]
       }
     },
@@ -243,10 +223,7 @@
               "sick": true,
               "guard": false,
               "attachments": []
-            },
-            null,
-            null,
-            null
+            }
           ],
           [
             {
@@ -257,11 +234,7 @@
               "sick": true,
               "guard": false,
               "attachments": []
-            },
-            null,
-            null,
-            null,
-            null
+            }
           ]
         ]
       }
@@ -327,7 +300,6 @@
         "winner": null,
         "boards": [
           [
-            null,
             {
               "iid": "u3",
               "card_id": "xiao_yin",
@@ -336,10 +308,7 @@
               "sick": true,
               "guard": false,
               "attachments": []
-            },
-            null,
-            null,
-            null
+            }
           ],
           [
             {
@@ -359,10 +328,7 @@
               "sick": true,
               "guard": false,
               "attachments": []
-            },
-            null,
-            null,
-            null
+            }
           ]
         ]
       }
@@ -443,14 +409,9 @@
               "sick": true,
               "guard": true,
               "attachments": []
-            },
-            null,
-            null,
-            null,
-            null
+            }
           ],
           [
-            null,
             {
               "iid": "u4",
               "card_id": "xi_tiao",
@@ -459,10 +420,7 @@
               "sick": true,
               "guard": false,
               "attachments": []
-            },
-            null,
-            null,
-            null
+            }
           ]
         ]
       }

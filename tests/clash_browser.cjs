@@ -97,6 +97,17 @@ async function main() {
       const found = await value(`(() => { const el = document.querySelector(${q(selector)}); if (!el) return ''; el.click(); return 'ok'; })()`);
       if (found !== 'ok') throw new Error('找不到 ' + selector);
     }
+    async function dblclick(selector) {
+      const box = await value(`(() => { const el = document.querySelector(${q(selector)}); if (!el) return null; const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + Math.min(r.height / 2, 24) }; })()`);
+      if (!box) throw new Error('找不到 ' + selector);
+      await send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: box.x, y: box.y });
+      await send('Input.dispatchMouseEvent', { type: 'mousePressed', x: box.x, y: box.y, button: 'left', clickCount: 1 });
+      await send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: box.x, y: box.y, button: 'left', clickCount: 1 });
+      await sleep(50);
+      await send('Input.dispatchMouseEvent', { type: 'mousePressed', x: box.x, y: box.y, button: 'left', clickCount: 2 });
+      await send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: box.x, y: box.y, button: 'left', clickCount: 2 });
+      await sleep(80);
+    }
     const text = selector => value(`(() => { const el = document.querySelector(${q(selector)}); return el ? el.textContent.trim() : null; })()`);
     const attr = (selector, name) => value(`(() => { const el = document.querySelector(${q(selector)}); return el ? el.getAttribute(${q(name)}) : null; })()`);
     const cardsIn = selector => value(`Array.from(document.querySelectorAll(${q(selector + ' [data-card]')})).map(el => el.getAttribute('data-card')).join(',')`);
@@ -113,7 +124,7 @@ async function main() {
     }
 
     eq(await attr('main.table', 'data-ruleset'), 'pcg.clash.v0', '规则编号');
-    eq(await attr('main.table', 'data-source-commit'), '704411fcb6138a05f9fdf8c168a366b7a2bb8237', '来源提交');
+    eq(await attr('main.table', 'data-source-commit'), '2752e13b584c184bd073cc31f139802237cb5f66', '来源提交');
     eq(await text('[data-seat="0"][data-stat="base"]'), '20', '先手基地');
     eq(await text('[data-seat="1"][data-stat="base"]'), '20', '后手基地');
     eq(await text('[data-seat="0"][data-stat="supply"]'), '1', '先手供电');
@@ -124,15 +135,24 @@ async function main() {
     if ((await text('#app')).includes('点阵哨')) throw new Error('开局页面露出了还在牌库里的点阵哨');
     await shot('01-opening');
 
-    await click('[data-action="select-hand"][data-card="xi_tiao"]');
-    await click('[data-action="play"]');
+    await dblclick('[data-action="select-hand"][data-card="xi_tiao"]');
+    eq(await value(`document.querySelectorAll('[data-board-seat="0"][data-card="xi_tiao"]').length`), 1, '双击只部署一次');
     eq(await attr('[data-board-seat="0"][data-slot="0"]', 'data-card'), 'xi_tiao', '细条入场');
     eq(await attr('[data-board-seat="0"][data-slot="0"]', 'data-sick'), 'true', '细条新入场');
     eq(await text('[data-seat="0"][data-stat="supply"]'), '0', '打出后供电');
+    const handAfter = await cardsIn('[data-hand-seat="0"]');
+    await dblclick('[data-action="select-hand"][data-card="xiao_yin"]');
+    eq(await text('[data-seat="0"][data-stat="supply"]'), '0', '电不足双击不扣电');
+    eq(await cardsIn('[data-hand-seat="0"]'), handAfter, '电不足双击不出牌');
+    eq(await attr('#last-error', 'data-code'), 'not_enough_supply', '电不足有提示');
     await click('[data-action="end-turn"]');
     eq(await attr('#turn-label', 'data-seat'), '1', '结束回合后立刻换人');
     eq(await text('[data-seat="1"][data-stat="supply"]'), '1', '后手起手供电');
     eq(await cardsIn('[data-hand-seat="1"]'), 'xi_tiao,hu_zhao,xiao_yin,gan_rao,jie_yi_ge_dian,dian_zhen', '后手抽到点阵哨');
+    await dblclick('[data-action="select-hand"][data-card="hu_zhao"]');
+    eq(await cardsIn('[data-hand-seat="1"]'), 'xi_tiao,hu_zhao,xiao_yin,gan_rao,jie_yi_ge_dian,dian_zhen', '配件双击不瞎装');
+    eq(await text('[data-seat="1"][data-stat="supply"]'), '1', '配件双击不扣电');
+    if (!(await text('#coach')).includes('目标')) throw new Error('配件双击没有进入选目标');
     await click('[data-action="select-hand"][data-card="jie_yi_ge_dian"]');
     await click('[data-action="play"]');
     eq(await text('[data-seat="1"][data-stat="supply"]'), '2', '借电后当前供电');
@@ -177,7 +197,7 @@ async function main() {
     eq(await attr('[data-board-seat="0"][data-slot="0"]', 'data-card'), 'dian_zhen', '先手只剩点阵哨');
     eq(await attr('[data-board-seat="0"][data-slot="0"]', 'data-sick'), 'true', '点阵哨新入场');
     eq(await attr('[data-board-seat="0"][data-slot="0"]', 'data-guard'), 'true', '点阵哨护卫');
-    eq(await attr('[data-board-seat="1"][data-slot="1"]', 'data-card'), 'xi_tiao', '后手细条留在原位');
+    eq(await attr('[data-board-seat="1"][data-slot="0"]', 'data-card'), 'xi_tiao', '后手细条收紧到最左');
     eq(await cardsIn('[data-grave="0"]'), 'xi_tiao,xiao_yin', '先手墓地顺序');
     eq(await cardsIn('[data-grave="1"]'), 'jie_yi_ge_dian,xiao_yin', '后手墓地顺序');
     await shot('03-turn-three');
@@ -197,11 +217,11 @@ async function main() {
     await click('[data-action="scenario"][data-scenario="support-present"]');
     await click('[data-action="support"]');
     eq(await text('[data-seat="0"][data-stat="supply"]'), '4', '支援扣 2');
-    eq(await attr('[data-board-seat="0"][data-slot="0"]', 'data-card'), 'xiao_yin', '小印留在原位');
-    eq(await attr('[data-board-seat="0"][data-slot="1"]', 'data-card'), 'hou_ke', '厚壳进最左空位');
-    eq(await attr('[data-board-seat="0"][data-slot="1"]', 'data-durability'), '6', '厚壳满耐久');
-    eq(await attr('[data-board-seat="0"][data-slot="1"]', 'data-guard'), 'true', '厚壳护卫');
-    eq(await attr('[data-board-seat="0"][data-slot="1"]', 'data-sick'), 'true', '厚壳新入场');
+    eq(await attr('[data-board-seat="0"][data-slot="0"]', 'data-card'), 'hou_ke', '厚壳插到最左');
+    eq(await attr('[data-board-seat="0"][data-slot="1"]', 'data-card'), 'xiao_yin', '小印被挤到右边');
+    eq(await attr('[data-board-seat="0"][data-slot="0"]', 'data-durability'), '6', '厚壳满耐久');
+    eq(await attr('[data-board-seat="0"][data-slot="0"]', 'data-guard'), 'true', '厚壳护卫');
+    eq(await attr('[data-board-seat="0"][data-slot="0"]', 'data-sick'), 'true', '厚壳新入场');
     eq(await cardsIn('[data-grave="0"]'), '', '厚壳离开墓地');
     await click('[data-action="support"]');
     eq(await attr('#last-error', 'data-code'), 'already_used_ability', '再支援');
@@ -235,8 +255,8 @@ async function main() {
     eq(await text('[data-seat="0"][data-stat="supply"]'), '4', '先支付登场费用');
     await click('[data-action="support"]');
     eq(await text('[data-seat="0"][data-stat="supply"]'), '2', '新入场的小印可以支援');
-    eq(await attr('[data-board-seat="0"][data-slot="0"]', 'data-card'), 'xiao_yin', '小印不离场');
-    eq(await attr('[data-board-seat="0"][data-slot="1"]', 'data-card'), 'hou_ke', '随后叫回厚壳');
+    eq(await attr('[data-board-seat="0"][data-slot="0"]', 'data-card'), 'hou_ke', '厚壳插到最左');
+    eq(await attr('[data-board-seat="0"][data-slot="1"]', 'data-card'), 'xiao_yin', '小印仍在场上');
     await click('[data-board-seat="0"][data-card="hou_ke"]');
     await click('[data-action="attack-base"]');
     eq(await attr('#last-error', 'data-code'), 'summoning_sickness', '厚壳不能攻击');
@@ -251,7 +271,7 @@ async function main() {
     await click('[data-action="select-hand"][data-card="gan_rao"]');
     await click('[data-board-seat="0"][data-card="hou_ke"]');
     eq(await cardsIn('[data-grave="0"]'), 'hou_ke', '厚壳进自己墓地');
-    eq(await attr('[data-board-seat="0"][data-slot="1"]', 'data-card'), 'xiao_yin', '小印留在位置 1');
+    eq(await attr('[data-board-seat="0"][data-slot="0"]', 'data-card'), 'xiao_yin', '死亡后队列收紧，小印到最左');
     await click('[data-action="end-turn"]');
     eq(await attr('#turn-label', 'data-seat'), '0', '结束后先手回合');
     eq(await text('[data-seat="0"][data-stat="supply"]'), '4', '先手回满');
@@ -281,6 +301,24 @@ async function main() {
     await click('[data-action="attack-base"]');
     eq(await text('[data-seat="1"][data-stat="base"]'), '18', '扩展对局里的牌能造成伤害');
     await shot('10-roster-play');
+    await click('[data-action="scenario"][data-scenario="grow"]');
+    const kept = await attr('[data-board-seat="0"][data-slot="0"]', 'data-iid');
+    await click('[data-action="select-hand"][data-card="xi_tiao"]');
+    await click('[data-action="play"]');
+    eq(await value(`document.querySelectorAll('[data-board-seat="0"][data-card]').length`), 6, '第 6 台排到最右');
+    eq(await attr('[data-board-seat="0"][data-slot="0"]', 'data-iid'), kept, '追加不挪动原来的最左');
+    eq(await attr('[data-board-seat="0"][data-slot="5"]', 'data-card'), 'xi_tiao', '新单位在最右');
+    await click('[data-action="support"]');
+    eq(await value(`document.querySelectorAll('[data-board-seat="0"][data-card]').length`), 7, '支援后是 7 台');
+    eq(await attr('[data-board-seat="0"][data-slot="0"]', 'data-card'), 'hou_ke', '第 7 台是插到最左的厚壳');
+    eq(await attr('[data-board-seat="0"][data-slot="1"]', 'data-iid'), kept, '原来的最左只是右移');
+    await click(`[data-iid="${kept}"]`);
+    await click('[data-board-seat="1"][data-card="hou_ke"]');
+    eq(await attr('[data-board-seat="1"][data-card="hou_ke"]', 'data-durability'), '4', '打中指定的厚壳');
+    eq(await attr('[data-board-seat="1"][data-card="xi_tiao"]', 'data-durability'), '4', '旁边的细条没有被误伤');
+    if (await value(`document.querySelectorAll('.socket').length`) !== 0) throw new Error('还在画固定空槽');
+    await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
+    await shot('10b-seven-units');
     await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
     await shot('11-narrow-table');
     const narrow = await value(`(() => {
@@ -304,7 +342,7 @@ async function main() {
       const handBox = hand.getBoundingClientRect();
       const endBox = end.getBoundingClientRect();
       const overlap = !(endBox.bottom <= handBox.top || endBox.top >= handBox.bottom);
-      const card = document.querySelector('.hands .playcard');
+      const card = [...document.querySelectorAll('.hands .playcard')].find(node => node.querySelector('img'));
       const art = card && card.querySelector('img');
       const supply = document.querySelector('.supply-read');
       return {

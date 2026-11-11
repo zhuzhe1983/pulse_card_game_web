@@ -4,7 +4,7 @@
   "base_life": 20,
   "max_supply": 10,
   "hand_limit": 8,
-  "board_limit": 5,
+  "board_limit": null,
   "opening_hand": [3, 4],
   "deck_size_min": 8,
   "deck_size_max": 12,

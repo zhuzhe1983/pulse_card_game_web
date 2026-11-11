@@ -1,0 +1,15 @@
+{
+  "status": "ready",
+  "slots": {
+    "arena_background": "scene/pulse-arena-bg-16x9.webp",
+    "core_frame": "scene/ui/core-portrait-frame-a.webp",
+    "core_frame_small": "scene/ui/core-portrait-frame-b.webp",
+    "unit_frame": "scene/ui/device-card-frame-c.webp",
+    "hand_frame": "scene/ui/device-card-frame-b.webp",
+    "end_turn": "scene/ui/end-turn-button-primary.webp",
+    "end_turn_compact": "scene/ui/end-turn-button-compact.webp",
+    "lamp_cost": "scene/ui/lamp-cost-cyan.webp",
+    "lamp_attack": "scene/ui/lamp-attack-amber.webp",
+    "lamp_durability": "scene/ui/lamp-durability-teal.webp"
+  }
+}
