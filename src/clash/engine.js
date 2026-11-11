@@ -1,13 +1,13 @@
 /* pcg.clash.v0 table rules.
- * Bound to prompt commit 2752e13b584c184bd073cc31f139802237cb5f66.
+ * Bound to prompt commit 64848ae38b276e370ec225f88f1498424ff68497.
  * Card numbers come from the playtest JSON. Combat reads kind, cost, attack,
  * durability, guard, bonuses and the closed effect list only.
  * star, family and version are stored when a pack supplies them and are not read here. */
 (function (root) {
   'use strict';
   const RULESET = 'pcg.clash.v0';
-  const SOURCE_COMMIT = '2752e13b584c184bd073cc31f139802237cb5f66';
-  const IMPLEMENTED_EFFECTS = Object.freeze(['support', 'knob', 'mend', 'damage', 'heal_base', 'supply', 'play_draw', 'play_damage']);
+  const SOURCE_COMMIT = '64848ae38b276e370ec225f88f1498424ff68497';
+  const IMPLEMENTED_EFFECTS = Object.freeze(['support', 'knob', 'mend', 'damage', 'heal_base', 'supply', 'play_draw', 'play_damage', 'draw_one', 'retrieve_grave', 'arm_aiflow', 'seize']);
   const IMPLEMENTED = new Set(IMPLEMENTED_EFFECTS);
 
   class ClashError extends Error {
@@ -125,6 +125,9 @@
       game.graves = [[], []];
       game.ability_used = [{}, {}];
       game.promoteBan = [[], []];
+      game.upper_links = [[], []];
+      game.upper_pulsed = [false, false];
+      game.aiflow_armed = [false, false];
       game.seat = 0;
       game.turns_started = [1, 0];
       game.phase = 'main';
@@ -148,6 +151,9 @@
       this.graves = [[], []];
       this.ability_used = [{}, {}];
       this.promoteBan = [[], []];
+      this.upper_links = [[], []];
+      this.upper_pulsed = [false, false];
+      this.aiflow_armed = [false, false];
       this.seat = 0;
       this.turns_started = [0, 0];
       this.phase = 'opening';
@@ -167,7 +173,138 @@
 
     event(text) { this.log.push(text); }
 
-    units(seat) { return this.boards[seat].filter(unit => unit != null); }
+    units(seat) { return this.boards[seat].filter(unit => unit && !unit.link); }
+
+    isChain(cardId) { return !!(this.cards[cardId] && this.cards[cardId].chain_piece); }
+
+    isUpperHost(cardId) { return !!(this.cards[cardId] && this.cards[cardId].upper_host); }
+
+    isEsp32Main(cardId) {
+      const card = this.cards[cardId];
+      if (!card || card.upper_host || card.kind !== 'main') return false;
+      if (card.esp32_main) return true;
+      const chips = card['official_' + 'main_chips'] || [];
+      const role = card['hardware_' + 'controller'];
+      return role === 'independent_host' && chips.join(' ').includes('ESP32');
+    }
+
+    formationState(seat) {
+      const line = this.boards[seat];
+      if (!line.length || line[0].link || this.cards[line[0].card_id].kind !== 'main') {
+        return { leader: false, chain_run: 0, percent: 0 };
+      }
+      let run = 0;
+      for (const entry of line.slice(1)) {
+        if (entry.link && this.isChain(entry.card_id)) run += 1;
+        else break;
+      }
+      return { leader: true, chain_run: run, percent: 10 + 5 * run };
+    }
+
+    strikePreview(seat, attackValue) {
+      if (attackValue <= 0) return 0;
+      let boosted = attackValue;
+      if (this.upper_links[seat].length) boosted += 1;
+      if (this.aiflow_armed[seat]) boosted += 2;
+      const percent = this.formationState(seat).percent;
+      return Math.floor((boosted * (100 + percent) + 99) / 100);
+    }
+
+    strikeDamage(seat, attackValue) {
+      if (attackValue <= 0) return 0;
+      let boosted = attackValue;
+      if (this.upper_links[seat].length) boosted += 1;
+      if (this.aiflow_armed[seat]) {
+        boosted += 2;
+        this.aiflow_armed[seat] = false;
+      }
+      const percent = this.formationState(seat).percent;
+      return Math.floor((boosted * (100 + percent) + 99) / 100);
+    }
+
+    effectiveMax(seat) {
+      const bonus = this.upper_links[seat].length ? 1 : 0;
+      return Math.min(10, this.max_supply[seat] + bonus);
+    }
+
+    dropUpperLinks(iid) {
+      for (const seat of [0, 1]) {
+        const kept = this.upper_links[seat].filter(link => link.source !== iid && link.target !== iid);
+        if (kept.length !== this.upper_links[seat].length) {
+          this.upper_links[seat] = kept;
+          if (!kept.length) this.supply[seat] = Math.min(this.supply[seat], this.max_supply[seat]);
+        }
+      }
+    }
+
+    placeLink(seat, cardId, hostIid, index = null) {
+      const link = this.makeUnit(seat, cardId, false, 1);
+      link.link = true;
+      link.host_iid = hostIid;
+      if (index == null) this.boards[seat].push(link);
+      else this.boards[seat].splice(index, 0, link);
+      this.reindex(seat);
+      this.event(`链节标记放到座位${seat}位置${link.slot}`);
+      return link;
+    }
+
+    removeLinks(seat, hostIid) {
+      this.boards[seat] = this.boards[seat].filter(unit => !(unit.link && unit.host_iid === hostIid));
+      this.reindex(seat);
+    }
+
+    seizeUnit(seat, foe) {
+      const old = foe.seat;
+      const links = this.boards[old].filter(entry => entry.link && entry.host_iid === foe.iid);
+      for (const entry of links) this.boards[old].splice(this.boards[old].indexOf(entry), 1);
+      this.boards[old].splice(this.boards[old].indexOf(foe), 1);
+      this.reindex(old);
+      foe.seat = seat;
+      foe.sick = true;
+      foe.ability_lock = true;
+      this.boards[seat].push(foe);
+      for (const entry of links) {
+        entry.seat = seat;
+        this.boards[seat].push(entry);
+      }
+      this.reindex(seat);
+      this.dropUpperLinks(foe.iid);
+      this.event(`夺舍，${this.cards[foe.card_id].name}改由座位${seat}控制，排到最右，本回合不能攻击`);
+    }
+
+    upperLink(seat, sourceId, targetId) {
+      this.requireMain(seat);
+      const sourceIid = this.resolveIid(seat, sourceId);
+      const targetIid = this.resolveIid(seat, targetId);
+      const sourceFound = this.find(sourceIid);
+      const targetFound = this.find(targetIid);
+      const source = sourceFound[2];
+      const target = targetFound[2];
+      if (sourceFound[0] !== seat || source.link || !this.isUpperHost(source.card_id)) {
+        throw new ClashError('来自上位的爱只能由己方上位机发动', 'bad_target');
+      }
+      if (source.ability_lock) throw new ClashError('这台单位本回合不能发动技能', 'seized_this_turn');
+      if (targetFound[0] !== seat || target.link || !this.isEsp32Main(target.card_id)) {
+        throw new ClashError('只能连到己方的 ESP32 主控', 'bad_target');
+      }
+      if (sourceIid === targetIid) throw new ClashError('不能连自己', 'bad_target');
+      if (this.upper_links[seat].some(item => item.source === sourceIid)) {
+        throw new ClashError('这台上位机已经连着', 'already_used_ability');
+      }
+      if (this.upper_links[seat].some(item => item.target === targetIid)) {
+        throw new ClashError('这台主控已经连着上位机', 'already_used_ability');
+      }
+      if (this.supply[seat] < 1) throw new ClashError('供电不足', 'not_enough_supply');
+      this.pay(seat, 1);
+      const wasEmpty = this.upper_links[seat].length === 0;
+      this.upper_links[seat].push({ source: sourceIid, target: targetIid });
+      if (wasEmpty && !this.upper_pulsed[seat]) {
+        this.supply[seat] = Math.min(10, this.supply[seat] + 1);
+        this.upper_pulsed[seat] = true;
+      }
+      this.supply[seat] = Math.min(this.supply[seat], this.effectiveMax(seat));
+      this.event('来自上位的爱接上');
+    }
 
     aliveCount(seat) { return this.units(seat).length; }
 
@@ -196,6 +333,8 @@
       this.turns_started[seat] += 1;
       this.ability_used[seat] = {};
       this.promoteBan[seat] = [];
+      this.upper_pulsed[seat] = false;
+      for (const unit of this.units(seat)) unit.ability_lock = false;
       const firstOpening = seat === 0 && this.turns_started[seat] === 1;
       if (firstOpening) {
         this.event(`座位${seat}回合开始：先手第1回合不抽牌`);
@@ -210,7 +349,7 @@
       }
       this.event(`座位${seat}场上原有单位解除新入场限制`);
       this.max_supply[seat] = Math.min(this.rules.maxSupply, this.max_supply[seat] + 1);
-      this.supply[seat] = this.max_supply[seat];
+      this.supply[seat] = this.effectiveMax(seat);
       this.phase = 'main';
       this.event(`座位${seat}供电上限${this.max_supply[seat]}，当前供电回满`);
     }
@@ -258,7 +397,8 @@
         sick,
         attacked: false,
         temp_attack: 0,
-        attachments: []
+        attachments: [],
+        ability_lock: false
       };
       this._nextId += 1;
       return unit;
@@ -304,6 +444,9 @@
           if (found[0] === seat) throw new ClashError('入场伤害只能指定敌方单位', 'bad_target');
         }
       } else if (card.kind === 'attachment') {
+        if (card.chain_piece && index != null && (!Number.isInteger(index) || index < 0 || index > this.boards[seat].length)) {
+          throw new ClashError('插入位置越界', 'bad_index');
+        }
         if (target == null) throw new ClashError('配件必须指定己方主控', 'bad_target');
         const found = this.find(this.resolveIid(seat, target));
         if (found[0] !== seat) throw new ClashError('配件只能装在己方主控上', 'bad_target');
@@ -329,6 +472,7 @@
       } else if (card.kind === 'attachment') {
         host.attachments.push(cardId);
         this.event(`${card.name}装到${this.cards[host.card_id].name}上`);
+        if (card.chain_piece) this.placeLink(seat, cardId, host.iid, index);
       } else {
         this.castSpell(seat, card, target, mode);
         this.graves[seat].push(cardId);
@@ -340,7 +484,20 @@
 
     prepareSpell(seat, card, target, mode) {
       const effect = card.effect;
-      if (effect === 'supply' || effect === 'heal_base') return;
+      if (effect === 'supply' || effect === 'heal_base' || effect === 'draw_one' || effect === 'retrieve_grave') return;
+      if (effect === 'arm_aiflow') {
+        if (this.aiflow_armed[seat]) throw new ClashError('说人话还没用掉', 'already_used_ability');
+        return;
+      }
+      if (effect === 'seize') {
+        if (target == null || target === 'base') throw new ClashError('夺舍只能指定敌方场上的主控', 'bad_target');
+        const foeFound = this.find(this.resolveIid(1 - seat, target));
+        const foe = foeFound[2];
+        if (foeFound[0] === seat || foe.link || this.cards[foe.card_id].kind !== 'main') {
+          throw new ClashError('夺舍只能指定敌方场上的主控', 'bad_target');
+        }
+        return;
+      }
       if (effect === 'damage') {
         if (target == null) throw new ClashError('干扰必须指定敌方单位', 'bad_target');
         const found = this.find(this.resolveIid(1 - seat, target));
@@ -384,6 +541,26 @@
         } else {
           throw new ClashError('补给要选择修复或临时强化', 'bad_target');
         }
+      } else if (effect === 'draw_one') {
+        this.draw(seat);
+      } else if (effect === 'retrieve_grave') {
+        if (!this.graves[seat].length) this.event('墓地是空的，记一笔没有取回');
+        else {
+          const recovered = this.graves[seat].pop();
+          if (this.hands[seat].length >= this.rules.handLimit) {
+            this.graves[seat].push(recovered);
+            this.event('手牌已满，记一笔没有取回');
+          } else {
+            this.hands[seat].push(recovered);
+            this.event(`记一笔取回${this.cards[recovered].name}`);
+          }
+        }
+      } else if (effect === 'arm_aiflow') {
+        this.aiflow_armed[seat] = true;
+        this.event('说人话：本回合下一次打击在百分比之前攻击+2');
+      } else if (effect === 'seize') {
+        const foe = this.find(this.resolveIid(1 - seat, target))[2];
+        this.seizeUnit(seat, foe);
       } else {
         throw new ClashError('未知战术');
       }
@@ -392,8 +569,12 @@
     support(seat) {
       this.requireMain(seat);
       const reviveId = this.capabilities.bindings.support.revive;
-      const sources = this.units(seat).filter(unit => this.cards[unit.card_id].effect === 'support');
-      if (sources.length < 1) throw new ClashError('场上要有一台小印才能支援', 'no_stamp_on_board');
+      const allSources = this.units(seat).filter(unit => this.cards[unit.card_id].effect === 'support');
+      const sources = allSources.filter(unit => !unit.ability_lock);
+      if (!sources.length) {
+        if (allSources.length) throw new ClashError('这台小印本回合不能支援', 'seized_this_turn');
+        throw new ClashError('场上要有一台小印才能支援', 'no_stamp_on_board');
+      }
       if (this.ability_used[seat].support) throw new ClashError('本回合已经支援过', 'already_used_ability');
       if (!this.graves[seat].includes(reviveId) || this.promoteBan[seat].includes(reviveId)) {
         throw new ClashError('墓地里没有可支援的厚壳工控', 'no_shell_in_grave');
@@ -438,6 +619,8 @@
       this.pay(seat, cost);
       this.takeHand(seat, nextId);
       if (kind === 'main') {
+        this.dropUpperLinks(unit.iid);
+        this.removeLinks(seat, unit.iid);
         const index = this.boards[seat].indexOf(unit);
         for (const attachment of unit.attachments.slice()) {
           this.graves[seat].push(attachment);
@@ -454,6 +637,9 @@
         this.graves[seat].push(currentId);
         this.promoteBan[seat].push(currentId);
         unit.attachments.push(nextId);
+        for (const entry of this.boards[seat]) {
+          if (entry.link && entry.host_iid === unit.iid && entry.card_id === currentId) entry.card_id = nextId;
+        }
         this.event(`${current.name}升成${next.name}，仍装在原宿主上`);
       }
       this.check_deaths();
@@ -469,6 +655,7 @@
       if (hostFound[0] !== seat || knobCard.effect !== 'knob') {
         throw new ClashError('只有己方旋钮台能调这一下', 'bad_target');
       }
+      if (hostFound[2].ability_lock) throw new ClashError('这台单位本回合不能发动技能', 'seized_this_turn');
       if (this.ability_used[seat].knob) throw new ClashError('本回合旋钮已经用过', 'already_used_ability');
       const allyFound = this.find(target);
       if (allyFound[0] !== seat) throw new ClashError('旋钮只能强化己方单位', 'bad_target');
@@ -486,13 +673,14 @@
       const atkFound = this.find(attackerId);
       if (atkFound[0] !== seat) throw new ClashError('不能操作对方的单位', 'bad_target');
       const attacker = atkFound[2];
+      if (attacker.link) throw new ClashError('链节标记不能攻击', 'bad_target');
       if (attacker.sick) throw new ClashError('新入场的单位本回合不能攻击', 'summoning_sickness');
       if (attacker.attacked) throw new ClashError('这台单位本回合已经攻击过', 'already_attacked');
       const guards = this.units(1 - seat).filter(unit => hasGuard(this.cards, unit));
       if (target === 'base') {
         if (guards.length && !bypassGuard(this.cards, attacker)) throw new ClashError('对方有护卫时只能攻击护卫', 'guard_blocks');
         attacker.attacked = true;
-        const damage = attackOf(this.cards, attacker);
+        const damage = this.strikeDamage(seat, attackOf(this.cards, attacker));
         this.bases[1 - seat] = Math.max(0, this.bases[1 - seat] - damage);
         this.event(`${this.cards[attacker.card_id].name}攻击基地，对方基地变为${this.bases[1 - seat]}`);
         this.check_bases();
@@ -501,12 +689,13 @@
       const defFound = this.find(this.resolveIid(1 - seat, target));
       if (defFound[0] === seat) throw new ClashError('不能攻击己方单位', 'bad_target');
       const defender = defFound[2];
+      if (defender.link) throw new ClashError('不能攻击链节标记', 'bad_target');
       if (guards.length && !guards.includes(defender) && !bypassGuard(this.cards, attacker)) {
         throw new ClashError('对方有护卫时只能攻击护卫', 'guard_blocks');
       }
       attacker.attacked = true;
-      const atkDamage = attackOf(this.cards, attacker);
-      const defDamage = attackOf(this.cards, defender);
+      const atkDamage = this.strikeDamage(seat, attackOf(this.cards, attacker));
+      const defDamage = this.strikeDamage(1 - seat, attackOf(this.cards, defender));
       attacker.durability = Math.max(0, attacker.durability - defDamage);
       defender.durability = Math.max(0, defender.durability - atkDamage);
       this.event(`${this.cards[attacker.card_id].name}与${this.cards[defender.card_id].name}同时结算，耐久变为${attacker.durability}和${defender.durability}`);
@@ -517,11 +706,14 @@
       const dead = [];
       for (const seat of [0, 1]) {
         for (const unit of this.boards[seat]) {
-          if (unit.durability <= 0) dead.push(unit);
+          if (!unit.link && unit.durability <= 0) dead.push(unit);
         }
       }
       for (const unit of dead) {
         const seat = unit.seat;
+        if (!this.boards[seat].includes(unit)) continue;
+        this.dropUpperLinks(unit.iid);
+        this.removeLinks(seat, unit.iid);
         for (const attachment of unit.attachments) {
           this.graves[seat].push(attachment);
           this.event(`${this.cards[attachment].name}随宿主进入墓地`);
@@ -554,20 +746,22 @@
         unit.temp_attack = 0;
         unit.attacked = false;
       }
-      this.supply[seat] = 0;
-      this.event(`座位${seat}回合结束，临时攻击加成清除，没用完的供电清零`);
+        this.supply[seat] = 0;
+        this.aiflow_armed[seat] = false;
+        this.event(`座位${seat}回合结束，临时攻击加成清除，没用完的供电清零`);
       this.seat = 1 - seat;
       this.phase = 'between';
     }
 
-    spawn(seat, cardId, index, durability = null, sick = false) {
+    spawn(seat, cardId, index = null, durability = null, sick = false) {
+      if (index == null) index = this.boards[seat].length;
       return this.insertUnit(seat, cardId, index, sick, durability);
     }
 
     view() {
       const show = unit => {
         if (!unit) return null;
-        return {
+        const shown = {
           iid: unit.iid,
           card_id: unit.card_id,
           durability: unit.durability,
@@ -576,6 +770,11 @@
           guard: hasGuard(this.cards, unit),
           attachments: unit.attachments.slice()
         };
+        if (unit.link) {
+          shown.link = true;
+          shown.host_iid = unit.host_iid;
+        }
+        return shown;
       };
       return {
         bases: this.bases.slice(),
@@ -587,7 +786,10 @@
         graves: this.graves.map(grave => grave.slice()),
         winner: this.winner,
         seat: this.seat,
-        phase: this.phase
+        phase: this.phase,
+        formation: [this.formationState(0), this.formationState(1)],
+        upper_links: this.upper_links.map(row => row.map(link => ({ source: link.source, target: link.target }))),
+        aiflow_armed: this.aiflow_armed.slice()
       };
     }
   }

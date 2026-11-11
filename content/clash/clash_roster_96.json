@@ -564,7 +564,8 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "摇杆节",
-      "amount": 0
+      "amount": 0,
+      "chain_piece": true
     },
     {
       "rid": "C001b",
@@ -610,7 +611,8 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "编码节",
-      "amount": 0
+      "amount": 0,
+      "chain_piece": true
     },
     {
       "rid": "C001c",
@@ -656,7 +658,8 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "角度节",
-      "amount": 0
+      "amount": 0,
+      "chain_piece": true
     },
     {
       "rid": "C001d",
@@ -702,7 +705,8 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "测距节",
-      "amount": 0
+      "amount": 0,
+      "chain_piece": true
     },
     {
       "rid": "C001e",
@@ -748,7 +752,8 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "红外节",
-      "amount": 0
+      "amount": 0,
+      "chain_piece": true
     },
     {
       "rid": "C001f",
@@ -794,7 +799,8 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "开关节",
-      "amount": 0
+      "amount": 0,
+      "chain_piece": true
     },
     {
       "rid": "C001g",
@@ -840,7 +846,8 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "麦节",
-      "amount": 0
+      "amount": 0,
+      "chain_piece": true
     },
     {
       "rid": "C001h",
@@ -886,7 +893,8 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "蜂鸣节",
-      "amount": 0
+      "amount": 0,
+      "chain_piece": true
     },
     {
       "rid": "C001i",
@@ -932,7 +940,8 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "彩灯节",
-      "amount": 0
+      "amount": 0,
+      "chain_piece": true
     },
     {
       "rid": "C001j",
@@ -978,7 +987,8 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "单声节",
-      "amount": 0
+      "amount": 0,
+      "chain_piece": true
     },
     {
       "rid": "C001z",
@@ -1024,7 +1034,8 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "一节键",
-      "amount": 0
+      "amount": 0,
+      "chain_piece": true
     },
     {
       "rid": "C002a",
@@ -1068,7 +1079,8 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "回传节",
-      "amount": 0
+      "amount": 0,
+      "chain_piece": true
     },
     {
       "rid": "C002b",
@@ -1112,7 +1124,8 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "固定节",
-      "amount": 0
+      "amount": 0,
+      "chain_piece": true
     },
     {
       "rid": "C002c",
@@ -1156,7 +1169,8 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "空节",
-      "amount": 0
+      "amount": 0,
+      "chain_piece": true
     },
     {
       "rid": "C002z",
@@ -1200,7 +1214,8 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "桥节",
-      "amount": 0
+      "amount": 0,
+      "chain_piece": true
     },
     {
       "rid": "C003",
@@ -1244,7 +1259,8 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "接上串",
-      "amount": 0
+      "amount": 0,
+      "chain_piece": true
     },
     {
       "rid": "C004a",
@@ -2086,7 +2102,8 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "串线舵机",
-      "amount": 0
+      "amount": 0,
+      "chain_piece": true
     },
     {
       "rid": "H003",
@@ -4302,7 +4319,9 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "零键",
-      "amount": 0
+      "amount": 0,
+      "upper_host": true,
+      "official_arch_note": "官方文档 https://docs.m5stack.com/en/CardputerZero 写明 CPU 为 RP3A0（BCM2837）四核 Cortex-A53，ARMv8-A。这只标记上位机资格，费用攻击耐久仍是 5/4/4。"
     },
     {
       "rid": "S001a",

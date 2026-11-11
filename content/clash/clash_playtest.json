@@ -5,7 +5,10 @@
   "max_supply": 10,
   "hand_limit": 8,
   "board_limit": null,
-  "opening_hand": [3, 4],
+  "opening_hand": [
+    3,
+    4
+  ],
   "deck_size_min": 8,
   "deck_size_max": 12,
   "minimum_main_units": 4,
@@ -33,7 +36,8 @@
       "hardware_controller": "independent_host",
       "art_type": null,
       "role_note": "主控单位。支援：支付 2 点供电，把墓地里的厚壳工控以满耐久召到空位。每回合限 1 次。小印留在场上。复活的厚壳本回合不能攻击。",
-      "hardware_note": "灵感是能独立运行的邮票形主机。卡名不写型号。它和厚壳工控没有芯片一对一绑定。"
+      "hardware_note": "灵感是能独立运行的邮票形主机。卡名不写型号。它和厚壳工控没有芯片一对一绑定。",
+      "esp32_main": true
     },
     {
       "template_id": "xi_tiao",
@@ -50,7 +54,8 @@
       "amount": 0,
       "series": "stick",
       "role_note": "主控单位。便宜的第一回合身体。",
-      "hardware_note": "灵感是细长的独立主机，不是外接条。"
+      "hardware_note": "灵感是细长的独立主机，不是外接条。",
+      "esp32_main": true
     },
     {
       "template_id": "dian_zhen",
@@ -67,7 +72,8 @@
       "amount": 0,
       "series": "atom",
       "role_note": "主控单位，自带护卫。",
-      "hardware_note": "灵感是带灯阵的独立小主机。"
+      "hardware_note": "灵感是带灯阵的独立小主机。",
+      "esp32_main": true
     },
     {
       "template_id": "xuan_niu",
@@ -84,7 +90,8 @@
       "amount": 1,
       "series": "dial",
       "role_note": "主控单位。你的回合支付 1 点供电，让一个己方单位本回合攻击 +1。每回合限 1 次。",
-      "hardware_note": "灵感是带旋钮的独立桌面主机。"
+      "hardware_note": "灵感是带旋钮的独立桌面主机。",
+      "esp32_main": true
     },
     {
       "template_id": "qiao_jian",
@@ -101,7 +108,8 @@
       "amount": 0,
       "series": "cardputer",
       "role_note": "主控单位。攻击高、耐久低。",
-      "hardware_note": "灵感是带键盘的掌上主机。不写成某一版型号，也不和厚壳工控混成同一张卡。"
+      "hardware_note": "灵感是带键盘的掌上主机。不写成某一版型号，也不和厚壳工控混成同一张卡。",
+      "esp32_main": true
     },
     {
       "template_id": "hou_ke",
@@ -121,7 +129,8 @@
       "hardware_controller": "independent_host",
       "art_type": null,
       "role_note": "主控单位，自带护卫。自己不能把小印从墓地叫回来。它死在墓地里时，要由场上的小印支援才能回来。",
-      "hardware_note": "灵感是机壳里已经焊有一块邮票主机的工控机。场上的小印是另一张卡，不是壳里那一块原装芯片。"
+      "hardware_note": "灵感是机壳里已经焊有一块邮票主机的工控机。场上的小印是另一张卡，不是壳里那一块原装芯片。",
+      "esp32_main": true
     },
     {
       "template_id": "lian_jie",
@@ -140,8 +149,9 @@
       "game_role": "attachment",
       "hardware_controller": "auxiliary_programmable_mcu",
       "art_type": null,
-      "role_note": "游戏角色是配件。装到一台己方主控上，使它攻击 +1。不占场位。宿主死亡时配件进墓地。这个角色不改写硬件结论。",
-      "hardware_note": "对应目录里的 Chain 节点。那些节点写的是 STM32G031 一类辅助可编程单片机，不是无主控。Chain DualKey 是另一条记录，主控是 ESP32-S3，能独立运行，链节不代表它。美术 type A/B 以后按该硬件的卡面家族填，不从游戏角色推导。"
+      "role_note": "游戏角色是配件。装到一台己方主控上，使它攻击 +1。同时在队伍里放一个链节标记，用来算连续 Chain。标记不能攻击，也不能被攻击。宿主离开或升星丢掉配件时，标记一起拿走，配件只进墓地一次。这个角色不改写硬件结论。",
+      "hardware_note": "对应目录里的 Chain 节点。那些节点写的是 STM32G031 一类辅助可编程单片机，不是无主控。Chain DualKey 是另一条记录，主控是 ESP32-S3，能独立运行，链节不代表它。美术 type A/B 以后按该硬件的卡面家族填，不从游戏角色推导。",
+      "chain_piece": true
     },
     {
       "template_id": "qian_li",
@@ -247,7 +257,25 @@
     "hardware_note": "规则代币，不是硬件。"
   },
   "decks": {
-    "first": ["xi_tiao", "xiao_yin", "bu_ji", "dian_zhen", "lian_jie", "hou_ke", "gan_rao", "qiao_jian"],
-    "second": ["xi_tiao", "hu_zhao", "xiao_yin", "gan_rao", "dian_zhen", "hui_chong", "hou_ke", "qiao_jian"]
+    "first": [
+      "xi_tiao",
+      "xiao_yin",
+      "bu_ji",
+      "dian_zhen",
+      "lian_jie",
+      "hou_ke",
+      "gan_rao",
+      "qiao_jian"
+    ],
+    "second": [
+      "xi_tiao",
+      "hu_zhao",
+      "xiao_yin",
+      "gan_rao",
+      "dian_zhen",
+      "hui_chong",
+      "hou_ke",
+      "qiao_jian"
+    ]
   }
 }

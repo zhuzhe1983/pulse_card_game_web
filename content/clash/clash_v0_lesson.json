@@ -12,7 +12,7 @@
       4
     ]
   },
-  "note": "教学局不洗牌。牌库列表第 0 张在顶。战场是有序队列，没有固定张数。结束回合后必须立刻开始对方回合。非法行动不改变局面。",
+  "note": "教学局不洗牌。牌库列表第 0 张在顶。战场是有序队列，没有固定张数。最左主控的打击按 10% 向上取整。结束回合后必须立刻开始对方回合。非法行动不改变局面。",
   "lesson_steps": [
     {
       "name": "t1_start",
@@ -171,7 +171,7 @@
       "expect": {
         "bases": [
           20,
-          19
+          18
         ],
         "supply": [
           0,
@@ -263,7 +263,7 @@
       "expect": {
         "bases": [
           20,
-          19
+          18
         ],
         "supply": [
           0,
@@ -294,7 +294,8 @@
             "xi_tiao"
           ],
           [
-            "jie_yi_ge_dian"
+            "jie_yi_ge_dian",
+            "xiao_yin"
           ]
         ],
         "winner": null,
@@ -311,15 +312,6 @@
             }
           ],
           [
-            {
-              "iid": "u2",
-              "card_id": "xiao_yin",
-              "durability": 1,
-              "attack": 2,
-              "sick": false,
-              "guard": false,
-              "attachments": []
-            },
             {
               "iid": "u4",
               "card_id": "xi_tiao",
@@ -353,7 +345,7 @@
       "do": "attack",
       "seat": 0,
       "attacker": "xiao_yin",
-      "target": "xiao_yin"
+      "target": "xi_tiao"
     },
     {
       "name": "t3_end",
@@ -362,7 +354,7 @@
       "expect": {
         "bases": [
           20,
-          19
+          18
         ],
         "supply": [
           0,
@@ -395,7 +387,8 @@
           ],
           [
             "jie_yi_ge_dian",
-            "xiao_yin"
+            "xiao_yin",
+            "xi_tiao"
           ]
         ],
         "winner": null,
@@ -411,17 +404,7 @@
               "attachments": []
             }
           ],
-          [
-            {
-              "iid": "u4",
-              "card_id": "xi_tiao",
-              "durability": 2,
-              "attack": 1,
-              "sick": true,
-              "guard": false,
-              "attachments": []
-            }
-          ]
+          []
         ]
       }
     }
