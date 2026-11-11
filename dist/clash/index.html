@@ -251,6 +251,7 @@ button { border: 0; color: inherit; background: none; font: inherit; }
 #coach { display: none; }
 #last-error { position: relative; margin: 0; min-height: 0; font-size: 14px; font-weight: 750; color: #ffb0a4; }
 #last-error:empty { display: none; }
+.table-notice { margin: 6px auto 0; max-width: 34em; padding: 6px 10px; border-radius: 10px; background: #3a2218f2; color: #fff6d8; border: 1px solid #e8a56a; font-size: 15px; font-weight: 800; line-height: 1.35; }
 .hand-dock { position: absolute; z-index: 6; left: 8%; right: 8%; bottom: calc(var(--sink) * -1); height: var(--hand-h); pointer-events: none; overflow: visible; }
 .hand-dock .playcard, .hand-dock .hands { pointer-events: auto; }
 .hands.fan { height: 100%; display: flex; justify-content: center; align-items: flex-end; overflow: visible; }
@@ -595,14 +596,14 @@ globalThis.PCGClashArt={"A001":{"card":"../../wiki/assets/card/A001__Hat_DAC2.we
 globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pulse-arena-bg-16x9.webp","core_frame":"scene/ui/core-portrait-frame-a.webp","core_frame_small":"scene/ui/core-portrait-frame-b.webp","unit_frame":"scene/ui/device-card-frame-c.webp","hand_frame":"scene/ui/device-card-frame-b.webp","end_turn":"scene/ui/end-turn-button-primary.webp","end_turn_compact":"scene/ui/end-turn-button-compact.webp","lamp_cost":"scene/ui/lamp-cost-cyan.webp","lamp_attack":"scene/ui/lamp-attack-amber.webp","lamp_durability":"scene/ui/lamp-durability-teal.webp"}};
 </script>
 <script>/* pcg.clash.v0 table rules.
- * Bound to prompt commit 7e4c56675a93dfe759b81daa8582003ddf579aec.
+ * Bound to prompt commit ead309b68815998a49e58b3d2823b94d692e11d2.
  * Card numbers come from the playtest JSON. Combat reads kind, cost, attack,
  * durability, guard, bonuses and the closed effect list only.
  * star, family and version are stored when a pack supplies them and are not read here. */
 (function (root) {
   'use strict';
   const RULESET = 'pcg.clash.v0';
-  const SOURCE_COMMIT = '7e4c56675a93dfe759b81daa8582003ddf579aec';
+  const SOURCE_COMMIT = 'ead309b68815998a49e58b3d2823b94d692e11d2';
   const IMPLEMENTED_EFFECTS = Object.freeze(['support', 'knob', 'mend', 'damage', 'heal_base', 'supply', 'play_draw', 'play_damage', 'draw_one', 'retrieve_grave', 'arm_aiflow', 'seize']);
   const IMPLEMENTED = new Set(IMPLEMENTED_EFFECTS);
   const REASON_TEXT = Object.freeze({
@@ -1573,91 +1574,120 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
     return { included, excluded };
   }
 
-  function takeCards(rng, list, count, used) {
-    const bag = shuffle(list.filter(card => !used.has(card.template_id)), rng);
-    const got = bag.slice(0, count);
-    got.forEach(card => used.add(card.template_id));
-    return got;
+  function isChainTop(card) {
+    return !!(card && card.growth_kind === 'chain' && card.star && !card.next_template_id);
+  }
+
+  function copyLimit(card) {
+    return isChainTop(card) ? 1 : 2;
+  }
+
+  function takeLimited(rng, list, count, used) {
+    const bag = shuffle(list.filter(card => (used[card.template_id] || 0) < copyLimit(card)), rng);
+    const chosen = [];
+    bag.forEach(card => {
+      if (chosen.length >= count) return;
+      if ((used[card.template_id] || 0) >= copyLimit(card)) return;
+      used[card.template_id] = (used[card.template_id] || 0) + 1;
+      chosen.push(card);
+    });
+    return chosen;
   }
 
   function deckShape(list) {
+    const counts = {};
+    list.forEach(card => { counts[card.template_id] = (counts[card.template_id] || 0) + 1; });
     return {
       size: list.length,
-      unique: new Set(list.map(card => card.template_id)).size === list.length,
       mains: list.filter(card => card.kind === 'main').length,
       lowMains: list.filter(card => card.kind === 'main' && card.cost <= 2).length,
       mid: list.filter(card => card.cost >= 3 && card.cost <= 5).length,
       high: list.filter(card => card.cost >= 6).length,
       parts: list.filter(card => card.kind === 'attachment').length,
-      topCheap: list.slice(0, 4).filter(card => card.cost <= 2).length
+      topCheap: list.slice(0, 4).filter(card => card.cost <= 2).length,
+      copiesOk: list.every(card => counts[card.template_id] <= copyLimit(card))
     };
   }
 
-  function shapeOk(shape, relaxed) {
-    if (!shape.unique || shape.mains < 4 || shape.lowMains < 1 || shape.size < 8) return false;
-    if (relaxed) return true;
-    return shape.size === 12 && shape.lowMains >= 2 && shape.mid >= 2 && shape.high >= 1 && shape.parts >= 2 && shape.topCheap >= 2;
+  function assembleSim(pool, rng, wantHigh, wantMid) {
+    const used = {};
+    const low = pool.filter(card => card.kind === 'main' && card.cost <= 2);
+    const mid = pool.filter(card => card.cost >= 3 && card.cost <= 5);
+    const high = pool.filter(card => card.cost >= 6);
+    const parts = pool.filter(card => card.kind === 'attachment');
+    const mains = pool.filter(card => card.kind === 'main');
+    let picked = [];
+    picked = picked.concat(takeLimited(rng, low, 5, used));
+    picked = picked.concat(takeLimited(rng, mid, wantMid, used));
+    picked = picked.concat(takeLimited(rng, high, wantHigh, used));
+    picked = picked.concat(takeLimited(rng, parts, 5, used));
+    const haveMains = picked.filter(card => card.kind === 'main').length;
+    if (haveMains < 10) picked = picked.concat(takeLimited(rng, mains, 10 - haveMains, used));
+    const rest = [];
+    pool.forEach(card => {
+      const room = copyLimit(card) - (used[card.template_id] || 0);
+      for (let n = 0; n < room; n += 1) rest.push(card);
+    });
+    shuffle(rest, rng).forEach(card => {
+      if (picked.length >= 30) return;
+      if ((used[card.template_id] || 0) >= copyLimit(card)) return;
+      used[card.template_id] = (used[card.template_id] || 0) + 1;
+      picked.push(card);
+    });
+    return picked.slice(0, 30);
   }
 
-  function orderDeck(picked, rng, notes) {
-    const cheap = picked.filter(card => card.cost <= 2);
-    const rest = picked.filter(card => card.cost > 2);
-    const top = cheap.slice(0, 2);
-    const body = shuffle(rest.concat(cheap.slice(2)), rng);
-    const ordered = top.concat(body);
-    if (ordered.slice(0, 4).filter(card => card.cost <= 2).length < 2) notes.push('牌池不足');
-    return ordered;
+  function openingWindow(deck) {
+    const byId = {};
+    deck.forEach(card => { byId[card.template_id] = card; });
+    const cheapCount = () => deck.slice(0, 4).filter(card => card.cost <= 2).length;
+    if (cheapCount() >= 2) return deck;
+    const later = [];
+    const early = [];
+    deck.forEach((card, index) => {
+      if (index >= 4 && card.cost <= 2) later.push(index);
+      if (index < 4 && card.cost > 2) early.push(index);
+    });
+    later.forEach((late, nth) => {
+      if (cheapCount() >= 2 || !early[nth] && early[nth] !== 0) return;
+      const slot = early[nth];
+      if (slot == null) return;
+      const swap = deck[slot];
+      deck[slot] = deck[late];
+      deck[late] = swap;
+    });
+    return deck;
   }
 
   function buildSimDeck(pool, rng) {
     const notes = [];
-    const mains = pool.filter(card => card.kind === 'main');
-    const parts = pool.filter(card => card.kind === 'attachment');
-    const lowMains = mains.filter(card => card.cost <= 2);
-    const mid = pool.filter(card => card.cost >= 3 && card.cost <= 5);
-    const high = pool.filter(card => card.cost >= 6);
-    let wantHigh = 1;
-    let wantMid = 2;
-    let relaxed = false;
-    function assemble() {
-      const used = new Set();
-      let picked = [];
-      picked = picked.concat(takeCards(rng, lowMains, Math.min(2, lowMains.length), used));
-      if (wantMid) picked = picked.concat(takeCards(rng, mid, wantMid, used));
-      if (wantHigh) picked = picked.concat(takeCards(rng, high, wantHigh, used));
-      const haveParts = picked.filter(card => card.kind === 'attachment').length;
-      if (haveParts < 2) picked = picked.concat(takeCards(rng, parts, 2 - haveParts, used));
-      const haveMains = picked.filter(card => card.kind === 'main').length;
-      if (haveMains < 4) picked = picked.concat(takeCards(rng, mains, 4 - haveMains, used));
-      const room = Math.max(0, 12 - picked.length);
-      picked = picked.concat(takeCards(rng, pool, room, used));
-      return picked.slice(0, 12);
-    }
-    let picked = assemble();
-    if (!shapeOk(deckShape(picked), false)) {
-      wantHigh = 0;
-      relaxed = true;
+    let wantHigh = 3;
+    let wantMid = 5;
+    let picked = assembleSim(pool, rng, wantHigh, wantMid);
+    let shape = deckShape(picked);
+    if (picked.length !== 30 || shape.high < 3) {
+      wantHigh = 1;
       notes.push('放宽高费');
-      picked = assemble();
+      picked = assembleSim(pool, rng, wantHigh, wantMid);
+      shape = deckShape(picked);
     }
-    if (!shapeOk(deckShape(picked), false) && wantMid > 1) {
-      wantMid = 1;
+    if (picked.length !== 30 || shape.mid < 5) {
+      wantMid = 2;
       notes.push('减少中费');
-      picked = assemble();
+      picked = assembleSim(pool, rng, wantHigh, wantMid);
+      shape = deckShape(picked);
     }
-    if (!shapeOk(deckShape(picked), true)) {
-      notes.push('牌池不足');
-      if (picked.length < 8) picked = picked.concat(pool.filter(card => !picked.some(item => item.template_id === card.template_id)).slice(0, 8 - picked.length));
-    }
-    const ordered = orderDeck(picked, rng, notes);
-    return { ids: ordered.map(card => card.template_id), notes, shape: deckShape(ordered) };
+    if (picked.length !== 30 || shape.lowMains < 1) notes.push('牌池不足');
+    const ordered = openingWindow(picked);
+    shape = deckShape(ordered);
+    if (shape.topCheap < 2) notes.push('牌池不足');
+    return { ids: ordered.map(card => card.template_id), notes, shape };
   }
 
   function buildSimDecks(pool, seed) {
-    const seed0 = seed >>> 0;
-    const left = buildSimDeck(pool, mulberry32(seed0 || 1));
-    const rightSeed = (Math.imul(seed0 || 1, 0x9E3779B1) >>> 0) || 1;
-    const right = buildSimDeck(pool, mulberry32(rightSeed));
+    const seed0 = seed >>> 0 || 1;
+    const left = buildSimDeck(pool, mulberry32(seed0));
+    const right = buildSimDeck(pool, mulberry32(seed0 + 1));
     return {
       seed: seed0,
       decks: [left.ids, right.ids],
@@ -1930,11 +1960,16 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
   const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
   const rules = pack.rules;
   const tokenId = pack.tokenId;
+  const batteryId = 'bei_yong_dian_chi';
   const cards = Object.create(null);
   Object.keys(pack.cards).forEach(id => { cards[id] = pack.cards[id]; });
   roster.cards.forEach(card => { cards[card.template_id] = card; });
   const services = root.PCGClashServices || { cards: [], design_hosts: [] };
   services.cards.concat(services.design_hosts || []).forEach(card => { cards[card.template_id] = card; });
+  cards[batteryId] = {
+    template_id: batteryId, name: '备用电池', kind: 'spell', cost: 0, attack: 0, durability: 0,
+    attack_bonus: 0, grants_guard: false, bypass_guard: false, guard: false, effect: 'supply', amount: 1
+  };
   const presetFirst = ['art_h039a', 'xiao_yin', 'art_h038a', 'hou_ke', 'dian_zhen', 'art_h027a', 'xuan_niu', 'art_h003', 'art_h025', 'lian_jie'];
   const presetSecond = ['art_h005', 'art_h007', 'qiao_jian', 'art_h032', 'art_h036', 'art_h036a', 'art_c004c', 'art_c004d', 'gan_rao', 'hu_zhao'];
   const seatName = seat => seat === 0 ? '先手' : '后手';
@@ -2055,10 +2090,12 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
         ui.seed = 0;
         ui.built = null;
       }
-      game = new C.Game(cards, first, second, rules, tokenId, pack.capabilities);
+      const matchRules = scenario === 'sim' ? Object.assign({}, rules, { handLimit: 10 }) : rules;
+      const matchToken = scenario === 'sim' ? batteryId : tokenId;
+      game = new C.Game(cards, first, second, matchRules, matchToken, pack.capabilities);
       game.start_turn();
       if (scenario === 'sim') {
-        push(`模拟战。种子 ${ui.seed}。可入池 ${ui.simPool} 张。你在下方，对方在上方。后手另发借一格电。${ui.simNotes ? ' ' + ui.simNotes : ''}`);
+        push(`模拟战。种子 ${ui.seed}。每副 30 张，可入池 ${ui.simPool} 张。先手 3 张，后手 4 张，另发备用电池。手牌上限 10。${ui.simNotes ? ' ' + ui.simNotes : ''}`);
       } else if (scenario === 'versus') {
         push('固定教学。你在下方，对方在上方。结束回合后对方自动行动。这不是模拟战。');
       } else {
@@ -2267,7 +2304,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
     burner_seize: 'scene/cards/art-seize-432x576.webp'
   };
   function picture(card, kind) {
-    if (card && card.template_id === tokenId) return `<img class="coin-lamp" src="scene/ui/lamp-power-on-amber-128.webp" alt="" draggable="false">`;
+    if (card && (card.template_id === tokenId || card.template_id === batteryId)) return `<img class="coin-lamp" src="scene/ui/lamp-power-on-amber-128.webp" alt="" draggable="false">`;
     const shot = card && artbook[card.rid];
     if (shot) return `<img src="${esc(kind === 'board' ? shot.char : shot.card)}" alt="" draggable="false">`;
     const paintedSrc = card && painted[card.template_id];
@@ -2300,7 +2337,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
       const nums = card.kind === 'main'
         ? `<span class="patk">${card.attack}</span><span class="php">${card.durability}</span>`
         : '';
-      const coin = id === tokenId ? ' coin' : '';
+      const coin = id === tokenId || id === batteryId ? ' coin' : '';
       const body = `<span class="cost">${card.cost}</span>${star ? `<span class="star">${star}星</span>` : ''}<span class="art">${picture(card, 'board')}</span><span class="cname">${esc(card.name)}</span>${nums}<span class="detail">${esc(blurb(card))}</span>`;
       const fan = ` style="--i:${index};--n:${count}"`;
       if (seat !== game.seat) return `<div class="playcard${coin}" ${sceneAttr('hand_frame')} data-card="${esc(id)}"${fan}>${body}<span class="statsline">教学明牌</span></div>`;
@@ -2710,7 +2747,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
     <main class="arena table${ui.attacker ? ' aiming' : ''}${canDeploy() ? ' holding' : ''}${ui.aiBusy ? ' ai-run' : ''}" data-scene-status="${esc(scenebook.status || 'awaiting_generated_assets')}" data-scenario="${esc(ui.scenario)}" data-ruleset="${esc(content.ruleset_id)}" data-source-commit="${esc(C.SOURCE_COMMIT)}" data-mode="${ui.mode}" data-opening="${esc(ui.opening)}" data-ai="${ui.aiBusy ? 'run' : 'idle'}" data-handoff="${ui.handoff ? '1' : '0'}" data-seed="${ui.seed || ''}" data-sim-pool="${ui.simPool || ''}" data-sim-excluded="${esc(ui.simExcluded || '')}" data-deck0="${esc(ui.built ? ui.built[0].join(',') : '')}" data-deck1="${esc(ui.built ? ui.built[1].join(',') : '')}">
       <div class="scene-bg" ${sceneAttr('arena_background')}></div>
       <div class="opp-dock">${handHtml(other, false)}</div>
-      ${(game.hands[1] || []).includes(tokenId) ? '<p class="compensation">后手补偿：多 1 张牌 + 借一格电</p>' : ''}
+      ${(game.hands[1] || []).includes(batteryId) ? '<p class="compensation">后手补偿：备用电池（0费，当前供电 +1）</p>' : (game.hands[1] || []).includes(tokenId) ? '<p class="compensation">后手补偿：多 1 张牌 + 借一格电</p>' : ''}
       <aside class="bays">${stack(other)}${stack(bottom)}</aside>
       <div class="mode-bar">
         <div class="mode-switch">
@@ -2728,6 +2765,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
         <p class="formation" data-formation="${game.formationState(active).percent}">${esc(formationLine(active))}</p>
         ${strikeHint()}
         <p id="coach">${esc(coach())}</p>
+        ${ui.notice ? `<p class="table-notice" data-notice="1">${esc(ui.notice)}</p>` : ''}
         <p id="last-error" data-code="${esc(ui.error ? ui.error.code : '')}">${ui.error ? esc(ui.error.message) : ''}</p>
       </div>
       ${ui.aiBusy ? '<p class="ai-banner">对方正在行动</p>' : ''}
@@ -2764,6 +2802,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
     if (!card) return note(new C.ClashError('请先选择手牌', 'not_in_hand'));
     const seat = game.seat;
     const bases = game.bases.slice();
+    const logBefore = game.log.length;
     try {
       game.play(seat, card.template_id, target == null ? null : target, mode || null, index == null ? null : index);
     } catch (error) {
@@ -2776,6 +2815,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
       const moved = game.find(target)[2];
       text += ` 夺舍：${cards[moved.card_id].name}改由${sideLabel(seat)}控制，移到${sideLabel(seat)}这一侧最右。`;
     }
+    soakLog(logBefore);
     push(text);
     clearChoice();
     render();
@@ -2901,9 +2941,20 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
     aiTimer = setTimeout(step, 220);
   }
 
+  function soakLog(before) {
+    const bits = [];
+    game.log.slice(before).forEach(line => {
+      const text = String(line);
+      if (text.includes('手牌已满')) bits.push(text + '。这张牌展示后烧毁，没有触发出场。');
+      if (text.includes('疲劳')) bits.push(text + '。疲劳打在自己的核心上。');
+    });
+    ui.notice = bits.join(' ');
+  }
+
   function endTurn() {
     if (ui.aiBusy) return;
     if (ui.mode === 'ai' && game.seat !== 0) return;
+    const logBefore = game.log.length;
     const next = 1 - game.seat;
     const deckBefore = game.decks[next].length;
     const handBefore = game.hands[next].length;
@@ -2928,6 +2979,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
     } else if (game.seat === 0 && game.turns_started[0] === 1) {
       text += ' 先手第 1 回合不抽牌。';
     }
+    soakLog(logBefore);
     push(text);
     ui.showBanner = true;
     if (ui.mode === 'hotseat' && game.winner == null) ui.handoff = true;

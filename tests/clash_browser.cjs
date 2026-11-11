@@ -129,7 +129,7 @@ async function main() {
     }
 
     eq(await attr('main.table', 'data-ruleset'), 'pcg.clash.v0', '规则编号');
-    eq(await attr('main.table', 'data-source-commit'), '7e4c56675a93dfe759b81daa8582003ddf579aec', '来源提交');
+    eq(await attr('main.table', 'data-source-commit'), 'ead309b68815998a49e58b3d2823b94d692e11d2', '来源提交');
     eq(await attr('.nfc-entry', 'data-nfc'), 'off', '这台桌面浏览器不能刷卡');
     if (await value(`document.querySelector('.nfc-entry').disabled`) !== true) throw new Error('刷卡入口没有禁用');
     const nfcText = await text('.nfc-entry');

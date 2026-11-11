@@ -1,12 +1,12 @@
 /* pcg.clash.v0 table rules.
- * Bound to prompt commit 7e4c56675a93dfe759b81daa8582003ddf579aec.
+ * Bound to prompt commit ead309b68815998a49e58b3d2823b94d692e11d2.
  * Card numbers come from the playtest JSON. Combat reads kind, cost, attack,
  * durability, guard, bonuses and the closed effect list only.
  * star, family and version are stored when a pack supplies them and are not read here. */
 (function (root) {
   'use strict';
   const RULESET = 'pcg.clash.v0';
-  const SOURCE_COMMIT = '7e4c56675a93dfe759b81daa8582003ddf579aec';
+  const SOURCE_COMMIT = 'ead309b68815998a49e58b3d2823b94d692e11d2';
   const IMPLEMENTED_EFFECTS = Object.freeze(['support', 'knob', 'mend', 'damage', 'heal_base', 'supply', 'play_draw', 'play_damage', 'draw_one', 'retrieve_grave', 'arm_aiflow', 'seize']);
   const IMPLEMENTED = new Set(IMPLEMENTED_EFFECTS);
   const REASON_TEXT = Object.freeze({
@@ -977,91 +977,120 @@
     return { included, excluded };
   }
 
-  function takeCards(rng, list, count, used) {
-    const bag = shuffle(list.filter(card => !used.has(card.template_id)), rng);
-    const got = bag.slice(0, count);
-    got.forEach(card => used.add(card.template_id));
-    return got;
+  function isChainTop(card) {
+    return !!(card && card.growth_kind === 'chain' && card.star && !card.next_template_id);
+  }
+
+  function copyLimit(card) {
+    return isChainTop(card) ? 1 : 2;
+  }
+
+  function takeLimited(rng, list, count, used) {
+    const bag = shuffle(list.filter(card => (used[card.template_id] || 0) < copyLimit(card)), rng);
+    const chosen = [];
+    bag.forEach(card => {
+      if (chosen.length >= count) return;
+      if ((used[card.template_id] || 0) >= copyLimit(card)) return;
+      used[card.template_id] = (used[card.template_id] || 0) + 1;
+      chosen.push(card);
+    });
+    return chosen;
   }
 
   function deckShape(list) {
+    const counts = {};
+    list.forEach(card => { counts[card.template_id] = (counts[card.template_id] || 0) + 1; });
     return {
       size: list.length,
-      unique: new Set(list.map(card => card.template_id)).size === list.length,
       mains: list.filter(card => card.kind === 'main').length,
       lowMains: list.filter(card => card.kind === 'main' && card.cost <= 2).length,
       mid: list.filter(card => card.cost >= 3 && card.cost <= 5).length,
       high: list.filter(card => card.cost >= 6).length,
       parts: list.filter(card => card.kind === 'attachment').length,
-      topCheap: list.slice(0, 4).filter(card => card.cost <= 2).length
+      topCheap: list.slice(0, 4).filter(card => card.cost <= 2).length,
+      copiesOk: list.every(card => counts[card.template_id] <= copyLimit(card))
     };
   }
 
-  function shapeOk(shape, relaxed) {
-    if (!shape.unique || shape.mains < 4 || shape.lowMains < 1 || shape.size < 8) return false;
-    if (relaxed) return true;
-    return shape.size === 12 && shape.lowMains >= 2 && shape.mid >= 2 && shape.high >= 1 && shape.parts >= 2 && shape.topCheap >= 2;
+  function assembleSim(pool, rng, wantHigh, wantMid) {
+    const used = {};
+    const low = pool.filter(card => card.kind === 'main' && card.cost <= 2);
+    const mid = pool.filter(card => card.cost >= 3 && card.cost <= 5);
+    const high = pool.filter(card => card.cost >= 6);
+    const parts = pool.filter(card => card.kind === 'attachment');
+    const mains = pool.filter(card => card.kind === 'main');
+    let picked = [];
+    picked = picked.concat(takeLimited(rng, low, 5, used));
+    picked = picked.concat(takeLimited(rng, mid, wantMid, used));
+    picked = picked.concat(takeLimited(rng, high, wantHigh, used));
+    picked = picked.concat(takeLimited(rng, parts, 5, used));
+    const haveMains = picked.filter(card => card.kind === 'main').length;
+    if (haveMains < 10) picked = picked.concat(takeLimited(rng, mains, 10 - haveMains, used));
+    const rest = [];
+    pool.forEach(card => {
+      const room = copyLimit(card) - (used[card.template_id] || 0);
+      for (let n = 0; n < room; n += 1) rest.push(card);
+    });
+    shuffle(rest, rng).forEach(card => {
+      if (picked.length >= 30) return;
+      if ((used[card.template_id] || 0) >= copyLimit(card)) return;
+      used[card.template_id] = (used[card.template_id] || 0) + 1;
+      picked.push(card);
+    });
+    return picked.slice(0, 30);
   }
 
-  function orderDeck(picked, rng, notes) {
-    const cheap = picked.filter(card => card.cost <= 2);
-    const rest = picked.filter(card => card.cost > 2);
-    const top = cheap.slice(0, 2);
-    const body = shuffle(rest.concat(cheap.slice(2)), rng);
-    const ordered = top.concat(body);
-    if (ordered.slice(0, 4).filter(card => card.cost <= 2).length < 2) notes.push('牌池不足');
-    return ordered;
+  function openingWindow(deck) {
+    const byId = {};
+    deck.forEach(card => { byId[card.template_id] = card; });
+    const cheapCount = () => deck.slice(0, 4).filter(card => card.cost <= 2).length;
+    if (cheapCount() >= 2) return deck;
+    const later = [];
+    const early = [];
+    deck.forEach((card, index) => {
+      if (index >= 4 && card.cost <= 2) later.push(index);
+      if (index < 4 && card.cost > 2) early.push(index);
+    });
+    later.forEach((late, nth) => {
+      if (cheapCount() >= 2 || !early[nth] && early[nth] !== 0) return;
+      const slot = early[nth];
+      if (slot == null) return;
+      const swap = deck[slot];
+      deck[slot] = deck[late];
+      deck[late] = swap;
+    });
+    return deck;
   }
 
   function buildSimDeck(pool, rng) {
     const notes = [];
-    const mains = pool.filter(card => card.kind === 'main');
-    const parts = pool.filter(card => card.kind === 'attachment');
-    const lowMains = mains.filter(card => card.cost <= 2);
-    const mid = pool.filter(card => card.cost >= 3 && card.cost <= 5);
-    const high = pool.filter(card => card.cost >= 6);
-    let wantHigh = 1;
-    let wantMid = 2;
-    let relaxed = false;
-    function assemble() {
-      const used = new Set();
-      let picked = [];
-      picked = picked.concat(takeCards(rng, lowMains, Math.min(2, lowMains.length), used));
-      if (wantMid) picked = picked.concat(takeCards(rng, mid, wantMid, used));
-      if (wantHigh) picked = picked.concat(takeCards(rng, high, wantHigh, used));
-      const haveParts = picked.filter(card => card.kind === 'attachment').length;
-      if (haveParts < 2) picked = picked.concat(takeCards(rng, parts, 2 - haveParts, used));
-      const haveMains = picked.filter(card => card.kind === 'main').length;
-      if (haveMains < 4) picked = picked.concat(takeCards(rng, mains, 4 - haveMains, used));
-      const room = Math.max(0, 12 - picked.length);
-      picked = picked.concat(takeCards(rng, pool, room, used));
-      return picked.slice(0, 12);
-    }
-    let picked = assemble();
-    if (!shapeOk(deckShape(picked), false)) {
-      wantHigh = 0;
-      relaxed = true;
+    let wantHigh = 3;
+    let wantMid = 5;
+    let picked = assembleSim(pool, rng, wantHigh, wantMid);
+    let shape = deckShape(picked);
+    if (picked.length !== 30 || shape.high < 3) {
+      wantHigh = 1;
       notes.push('放宽高费');
-      picked = assemble();
+      picked = assembleSim(pool, rng, wantHigh, wantMid);
+      shape = deckShape(picked);
     }
-    if (!shapeOk(deckShape(picked), false) && wantMid > 1) {
-      wantMid = 1;
+    if (picked.length !== 30 || shape.mid < 5) {
+      wantMid = 2;
       notes.push('减少中费');
-      picked = assemble();
+      picked = assembleSim(pool, rng, wantHigh, wantMid);
+      shape = deckShape(picked);
     }
-    if (!shapeOk(deckShape(picked), true)) {
-      notes.push('牌池不足');
-      if (picked.length < 8) picked = picked.concat(pool.filter(card => !picked.some(item => item.template_id === card.template_id)).slice(0, 8 - picked.length));
-    }
-    const ordered = orderDeck(picked, rng, notes);
-    return { ids: ordered.map(card => card.template_id), notes, shape: deckShape(ordered) };
+    if (picked.length !== 30 || shape.lowMains < 1) notes.push('牌池不足');
+    const ordered = openingWindow(picked);
+    shape = deckShape(ordered);
+    if (shape.topCheap < 2) notes.push('牌池不足');
+    return { ids: ordered.map(card => card.template_id), notes, shape };
   }
 
   function buildSimDecks(pool, seed) {
-    const seed0 = seed >>> 0;
-    const left = buildSimDeck(pool, mulberry32(seed0 || 1));
-    const rightSeed = (Math.imul(seed0 || 1, 0x9E3779B1) >>> 0) || 1;
-    const right = buildSimDeck(pool, mulberry32(rightSeed));
+    const seed0 = seed >>> 0 || 1;
+    const left = buildSimDeck(pool, mulberry32(seed0));
+    const right = buildSimDeck(pool, mulberry32(seed0 + 1));
     return {
       seed: seed0,
       decks: [left.ids, right.ids],

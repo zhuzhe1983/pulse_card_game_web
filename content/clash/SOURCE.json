@@ -2,9 +2,9 @@
   "ruleset_id": "pcg.clash.v0",
   "prompt_repo": "https://github.com/zhuzhe1983/pulse_card_game_prompt",
   "prompt_pr": 3,
-  "prompt_commit": "7e4c56675a93dfe759b81daa8582003ddf579aec",
+  "prompt_commit": "ead309b68815998a49e58b3d2823b94d692e11d2",
   "prompt_commit_merged": false,
-  "previous_playtest_commit": "7ba58fb399956409ebc60323e2cca595c46112a0",
+  "previous_playtest_commit": "7e4c56675a93dfe759b81daa8582003ddf579aec",
   "copied_from_handoff": {
     "HEAD.txt": "7ba58fb399956409ebc60323e2cca595c46112a0",
     "content/clash_playtest.json": {
@@ -44,5 +44,5 @@
       "sha256": "c822d56f24bf3cab474aa74d05511654877fd796a7429c9019f9c73e63d2682d"
     }
   },
-  "note": "刷卡出牌对齐 prompt 7e4c566 的第 21 篇。只在 Android Chrome 的 HTTPS 页面启用 NDEF。卡面数字没有改。"
+  "note": "模拟战改为每副 30 张。同名最多 2 张，成长链顶端最多 1 张。固定教学仍是 8 张短局和借一格电。后手自由对局另发备用电池。手牌上限 10。"
 }

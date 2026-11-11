@@ -42,7 +42,11 @@ check('the illustrated roster is the candidate pool', () => {
   });
 });
 
-check('many seeds deal two playable twelve-card decks and replay', () => {
+function chainTop(card) {
+  return !!(card && card.growth_kind === 'chain' && card.star && !card.next_template_id);
+}
+
+check('many seeds deal two 30-card decks and replay', () => {
   const seeds = [1, 2, 7, 42, 99, 123456, 0x7ba58fb3, 999983];
   const seen = new Set();
   const byId = Object.create(null);
@@ -55,36 +59,71 @@ check('many seeds deal two playable twelve-card decks and replay', () => {
     seen.add(JSON.stringify(once.decks));
     assert.notEqual(once.decks[0].join(','), once.decks[1].join(','));
     once.decks.forEach(deck => {
-      assert.equal(deck.length, 12);
-      assert.equal(new Set(deck).size, 12);
-      assert.equal(deck.includes('jie_yi_ge_dian'), false);
+      assert.equal(deck.length, 30);
+      assert.equal(deck.includes('jie_yi_ge_dian') || deck.includes('bei_yong_dian_chi'), false);
+      const counts = {};
+      deck.forEach(id => { counts[id] = (counts[id] || 0) + 1; });
+      Object.keys(counts).forEach(id => {
+        const card = byId[id];
+        assert.ok(card, id);
+        assert.ok(counts[id] <= (chainTop(card) ? 1 : 2));
+        if (chainTop(card)) assert.ok(counts[id] <= 1);
+      });
       const cards = deck.map(id => byId[id]);
-      assert.ok(cards.every(Boolean));
-      assert.ok(cards.filter(card => card.kind === 'main').length >= 4);
-      assert.ok(cards.filter(card => card.kind === 'main' && card.cost <= 2).length >= 2);
-      assert.ok(cards.filter(card => card.cost >= 3 && card.cost <= 5).length >= 2);
-      assert.ok(cards.filter(card => card.cost >= 6).length >= 1);
-      assert.ok(cards.filter(card => card.kind === 'attachment').length >= 2);
+      assert.ok(cards.filter(card => card.kind === 'main').length >= 10);
+      assert.ok(cards.filter(card => card.kind === 'attachment').length >= 5);
+      assert.ok(cards.filter(card => card.kind === 'main' && card.cost <= 2).length >= 5);
+      assert.ok(cards.filter(card => card.cost >= 3 && card.cost <= 5).length >= 5);
+      assert.ok(cards.filter(card => card.cost >= 6).length >= 3);
       assert.ok(cards.slice(0, 4).filter(card => card.cost <= 2).length >= 2);
     });
   });
   assert.equal(seen.size, seeds.length);
+  assert.equal(playtest.decks.first.length, 8);
+  assert.equal(playtest.hand_limit, 8);
 });
 
-check('a seeded deck can be played and the coin stays outside the twelve', () => {
+check('a 30-card deck deals 3 and 4, burns at 10, fatigues the core, and the spare battery is legal for the opponent', () => {
   const loaded = C.loadPack(playtest, caps);
   roster.cards.forEach(card => { loaded.cards[card.template_id] = card; });
+  loaded.cards.bei_yong_dian_chi = {
+    template_id: 'bei_yong_dian_chi', name: '备用电池', kind: 'spell', cost: 0, attack: 0, durability: 0,
+    attack_bonus: 0, grants_guard: false, bypass_guard: false, guard: false, effect: 'supply', amount: 1
+  };
   const built = C.buildSimDecks(catalog.included, 42);
-  const game = new C.Game(loaded.cards, built.decks[0], built.decks[1], loaded.rules, loaded.tokenId, loaded.capabilities);
+  const simRules = Object.assign({}, loaded.rules, { handLimit: 10 });
+  const game = new C.Game(loaded.cards, built.decks[0], built.decks[1], simRules, 'bei_yong_dian_chi', loaded.capabilities);
   game.start_turn();
-  assert.equal(game.hands[1].includes(loaded.tokenId), true);
-  assert.equal(built.decks[0].includes(loaded.tokenId), false);
-  assert.equal(built.decks[1].includes(loaded.tokenId), false);
-  game.supply[0] = 10;
-  const main = game.hands[0].find(id => loaded.cards[id].kind === 'main');
-  game.play(0, main, null, null, 0);
-  assert.equal(game.boards[0].some(unit => unit.card_id === main), true);
-  assert.equal(game.hands[0].includes(main), false);
+  assert.equal(game.hands[0].length, 3);
+  assert.equal(game.hands[1].length, 5);
+  assert.equal(game.hands[1].includes('bei_yong_dian_chi'), true);
+  assert.equal(game.decks[0].length, 27);
+  assert.equal(game.decks[1].length, 26);
+  assert.equal(built.decks[1].includes('bei_yong_dian_chi'), false);
+  const burned = C.Game.empty(loaded.cards, simRules, loaded.capabilities);
+  burned.hands[0] = new Array(10).fill('xiao_yin');
+  burned.decks[0] = ['art_h024'];
+  burned.draw(0);
+  assert.equal(burned.hands[0].length, 10);
+  assert.deepEqual(burned.graves[0], ['art_h024']);
+  const tired = C.Game.empty(loaded.cards, simRules, loaded.capabilities);
+  tired.decks[0] = [];
+  tired.bases[0] = 20;
+  tired.draw(0);
+  tired.draw(0);
+  assert.equal(tired.bases[0], 17);
+  assert.equal(tired.fatigue[0], 2);
+  const ai = C.Game.empty(loaded.cards, simRules, loaded.capabilities);
+  ai.seat = 1;
+  ai.hands[1] = ['bei_yong_dian_chi'];
+  ai.supply[1] = 1;
+  const action = C.planAi(C.aiView(ai), new Set());
+  assert.equal(action.type, 'play');
+  assert.equal(action.card, 'bei_yong_dian_chi');
+  C.applyAi(ai, action);
+  assert.equal(ai.supply[1], 2);
+  C.finishTurn(ai);
+  assert.equal(ai.supply[1], 0);
 });
 
 console.log('PASS', passed, 'sim', 'pool', catalog.included.length, 'excluded', catalog.excluded.length);

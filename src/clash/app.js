@@ -8,11 +8,16 @@
   const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
   const rules = pack.rules;
   const tokenId = pack.tokenId;
+  const batteryId = 'bei_yong_dian_chi';
   const cards = Object.create(null);
   Object.keys(pack.cards).forEach(id => { cards[id] = pack.cards[id]; });
   roster.cards.forEach(card => { cards[card.template_id] = card; });
   const services = root.PCGClashServices || { cards: [], design_hosts: [] };
   services.cards.concat(services.design_hosts || []).forEach(card => { cards[card.template_id] = card; });
+  cards[batteryId] = {
+    template_id: batteryId, name: '备用电池', kind: 'spell', cost: 0, attack: 0, durability: 0,
+    attack_bonus: 0, grants_guard: false, bypass_guard: false, guard: false, effect: 'supply', amount: 1
+  };
   const presetFirst = ['art_h039a', 'xiao_yin', 'art_h038a', 'hou_ke', 'dian_zhen', 'art_h027a', 'xuan_niu', 'art_h003', 'art_h025', 'lian_jie'];
   const presetSecond = ['art_h005', 'art_h007', 'qiao_jian', 'art_h032', 'art_h036', 'art_h036a', 'art_c004c', 'art_c004d', 'gan_rao', 'hu_zhao'];
   const seatName = seat => seat === 0 ? '先手' : '后手';
@@ -133,10 +138,12 @@
         ui.seed = 0;
         ui.built = null;
       }
-      game = new C.Game(cards, first, second, rules, tokenId, pack.capabilities);
+      const matchRules = scenario === 'sim' ? Object.assign({}, rules, { handLimit: 10 }) : rules;
+      const matchToken = scenario === 'sim' ? batteryId : tokenId;
+      game = new C.Game(cards, first, second, matchRules, matchToken, pack.capabilities);
       game.start_turn();
       if (scenario === 'sim') {
-        push(`模拟战。种子 ${ui.seed}。可入池 ${ui.simPool} 张。你在下方，对方在上方。后手另发借一格电。${ui.simNotes ? ' ' + ui.simNotes : ''}`);
+        push(`模拟战。种子 ${ui.seed}。每副 30 张，可入池 ${ui.simPool} 张。先手 3 张，后手 4 张，另发备用电池。手牌上限 10。${ui.simNotes ? ' ' + ui.simNotes : ''}`);
       } else if (scenario === 'versus') {
         push('固定教学。你在下方，对方在上方。结束回合后对方自动行动。这不是模拟战。');
       } else {
@@ -345,7 +352,7 @@
     burner_seize: 'scene/cards/art-seize-432x576.webp'
   };
   function picture(card, kind) {
-    if (card && card.template_id === tokenId) return `<img class="coin-lamp" src="scene/ui/lamp-power-on-amber-128.webp" alt="" draggable="false">`;
+    if (card && (card.template_id === tokenId || card.template_id === batteryId)) return `<img class="coin-lamp" src="scene/ui/lamp-power-on-amber-128.webp" alt="" draggable="false">`;
     const shot = card && artbook[card.rid];
     if (shot) return `<img src="${esc(kind === 'board' ? shot.char : shot.card)}" alt="" draggable="false">`;
     const paintedSrc = card && painted[card.template_id];
@@ -378,7 +385,7 @@
       const nums = card.kind === 'main'
         ? `<span class="patk">${card.attack}</span><span class="php">${card.durability}</span>`
         : '';
-      const coin = id === tokenId ? ' coin' : '';
+      const coin = id === tokenId || id === batteryId ? ' coin' : '';
       const body = `<span class="cost">${card.cost}</span>${star ? `<span class="star">${star}星</span>` : ''}<span class="art">${picture(card, 'board')}</span><span class="cname">${esc(card.name)}</span>${nums}<span class="detail">${esc(blurb(card))}</span>`;
       const fan = ` style="--i:${index};--n:${count}"`;
       if (seat !== game.seat) return `<div class="playcard${coin}" ${sceneAttr('hand_frame')} data-card="${esc(id)}"${fan}>${body}<span class="statsline">教学明牌</span></div>`;
@@ -788,7 +795,7 @@
     <main class="arena table${ui.attacker ? ' aiming' : ''}${canDeploy() ? ' holding' : ''}${ui.aiBusy ? ' ai-run' : ''}" data-scene-status="${esc(scenebook.status || 'awaiting_generated_assets')}" data-scenario="${esc(ui.scenario)}" data-ruleset="${esc(content.ruleset_id)}" data-source-commit="${esc(C.SOURCE_COMMIT)}" data-mode="${ui.mode}" data-opening="${esc(ui.opening)}" data-ai="${ui.aiBusy ? 'run' : 'idle'}" data-handoff="${ui.handoff ? '1' : '0'}" data-seed="${ui.seed || ''}" data-sim-pool="${ui.simPool || ''}" data-sim-excluded="${esc(ui.simExcluded || '')}" data-deck0="${esc(ui.built ? ui.built[0].join(',') : '')}" data-deck1="${esc(ui.built ? ui.built[1].join(',') : '')}">
       <div class="scene-bg" ${sceneAttr('arena_background')}></div>
       <div class="opp-dock">${handHtml(other, false)}</div>
-      ${(game.hands[1] || []).includes(tokenId) ? '<p class="compensation">后手补偿：多 1 张牌 + 借一格电</p>' : ''}
+      ${(game.hands[1] || []).includes(batteryId) ? '<p class="compensation">后手补偿：备用电池（0费，当前供电 +1）</p>' : (game.hands[1] || []).includes(tokenId) ? '<p class="compensation">后手补偿：多 1 张牌 + 借一格电</p>' : ''}
       <aside class="bays">${stack(other)}${stack(bottom)}</aside>
       <div class="mode-bar">
         <div class="mode-switch">
@@ -806,6 +813,7 @@
         <p class="formation" data-formation="${game.formationState(active).percent}">${esc(formationLine(active))}</p>
         ${strikeHint()}
         <p id="coach">${esc(coach())}</p>
+        ${ui.notice ? `<p class="table-notice" data-notice="1">${esc(ui.notice)}</p>` : ''}
         <p id="last-error" data-code="${esc(ui.error ? ui.error.code : '')}">${ui.error ? esc(ui.error.message) : ''}</p>
       </div>
       ${ui.aiBusy ? '<p class="ai-banner">对方正在行动</p>' : ''}
@@ -842,6 +850,7 @@
     if (!card) return note(new C.ClashError('请先选择手牌', 'not_in_hand'));
     const seat = game.seat;
     const bases = game.bases.slice();
+    const logBefore = game.log.length;
     try {
       game.play(seat, card.template_id, target == null ? null : target, mode || null, index == null ? null : index);
     } catch (error) {
@@ -854,6 +863,7 @@
       const moved = game.find(target)[2];
       text += ` 夺舍：${cards[moved.card_id].name}改由${sideLabel(seat)}控制，移到${sideLabel(seat)}这一侧最右。`;
     }
+    soakLog(logBefore);
     push(text);
     clearChoice();
     render();
@@ -979,9 +989,20 @@
     aiTimer = setTimeout(step, 220);
   }
 
+  function soakLog(before) {
+    const bits = [];
+    game.log.slice(before).forEach(line => {
+      const text = String(line);
+      if (text.includes('手牌已满')) bits.push(text + '。这张牌展示后烧毁，没有触发出场。');
+      if (text.includes('疲劳')) bits.push(text + '。疲劳打在自己的核心上。');
+    });
+    ui.notice = bits.join(' ');
+  }
+
   function endTurn() {
     if (ui.aiBusy) return;
     if (ui.mode === 'ai' && game.seat !== 0) return;
+    const logBefore = game.log.length;
     const next = 1 - game.seat;
     const deckBefore = game.decks[next].length;
     const handBefore = game.hands[next].length;
@@ -1006,6 +1027,7 @@
     } else if (game.seat === 0 && game.turns_started[0] === 1) {
       text += ' 先手第 1 回合不抽牌。';
     }
+    soakLog(logBefore);
     push(text);
     ui.showBanner = true;
     if (ui.mode === 'hotseat' && game.winner == null) ui.handoff = true;

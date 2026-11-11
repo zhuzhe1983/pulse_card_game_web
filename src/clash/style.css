@@ -153,6 +153,7 @@ button { border: 0; color: inherit; background: none; font: inherit; }
 #coach { display: none; }
 #last-error { position: relative; margin: 0; min-height: 0; font-size: 14px; font-weight: 750; color: #ffb0a4; }
 #last-error:empty { display: none; }
+.table-notice { margin: 6px auto 0; max-width: 34em; padding: 6px 10px; border-radius: 10px; background: #3a2218f2; color: #fff6d8; border: 1px solid #e8a56a; font-size: 15px; font-weight: 800; line-height: 1.35; }
 .hand-dock { position: absolute; z-index: 6; left: 8%; right: 8%; bottom: calc(var(--sink) * -1); height: var(--hand-h); pointer-events: none; overflow: visible; }
 .hand-dock .playcard, .hand-dock .hands { pointer-events: auto; }
 .hands.fan { height: 100%; display: flex; justify-content: center; align-items: flex-end; overflow: visible; }
