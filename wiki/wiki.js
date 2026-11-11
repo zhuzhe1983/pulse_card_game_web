@@ -147,7 +147,7 @@
       const alt = esc(card.official_product_name_en + (isTabBack(card) ? ' 主体缩略图，官方背面，不是正面' : ' 主体缩略图'));
       return `<button type="button" class="tile" data-rid="${esc(card.rid)}" id="tile-${esc(card.rid)}">
         ${back}
-        <span class="thumb"><img src="${esc(webPath(card, 'char_thumb_webp'))}" alt="${alt}" width="${Number(thumb.width) || 160}" height="${Number(thumb.height) || 160}" loading="lazy" decoding="async"></span>
+        <span class="thumb"><img src="${esc(webPath(card, 'char_thumb_webp'))}" alt="${alt}" width="${Number(thumb.width) || 160}" height="${Number(thumb.height) || 160}" loading="eager" decoding="async"></span>
         ${starMark(card)}
         <span class="meta"><span>${esc(card.rid)}</span><span class="type ${esc(card.type)}">${esc(card.type)}</span></span>
         <strong class="official">${esc(card.official_product_name_en)}</strong>
@@ -312,8 +312,8 @@
   function paintBanners() {
     const counts = pack.counts || {};
     $('#total-pill').textContent = cards.length + ' 张';
-    $('#art-banner').textContent = `美术预览，尚未验收。这里的 ${cards.length} 张图不是 ${cards.length} 张已经能进对战的卡。`;
-    $('#design-banner').textContent = `设计已按 ${pack.ruleset_id || 'pcg.clash.v0'} 规划，状态是 playtest_draft、待试玩。${counts.chains || 0} 条升星链、${counts.star1 || 0} 张一星、${counts.star2 || 0} 张二星，没有三星。中文名和技能不是官方规格。网页玩法正在接入，是否生效以实际引擎版本为准。`;
+    $('#art-banner').textContent = `美术预览，尚未验收。这 ${cards.length} 张图就是图鉴里的对应卡，对战牌桌用其中的主体图。`;
+    $('#design-banner').textContent = `设计已接到 ${pack.ruleset_id || 'pcg.clash.v0'}，状态仍是 playtest_draft、待试玩。${counts.chains || 0} 条升星链、${counts.star1 || 0} 张一星、${counts.star2 || 0} 张二星，没有三星。中文名和技能不是官方规格。`;
     const rules = pack.growth_rules || {};
     $('#rules-note').textContent = rules.cost ? '升星：' + rules.cost + '不降星。' : '';
     $('#source-line').textContent = pack.source_commit ? '设计来源 ' + pack.source_repo + ' ' + pack.source_commit : '';
