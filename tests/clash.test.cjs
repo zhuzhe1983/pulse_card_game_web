@@ -9,22 +9,22 @@ const root = path.resolve(__dirname, '..');
 const read = name => JSON.parse(fs.readFileSync(path.join(root, name), 'utf8'));
 const payload = () => read('content/clash/clash_playtest.json');
 const lesson = () => read('content/clash/clash_v0_lesson.json');
+const capabilities = () => read('content/clash/capabilities.json');
 const sha = file => crypto.createHash('sha256').update(fs.readFileSync(path.join(root, file))).digest('hex');
 
 function setup(data = payload()) {
-  const rules = C.rulesFromPayload(data);
-  const cards = C.loadCards(data);
-  return { data, rules, cards };
+  const loaded = C.loadPack(data, capabilities());
+  return { data, ...loaded };
 }
 
 function newGame() {
-  const { data, rules, cards } = setup();
-  return new C.Game(cards, data.decks.first, data.decks.second, rules, data.second_player_token.template_id);
+  const { data, rules, cards, tokenId, capabilities: caps } = setup();
+  return new C.Game(cards, data.decks.first, data.decks.second, rules, tokenId, caps);
 }
 
 function empty() {
-  const { rules, cards } = setup();
-  return C.Game.empty(cards, rules);
+  const { rules, cards, capabilities: caps } = setup();
+  return C.Game.empty(cards, rules, caps);
 }
 
 function fingerprint(game) {
@@ -97,9 +97,8 @@ check('series and hardware labels do not change the lesson', () => {
     card.hardware_controller = 'not-a-rules-input';
     card.art_type = 'B';
   }
-  const cards = C.loadCards(data);
-  const rules = C.rulesFromPayload(data);
-  const game = new C.Game(cards, data.decks.first, data.decks.second, rules);
+  const loaded = C.loadPack(data, capabilities());
+  const game = new C.Game(loaded.cards, data.decks.first, data.decks.second, loaded.rules, loaded.tokenId, loaded.capabilities);
   for (const step of lesson().lesson_steps) replayStep(game, step);
   assert.equal(game.bases[0], 20);
   assert.equal(game.bases[1], 19);
@@ -481,6 +480,65 @@ check('a newly entered unit may use the knob but may not attack', () => {
   game.knob(0, 'xuan_niu', 'xuan_niu');
   assert.equal(game.view().boards[0][0].attack, 2);
   unchanged(game, () => game.attack(0, 'xuan_niu', 'base'), 'summoning_sickness');
+});
+
+check('pack size is data, unknown effects and star ranks stay closed', () => {
+  const caps = capabilities();
+  assert.deepEqual(caps.effects, C.IMPLEMENTED_EFFECTS);
+  assert.deepEqual(caps.not_implemented, ['star_upgrade']);
+  const base = payload();
+  const extra = JSON.parse(JSON.stringify(base));
+  extra.cards.push(Object.assign({}, extra.cards.find(card => card.template_id === 'gan_rao'), {
+    template_id: 'extra_zap',
+    name: '额外干扰',
+    version: 'v1.3'
+  }));
+  const loaded = C.loadPack(extra, caps);
+  assert.equal(Object.keys(loaded.cards).length, 14);
+  assert.equal(C.starOf(loaded.cards.extra_zap), null);
+  assert.equal(C.familyOf(loaded.cards.extra_zap), null);
+  const game = C.Game.empty(loaded.cards, loaded.rules, loaded.capabilities);
+  game.supply = [2, 2];
+  game.hands = [['extra_zap'], []];
+  game.spawn(1, 'xi_tiao', 0);
+  game.play(0, 'extra_zap', 'xi_tiao');
+  assert.equal(game.units(1).length, 0);
+  assert.deepEqual(game.graves[1], ['xi_tiao']);
+  assert.equal(typeof game.promote, 'undefined');
+  assert.equal(typeof game.starUpgrade, 'undefined');
+
+  const marked = JSON.parse(JSON.stringify(base));
+  const stamp = marked.cards.find(card => card.template_id === 'xiao_yin');
+  stamp.star = 2;
+  stamp.family = 'stamp-host';
+  stamp.version = 'v1.1';
+  const ranked = C.loadPack(marked, caps);
+  assert.equal(C.starOf(ranked.cards.xiao_yin), 2);
+  assert.equal(C.familyOf(ranked.cards.xiao_yin), 'stamp-host');
+  assert.equal(C.attackOf(ranked.cards, { card_id: 'xiao_yin', attachments: [], temp_attack: 0 }), 2);
+  const played = new C.Game(ranked.cards, marked.decks.first, marked.decks.second, ranked.rules, ranked.tokenId, ranked.capabilities);
+  played.start_turn();
+  for (const step of lesson().lesson_steps.slice(1)) replayStep(played, step);
+  assert.deepEqual(played.bases, [20, 19]);
+
+  const invented = JSON.parse(JSON.stringify(base));
+  invented.cards[0] = Object.assign({}, invented.cards[0], { effect: 'rush', version: 'v1.2' });
+  assert.throws(() => C.loadPack(invented, caps), error => error instanceof C.ClashError && error.code === 'unsupported_effect');
+  const widened = JSON.parse(JSON.stringify(caps));
+  widened.effects = caps.effects.concat('star_upgrade');
+  assert.throws(() => C.loadPack(base, widened), error => error instanceof C.ClashError && error.code === 'unsupported_effect');
+  const secondSupport = JSON.parse(JSON.stringify(base));
+  secondSupport.cards.push(Object.assign({}, secondSupport.cards.find(card => card.template_id === 'xiao_yin'), {
+    template_id: 'another_stamp',
+    name: '另一台小印'
+  }));
+  assert.throws(() => C.loadPack(secondSupport, caps), error => error instanceof C.ClashError && error.code === 'binding_mismatch');
+  assert.equal(C.starOf({ version: 'v1.3' }), null);
+  assert.equal(C.starOf({ star: 2, version: 'v1.1' }), 2);
+  assert.equal(C.familyOf({ family: 'stamp-host', series: 'other' }), 'stamp-host');
+  const badStar = JSON.parse(JSON.stringify(base));
+  badStar.cards[0].star = 'v1.3';
+  assert.throws(() => C.loadPack(badStar, caps), error => error instanceof C.ClashError && error.code === 'bad_star');
 });
 
 console.log('PASS clash', passed, 'groups');

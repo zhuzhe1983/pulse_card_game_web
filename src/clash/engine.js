@@ -1,11 +1,14 @@
 /* pcg.clash.v0 table rules.
  * Bound to prompt commit 5b85cc15305d3fcb1585d1096aa03b7c1766e3fe.
  * Card numbers come from the playtest JSON. Combat reads kind, cost, attack,
- * durability, guard, bonuses and effect only. */
+ * durability, guard, bonuses and the closed effect list only.
+ * star, family and version are stored when a pack supplies them and are not read here. */
 (function (root) {
   'use strict';
   const RULESET = 'pcg.clash.v0';
   const SOURCE_COMMIT = '5b85cc15305d3fcb1585d1096aa03b7c1766e3fe';
+  const IMPLEMENTED_EFFECTS = Object.freeze(['support', 'knob', 'mend', 'damage', 'heal_base', 'supply']);
+  const IMPLEMENTED = new Set(IMPLEMENTED_EFFECTS);
 
   class ClashError extends Error {
     constructor(message, code = 'rejected') {
@@ -21,6 +24,63 @@
     const token = payload.second_player_token;
     cards[token.template_id] = Object.assign({}, token);
     return cards;
+  }
+
+  function starOf(card) {
+    if (!card || card.star == null) return null;
+    if (card.star === 1 || card.star === 2 || card.star === 3) return card.star;
+    return null;
+  }
+
+  function familyOf(card) {
+    if (!card || typeof card.family !== 'string') return null;
+    const family = card.family.trim();
+    return family ? family : null;
+  }
+
+  function validateCard(card) {
+    if (card.effect != null && !IMPLEMENTED.has(card.effect)) {
+      throw new ClashError('还没有这个效果：' + card.effect, 'unsupported_effect');
+    }
+    if (Object.prototype.hasOwnProperty.call(card, 'star') && starOf(card) == null) {
+      throw new ClashError('星级只能是卡数据里的 1、2 或 3', 'bad_star');
+    }
+    if (Object.prototype.hasOwnProperty.call(card, 'family') && familyOf(card) == null) {
+      throw new ClashError('家族必须是卡面上的非空字符串', 'bad_family');
+    }
+  }
+
+  function loadPack(payload, capabilities) {
+    if (!payload || payload.ruleset_id !== RULESET) throw new ClashError('规则集不是 pcg.clash.v0', 'unsupported_effect');
+    if (!capabilities || capabilities.ruleset_id !== RULESET || !Array.isArray(capabilities.effects)) {
+      throw new ClashError('能力契约不属于这一规则集', 'unsupported_effect');
+    }
+    for (const effect of capabilities.effects) {
+      if (!IMPLEMENTED.has(effect)) throw new ClashError('能力契约里有尚未实现的效果 ' + effect, 'unsupported_effect');
+    }
+    for (const effect of IMPLEMENTED_EFFECTS) {
+      if (!capabilities.effects.includes(effect)) throw new ClashError('能力契约少了已实现的效果 ' + effect, 'unsupported_effect');
+    }
+    const seen = new Set();
+    for (const card of payload.cards) {
+      if (seen.has(card.template_id)) throw new ClashError('卡牌编号重复', 'bad_card');
+      seen.add(card.template_id);
+      validateCard(card);
+    }
+    validateCard(payload.second_player_token);
+    const supportCards = payload.cards.filter(card => card.effect === 'support');
+    const support = capabilities.bindings && capabilities.bindings.support;
+    if (!support || supportCards.length !== 1 || supportCards[0].template_id !== support.source || supportCards[0].kind !== 'main') {
+      throw new ClashError('支援绑定和卡表不一致', 'binding_mismatch');
+    }
+    const knobCards = payload.cards.filter(card => card.effect === 'knob');
+    const knob = capabilities.bindings.knob;
+    if (!knob || knobCards.length !== 1 || knobCards[0].template_id !== knob.source || knobCards[0].kind !== 'main' || knob.temp_attack !== 1) {
+      throw new ClashError('旋钮绑定和卡表不一致', 'binding_mismatch');
+    }
+    const cards = loadCards(payload);
+    if (!cards[support.revive]) throw new ClashError('支援目标不在卡表里', 'binding_mismatch');
+    return { cards, rules: rulesFromPayload(payload), tokenId: payload.second_player_token.template_id, capabilities };
   }
 
   function rulesFromPayload(payload) {
@@ -48,10 +108,11 @@
   }
 
   class Game {
-    static empty(cards, rules) {
+    static empty(cards, rules, capabilities) {
       const game = Object.create(Game.prototype);
       game.cards = cards;
       game.rules = rules;
+      game.capabilities = capabilities;
       game.bases = [rules.baseLife, rules.baseLife];
       game.max_supply = [0, 0];
       game.supply = [0, 0];
@@ -70,9 +131,10 @@
       return game;
     }
 
-    constructor(cards, deck0, deck1, rules, tokenId = 'jie_yi_ge_dian') {
+    constructor(cards, deck0, deck1, rules, tokenId = 'jie_yi_ge_dian', capabilities = null) {
       this.cards = cards;
       this.rules = rules;
+      this.capabilities = capabilities;
       this.bases = [rules.baseLife, rules.baseLife];
       this.max_supply = [0, 0];
       this.supply = [0, 0];
@@ -302,37 +364,42 @@
 
     support(seat) {
       this.requireMain(seat);
-      const sources = this.units(seat).filter(unit => unit.card_id === 'xiao_yin');
-      if (sources.length !== 1) throw new ClashError('场上要有一台小印才能支援', 'no_stamp_on_board');
-      if (this.ability_used[seat].xiao_yin) throw new ClashError('本回合已经支援过', 'already_used_ability');
-      if (!this.graves[seat].includes('hou_ke')) throw new ClashError('墓地里没有厚壳工控', 'no_shell_in_grave');
+      const binding = this.capabilities.bindings.support;
+      const source = this.cards[binding.source];
+      const revived = this.cards[binding.revive];
+      const sources = this.units(seat).filter(unit => unit.card_id === binding.source);
+      if (sources.length !== 1) throw new ClashError(`场上要有一台${source.name}才能支援`, 'no_stamp_on_board');
+      if (this.ability_used[seat][binding.source]) throw new ClashError('本回合已经支援过', 'already_used_ability');
+      if (!this.graves[seat].includes(binding.revive)) throw new ClashError(`墓地里没有${revived.name}`, 'no_shell_in_grave');
       if (this.aliveCount(seat) >= this.rules.boardLimit) throw new ClashError('场上没有空位', 'board_full');
-      const cost = this.cards.xiao_yin.amount;
+      const cost = source.amount;
       if (this.supply[seat] < cost) throw new ClashError('供电不足', 'not_enough_supply');
       this.pay(seat, cost);
-      this.ability_used[seat].xiao_yin = 1;
-      this.graves[seat].splice(this.graves[seat].indexOf('hou_ke'), 1);
-      this.event('小印支援，厚壳工控离开墓地');
-      return this.placeNew(seat, 'hou_ke');
+      this.ability_used[seat][binding.source] = 1;
+      this.graves[seat].splice(this.graves[seat].indexOf(binding.revive), 1);
+      this.event(`${source.name}支援，${revived.name}离开墓地`);
+      return this.placeNew(seat, binding.revive);
     }
 
     knob(seat, hostId, target) {
       this.requireMain(seat);
+      const binding = this.capabilities.bindings.knob;
       hostId = this.resolveIid(seat, hostId);
       target = this.resolveIid(seat, target);
       const hostFound = this.find(hostId);
-      if (hostFound[0] !== seat || hostFound[2].card_id !== 'xuan_niu') {
-        throw new ClashError('只有己方旋钮台能调这一下', 'bad_target');
+      const knobCard = this.cards[binding.source];
+      if (hostFound[0] !== seat || hostFound[2].card_id !== binding.source) {
+        throw new ClashError(`只有己方${knobCard.name}能调这一下`, 'bad_target');
       }
-      if (this.ability_used[seat].xuan_niu) throw new ClashError('本回合旋钮已经用过', 'already_used_ability');
+      if (this.ability_used[seat][binding.source]) throw new ClashError('本回合旋钮已经用过', 'already_used_ability');
       const allyFound = this.find(target);
-      if (allyFound[0] !== seat) throw new ClashError('旋钮只能强化己方单位', 'bad_target');
-      const cost = this.cards.xuan_niu.amount;
+      if (allyFound[0] !== seat) throw new ClashError(`${knobCard.name}只能强化己方单位`, 'bad_target');
+      const cost = knobCard.amount;
       if (this.supply[seat] < cost) throw new ClashError('供电不足', 'not_enough_supply');
       this.pay(seat, cost);
-      this.ability_used[seat].xuan_niu = 1;
-      allyFound[2].temp_attack += 1;
-      this.event(`旋钮台让${this.cards[allyFound[2].card_id].name}本回合攻击变为${attackOf(this.cards, allyFound[2])}`);
+      this.ability_used[seat][binding.source] = 1;
+      allyFound[2].temp_attack += binding.temp_attack;
+      this.event(`${knobCard.name}让${this.cards[allyFound[2].card_id].name}本回合攻击变为${attackOf(this.cards, allyFound[2])}`);
     }
 
     attack(seat, attackerId, target) {
@@ -465,8 +532,8 @@
   }
 
   const api = Object.freeze({
-    RULESET, SOURCE_COMMIT, ClashError, loadCards, rulesFromPayload,
-    attackOf, hasGuard, bypassGuard, Game, finishTurn
+    RULESET, SOURCE_COMMIT, IMPLEMENTED_EFFECTS, ClashError, loadCards, loadPack,
+    rulesFromPayload, starOf, familyOf, attackOf, hasGuard, bypassGuard, Game, finishTurn
   });
   root.PCGClash = api;
   if (typeof module === 'object' && module.exports) module.exports = api;

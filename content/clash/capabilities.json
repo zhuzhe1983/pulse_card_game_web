@@ -1,0 +1,24 @@
+{
+  "ruleset_id": "pcg.clash.v0",
+  "baseline_commit": "5b85cc15305d3fcb1585d1096aa03b7c1766e3fe",
+  "effects": ["support", "knob", "mend", "damage", "heal_base", "supply"],
+  "bindings": {
+    "support": {
+      "source": "xiao_yin",
+      "revive": "hou_ke",
+      "once": "per_player_turn"
+    },
+    "knob": {
+      "source": "xuan_niu",
+      "temp_attack": 1,
+      "once": "per_player_turn"
+    }
+  },
+  "reserved": {
+    "star": "卡上可选的整数 1、2 或 3。结算不读它。不能从 v1.1、v1.2、v1.3 这类版本号推出来。",
+    "family": "卡上可选的家族字符串。不是 series，也不是版本号，更不是星级。结算不读它。",
+    "version": "卡上可选的不透明字符串。出现也不表示星级。"
+  },
+  "not_implemented": ["star_upgrade"],
+  "note": "这里只登记基线已经实现的效果。多写一个效果名不会让引擎学会新技能。96 张扩展和升星动作等下一份交接包，再按权威契约加。"
+}

@@ -111,14 +111,19 @@ nav span[data-nav="wiki"] { color: #6f7c74; border-bottom: 1px dashed #6f7c74; }
 <div id="app"></div>
 <script>globalThis.PCGClashContent={"ruleset_id":"pcg.clash.v0","balance":"playtest_unverified","base_life":20,"max_supply":10,"hand_limit":8,"board_limit":5,"opening_hand":[3,4],"deck_size_min":8,"deck_size_max":12,"minimum_main_units":4,"classification":{"game_role":"主控单位、配件或战术。只决定这张牌在回合战里怎么用。","hardware_controller":"以研究目录里的硬件结论为准，例如独立可编程宿主、辅助可编程 MCU、无芯片连接件。不从游戏角色反推，也不把带可编程 MCU 的 Chain 写成无主控。","art_type":"美术 type A / type B 按该硬件自己的卡面家族。本试玩卡表不填这个字段，也不用游戏角色代替它。"},"cards":[{"template_id":"xiao_yin","name":"小印","kind":"main","cost":2,"attack":2,"durability":2,"guard":false,"attack_bonus":0,"grants_guard":false,"bypass_guard":false,"effect":"support","amount":2,"series":"stamp","game_role":"main","hardware_controller":"independent_host","art_type":null,"role_note":"主控单位。支援：支付 2 点供电，把墓地里的厚壳工控以满耐久召到空位。每回合限 1 次。小印留在场上。复活的厚壳本回合不能攻击。","hardware_note":"灵感是能独立运行的邮票形主机。卡名不写型号。它和厚壳工控没有芯片一对一绑定。"},{"template_id":"xi_tiao","name":"细条","kind":"main","cost":1,"attack":1,"durability":2,"guard":false,"attack_bonus":0,"grants_guard":false,"bypass_guard":false,"effect":null,"amount":0,"series":"stick","role_note":"主控单位。便宜的第一回合身体。","hardware_note":"灵感是细长的独立主机，不是外接条。"},{"template_id":"dian_zhen","name":"点阵哨","kind":"main","cost":3,"attack":2,"durability":4,"guard":true,"attack_bonus":0,"grants_guard":false,"bypass_guard":false,"effect":null,"amount":0,"series":"atom","role_note":"主控单位，自带护卫。","hardware_note":"灵感是带灯阵的独立小主机。"},{"template_id":"xuan_niu","name":"旋钮台","kind":"main","cost":3,"attack":1,"durability":3,"guard":false,"attack_bonus":0,"grants_guard":false,"bypass_guard":false,"effect":"knob","amount":1,"series":"dial","role_note":"主控单位。你的回合支付 1 点供电，让一个己方单位本回合攻击 +1。每回合限 1 次。","hardware_note":"灵感是带旋钮的独立桌面主机。"},{"template_id":"qiao_jian","name":"敲键","kind":"main","cost":4,"attack":4,"durability":3,"guard":false,"attack_bonus":0,"grants_guard":false,"bypass_guard":false,"effect":null,"amount":0,"series":"cardputer","role_note":"主控单位。攻击高、耐久低。","hardware_note":"灵感是带键盘的掌上主机。不写成某一版型号，也不和厚壳工控混成同一张卡。"},{"template_id":"hou_ke","name":"厚壳工控","kind":"main","cost":5,"attack":3,"durability":6,"guard":true,"attack_bonus":0,"grants_guard":false,"bypass_guard":false,"effect":null,"amount":0,"series":"stamplc","game_role":"main","hardware_controller":"independent_host","art_type":null,"role_note":"主控单位，自带护卫。自己不能把小印从墓地叫回来。它死在墓地里时，要由场上的小印支援才能回来。","hardware_note":"灵感是机壳里已经焊有一块邮票主机的工控机。场上的小印是另一张卡，不是壳里那一块原装芯片。"},{"template_id":"lian_jie","name":"链节","kind":"attachment","cost":1,"attack":0,"durability":0,"guard":false,"attack_bonus":1,"grants_guard":false,"bypass_guard":false,"effect":null,"amount":0,"series":"chain","game_role":"attachment","hardware_controller":"auxiliary_programmable_mcu","art_type":null,"role_note":"游戏角色是配件。装到一台己方主控上，使它攻击 +1。不占场位。宿主死亡时配件进墓地。这个角色不改写硬件结论。","hardware_note":"对应目录里的 Chain 节点。那些节点写的是 STM32G031 一类辅助可编程单片机，不是无主控。Chain DualKey 是另一条记录，主控是 ESP32-S3，能独立运行，链节不代表它。美术 type A/B 以后按该硬件的卡面家族填，不从游戏角色推导。"},{"template_id":"qian_li","name":"千里眼","kind":"attachment","cost":2,"attack":0,"durability":0,"guard":false,"attack_bonus":0,"grants_guard":false,"bypass_guard":true,"effect":null,"amount":0,"series":"unit","role_note":"配件。宿主攻击时可以不理会对方护卫。反击仍然发生。","hardware_note":"Unit 系列里有的只是传感器。这张按外接眼睛来做，不因为系列名就猜成主控。"},{"template_id":"hu_zhao","name":"护罩","kind":"attachment","cost":1,"attack":0,"durability":0,"guard":false,"attack_bonus":0,"grants_guard":true,"bypass_guard":false,"effect":null,"amount":0,"series":"module","role_note":"配件。让宿主获得护卫。宿主本来就有护卫时不能安装。一台主控同时只装一个配件。","hardware_note":"灵感是套在主机外面的保护件，自己不站到场上。"},{"template_id":"bu_ji","name":"补给包","kind":"spell","cost":1,"attack":0,"durability":0,"guard":false,"attack_bonus":0,"grants_guard":false,"bypass_guard":false,"effect":"mend","amount":2,"series":"tactic","role_note":"战术。选择一个己方单位：恢复 2 点耐久，或者本回合攻击 +1。不能超过卡面耐久。不能治疗基地。","hardware_note":"没有对应某一颗具体芯片。"},{"template_id":"gan_rao","name":"干扰","kind":"spell","cost":2,"attack":0,"durability":0,"guard":false,"attack_bonus":0,"grants_guard":false,"bypass_guard":false,"effect":"damage","amount":2,"series":"tactic","role_note":"战术。对一个敌方单位造成 2 点耐久伤害。护卫拦不住战术。没有反击。","hardware_note":"没有对应某一颗具体芯片。"},{"template_id":"hui_chong","name":"回充","kind":"spell","cost":2,"attack":0,"durability":0,"guard":false,"attack_bonus":0,"grants_guard":false,"bypass_guard":false,"effect":"heal_base","amount":4,"series":"tactic","role_note":"战术。己方基地恢复 4 点生命，不超过 20。","hardware_note":"没有对应某一颗具体芯片。"}],"second_player_token":{"template_id":"jie_yi_ge_dian","name":"借一格电","kind":"spell","cost":0,"attack":0,"durability":0,"guard":false,"attack_bonus":0,"grants_guard":false,"bypass_guard":false,"effect":"supply","amount":1,"series":"system","role_note":"后手补偿，不放进 12 张代表卡，也不放进牌库。打出后本回合当前供电 +1，可以暂时高于上限。下回合开始会把供电设回上限。","hardware_note":"规则代币，不是硬件。"},"decks":{"first":["xi_tiao","xiao_yin","bu_ji","dian_zhen","lian_jie","hou_ke","gan_rao","qiao_jian"],"second":["xi_tiao","hu_zhao","xiao_yin","gan_rao","dian_zhen","hui_chong","hou_ke","qiao_jian"]}};
 </script>
+<script>globalThis.PCGClashCapabilities={"ruleset_id":"pcg.clash.v0","baseline_commit":"5b85cc15305d3fcb1585d1096aa03b7c1766e3fe","effects":["support","knob","mend","damage","heal_base","supply"],"bindings":{"support":{"source":"xiao_yin","revive":"hou_ke","once":"per_player_turn"},"knob":{"source":"xuan_niu","temp_attack":1,"once":"per_player_turn"}},"reserved":{"star":"卡上可选的整数 1、2 或 3。结算不读它。不能从 v1.1、v1.2、v1.3 这类版本号推出来。","family":"卡上可选的家族字符串。不是 series，也不是版本号，更不是星级。结算不读它。","version":"卡上可选的不透明字符串。出现也不表示星级。"},"not_implemented":["star_upgrade"],"note":"这里只登记基线已经实现的效果。多写一个效果名不会让引擎学会新技能。96 张扩展和升星动作等下一份交接包，再按权威契约加。"};
+</script>
 <script>/* pcg.clash.v0 table rules.
  * Bound to prompt commit 5b85cc15305d3fcb1585d1096aa03b7c1766e3fe.
  * Card numbers come from the playtest JSON. Combat reads kind, cost, attack,
- * durability, guard, bonuses and effect only. */
+ * durability, guard, bonuses and the closed effect list only.
+ * star, family and version are stored when a pack supplies them and are not read here. */
 (function (root) {
   'use strict';
   const RULESET = 'pcg.clash.v0';
   const SOURCE_COMMIT = '5b85cc15305d3fcb1585d1096aa03b7c1766e3fe';
+  const IMPLEMENTED_EFFECTS = Object.freeze(['support', 'knob', 'mend', 'damage', 'heal_base', 'supply']);
+  const IMPLEMENTED = new Set(IMPLEMENTED_EFFECTS);
 
   class ClashError extends Error {
     constructor(message, code = 'rejected') {
@@ -134,6 +139,63 @@ nav span[data-nav="wiki"] { color: #6f7c74; border-bottom: 1px dashed #6f7c74; }
     const token = payload.second_player_token;
     cards[token.template_id] = Object.assign({}, token);
     return cards;
+  }
+
+  function starOf(card) {
+    if (!card || card.star == null) return null;
+    if (card.star === 1 || card.star === 2 || card.star === 3) return card.star;
+    return null;
+  }
+
+  function familyOf(card) {
+    if (!card || typeof card.family !== 'string') return null;
+    const family = card.family.trim();
+    return family ? family : null;
+  }
+
+  function validateCard(card) {
+    if (card.effect != null && !IMPLEMENTED.has(card.effect)) {
+      throw new ClashError('还没有这个效果：' + card.effect, 'unsupported_effect');
+    }
+    if (Object.prototype.hasOwnProperty.call(card, 'star') && starOf(card) == null) {
+      throw new ClashError('星级只能是卡数据里的 1、2 或 3', 'bad_star');
+    }
+    if (Object.prototype.hasOwnProperty.call(card, 'family') && familyOf(card) == null) {
+      throw new ClashError('家族必须是卡面上的非空字符串', 'bad_family');
+    }
+  }
+
+  function loadPack(payload, capabilities) {
+    if (!payload || payload.ruleset_id !== RULESET) throw new ClashError('规则集不是 pcg.clash.v0', 'unsupported_effect');
+    if (!capabilities || capabilities.ruleset_id !== RULESET || !Array.isArray(capabilities.effects)) {
+      throw new ClashError('能力契约不属于这一规则集', 'unsupported_effect');
+    }
+    for (const effect of capabilities.effects) {
+      if (!IMPLEMENTED.has(effect)) throw new ClashError('能力契约里有尚未实现的效果 ' + effect, 'unsupported_effect');
+    }
+    for (const effect of IMPLEMENTED_EFFECTS) {
+      if (!capabilities.effects.includes(effect)) throw new ClashError('能力契约少了已实现的效果 ' + effect, 'unsupported_effect');
+    }
+    const seen = new Set();
+    for (const card of payload.cards) {
+      if (seen.has(card.template_id)) throw new ClashError('卡牌编号重复', 'bad_card');
+      seen.add(card.template_id);
+      validateCard(card);
+    }
+    validateCard(payload.second_player_token);
+    const supportCards = payload.cards.filter(card => card.effect === 'support');
+    const support = capabilities.bindings && capabilities.bindings.support;
+    if (!support || supportCards.length !== 1 || supportCards[0].template_id !== support.source || supportCards[0].kind !== 'main') {
+      throw new ClashError('支援绑定和卡表不一致', 'binding_mismatch');
+    }
+    const knobCards = payload.cards.filter(card => card.effect === 'knob');
+    const knob = capabilities.bindings.knob;
+    if (!knob || knobCards.length !== 1 || knobCards[0].template_id !== knob.source || knobCards[0].kind !== 'main' || knob.temp_attack !== 1) {
+      throw new ClashError('旋钮绑定和卡表不一致', 'binding_mismatch');
+    }
+    const cards = loadCards(payload);
+    if (!cards[support.revive]) throw new ClashError('支援目标不在卡表里', 'binding_mismatch');
+    return { cards, rules: rulesFromPayload(payload), tokenId: payload.second_player_token.template_id, capabilities };
   }
 
   function rulesFromPayload(payload) {
@@ -161,10 +223,11 @@ nav span[data-nav="wiki"] { color: #6f7c74; border-bottom: 1px dashed #6f7c74; }
   }
 
   class Game {
-    static empty(cards, rules) {
+    static empty(cards, rules, capabilities) {
       const game = Object.create(Game.prototype);
       game.cards = cards;
       game.rules = rules;
+      game.capabilities = capabilities;
       game.bases = [rules.baseLife, rules.baseLife];
       game.max_supply = [0, 0];
       game.supply = [0, 0];
@@ -183,9 +246,10 @@ nav span[data-nav="wiki"] { color: #6f7c74; border-bottom: 1px dashed #6f7c74; }
       return game;
     }
 
-    constructor(cards, deck0, deck1, rules, tokenId = 'jie_yi_ge_dian') {
+    constructor(cards, deck0, deck1, rules, tokenId = 'jie_yi_ge_dian', capabilities = null) {
       this.cards = cards;
       this.rules = rules;
+      this.capabilities = capabilities;
       this.bases = [rules.baseLife, rules.baseLife];
       this.max_supply = [0, 0];
       this.supply = [0, 0];
@@ -415,37 +479,42 @@ nav span[data-nav="wiki"] { color: #6f7c74; border-bottom: 1px dashed #6f7c74; }
 
     support(seat) {
       this.requireMain(seat);
-      const sources = this.units(seat).filter(unit => unit.card_id === 'xiao_yin');
-      if (sources.length !== 1) throw new ClashError('场上要有一台小印才能支援', 'no_stamp_on_board');
-      if (this.ability_used[seat].xiao_yin) throw new ClashError('本回合已经支援过', 'already_used_ability');
-      if (!this.graves[seat].includes('hou_ke')) throw new ClashError('墓地里没有厚壳工控', 'no_shell_in_grave');
+      const binding = this.capabilities.bindings.support;
+      const source = this.cards[binding.source];
+      const revived = this.cards[binding.revive];
+      const sources = this.units(seat).filter(unit => unit.card_id === binding.source);
+      if (sources.length !== 1) throw new ClashError(`场上要有一台${source.name}才能支援`, 'no_stamp_on_board');
+      if (this.ability_used[seat][binding.source]) throw new ClashError('本回合已经支援过', 'already_used_ability');
+      if (!this.graves[seat].includes(binding.revive)) throw new ClashError(`墓地里没有${revived.name}`, 'no_shell_in_grave');
       if (this.aliveCount(seat) >= this.rules.boardLimit) throw new ClashError('场上没有空位', 'board_full');
-      const cost = this.cards.xiao_yin.amount;
+      const cost = source.amount;
       if (this.supply[seat] < cost) throw new ClashError('供电不足', 'not_enough_supply');
       this.pay(seat, cost);
-      this.ability_used[seat].xiao_yin = 1;
-      this.graves[seat].splice(this.graves[seat].indexOf('hou_ke'), 1);
-      this.event('小印支援，厚壳工控离开墓地');
-      return this.placeNew(seat, 'hou_ke');
+      this.ability_used[seat][binding.source] = 1;
+      this.graves[seat].splice(this.graves[seat].indexOf(binding.revive), 1);
+      this.event(`${source.name}支援，${revived.name}离开墓地`);
+      return this.placeNew(seat, binding.revive);
     }
 
     knob(seat, hostId, target) {
       this.requireMain(seat);
+      const binding = this.capabilities.bindings.knob;
       hostId = this.resolveIid(seat, hostId);
       target = this.resolveIid(seat, target);
       const hostFound = this.find(hostId);
-      if (hostFound[0] !== seat || hostFound[2].card_id !== 'xuan_niu') {
-        throw new ClashError('只有己方旋钮台能调这一下', 'bad_target');
+      const knobCard = this.cards[binding.source];
+      if (hostFound[0] !== seat || hostFound[2].card_id !== binding.source) {
+        throw new ClashError(`只有己方${knobCard.name}能调这一下`, 'bad_target');
       }
-      if (this.ability_used[seat].xuan_niu) throw new ClashError('本回合旋钮已经用过', 'already_used_ability');
+      if (this.ability_used[seat][binding.source]) throw new ClashError('本回合旋钮已经用过', 'already_used_ability');
       const allyFound = this.find(target);
-      if (allyFound[0] !== seat) throw new ClashError('旋钮只能强化己方单位', 'bad_target');
-      const cost = this.cards.xuan_niu.amount;
+      if (allyFound[0] !== seat) throw new ClashError(`${knobCard.name}只能强化己方单位`, 'bad_target');
+      const cost = knobCard.amount;
       if (this.supply[seat] < cost) throw new ClashError('供电不足', 'not_enough_supply');
       this.pay(seat, cost);
-      this.ability_used[seat].xuan_niu = 1;
-      allyFound[2].temp_attack += 1;
-      this.event(`旋钮台让${this.cards[allyFound[2].card_id].name}本回合攻击变为${attackOf(this.cards, allyFound[2])}`);
+      this.ability_used[seat][binding.source] = 1;
+      allyFound[2].temp_attack += binding.temp_attack;
+      this.event(`${knobCard.name}让${this.cards[allyFound[2].card_id].name}本回合攻击变为${attackOf(this.cards, allyFound[2])}`);
     }
 
     attack(seat, attackerId, target) {
@@ -578,8 +647,8 @@ nav span[data-nav="wiki"] { color: #6f7c74; border-bottom: 1px dashed #6f7c74; }
   }
 
   const api = Object.freeze({
-    RULESET, SOURCE_COMMIT, ClashError, loadCards, rulesFromPayload,
-    attackOf, hasGuard, bypassGuard, Game, finishTurn
+    RULESET, SOURCE_COMMIT, IMPLEMENTED_EFFECTS, ClashError, loadCards, loadPack,
+    rulesFromPayload, starOf, familyOf, attackOf, hasGuard, bypassGuard, Game, finishTurn
   });
   root.PCGClash = api;
   if (typeof module === 'object' && module.exports) module.exports = api;
@@ -589,23 +658,27 @@ nav span[data-nav="wiki"] { color: #6f7c74; border-bottom: 1px dashed #6f7c74; }
   'use strict';
   const C = root.PCGClash;
   const content = root.PCGClashContent;
+  const pack = C.loadPack(content, root.PCGClashCapabilities);
   const $ = document.querySelector.bind(document);
   const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
-  const rules = C.rulesFromPayload(content);
-  const cards = C.loadCards(content);
-  const tokenId = content.second_player_token.template_id;
+  const rules = pack.rules;
+  const cards = pack.cards;
+  const tokenId = pack.tokenId;
   const seatName = seat => seat === 0 ? '先手' : '后手';
   const kindName = kind => kind === 'main' ? '主控' : kind === 'attachment' ? '配件' : '战术';
   function blurb(card) {
-    if (card.kind === 'main') return `主控 · 攻${card.attack} 耐${card.durability}${card.guard ? ' · 护卫' : ''}`;
-    if (card.attack_bonus) return `配件 · 攻击 +${card.attack_bonus}`;
-    if (card.grants_guard) return '配件 · 获得护卫';
-    if (card.bypass_guard) return '配件 · 无视护卫';
-    if (card.effect === 'supply') return `战术 · 供电 +${card.amount}`;
-    if (card.effect === 'heal_base') return `战术 · 基地 +${card.amount}`;
-    if (card.effect === 'damage') return `战术 · 敌方 -${card.amount} 耐久`;
-    if (card.effect === 'mend') return `战术 · 修复 ${card.amount} 或攻击 +1`;
-    return kindName(card.kind);
+    let text = kindName(card.kind);
+    if (card.kind === 'main') text = `主控 · 攻${card.attack} 耐${card.durability}${card.guard ? ' · 护卫' : ''}`;
+    else if (card.attack_bonus) text = `配件 · 攻击 +${card.attack_bonus}`;
+    else if (card.grants_guard) text = '配件 · 获得护卫';
+    else if (card.bypass_guard) text = '配件 · 无视护卫';
+    else if (card.effect === 'supply') text = `战术 · 供电 +${card.amount}`;
+    else if (card.effect === 'heal_base') text = `战术 · 基地 +${card.amount}`;
+    else if (card.effect === 'damage') text = `战术 · 敌方 -${card.amount} 耐久`;
+    else if (card.effect === 'mend') text = `战术 · 修复 ${card.amount} 或攻击 +1`;
+    const star = C.starOf(card);
+    if (star != null) text += ` · ${star}星`;
+    return text;
   }
 
   let game = null;
@@ -639,11 +712,11 @@ nav span[data-nav="wiki"] { color: #6f7c74; border-bottom: 1px dashed #6f7c74; }
     ui = blankUi(scenario);
     ui.reveal = keepReveal;
     if (scenario === 'lesson') {
-      game = new C.Game(cards, content.decks.first.slice(), content.decks.second.slice(), rules, tokenId);
+      game = new C.Game(cards, content.decks.first.slice(), content.decks.second.slice(), rules, tokenId, pack.capabilities);
       game.start_turn();
       push('教学局。牌序固定，不洗牌。先手第 1 回合不抽牌，供电已回满。');
     } else if (scenario === 'support-present') {
-      game = C.Game.empty(cards, rules);
+      game = C.Game.empty(cards, rules, pack.capabilities);
       game.supply = [6, 6];
       game.max_supply = [6, 6];
       game.bases = [16, 18];
@@ -653,14 +726,14 @@ nav span[data-nav="wiki"] { color: #6f7c74; border-bottom: 1px dashed #6f7c74; }
       game.spawn(1, 'dian_zhen', 0);
       push('摆阵：小印已经在场，厚壳在自己的墓地。支援叫回厚壳，小印留在场上。');
     } else if (scenario === 'support-deploy') {
-      game = C.Game.empty(cards, rules);
+      game = C.Game.empty(cards, rules, pack.capabilities);
       game.supply = [6, 6];
       game.max_supply = [6, 6];
       game.hands = [['xiao_yin'], []];
       game.graves = [['hou_ke'], []];
       push('摆阵：厚壳已在墓地，小印还在手牌。没有小印在场时支援不会扣电。');
     } else if (scenario === 'support-again') {
-      game = C.Game.empty(cards, rules);
+      game = C.Game.empty(cards, rules, pack.capabilities);
       game.supply = [0, 2];
       game.max_supply = [3, 2];
       game.bases = [16, 18];
@@ -754,11 +827,12 @@ nav span[data-nav="wiki"] { color: #6f7c74; border-bottom: 1px dashed #6f7c74; }
       <h4>${esc(card.name)} · ${card.cost} 费</h4>
       <p>${kindName(card.kind)}${card.kind === 'main' ? ` · 攻 ${card.attack} · 耐 ${card.durability}` : ''}${card.guard ? ' · 护卫' : ''}</p>
       <p>玩法种类：${kindName(card.kind)}。游戏角色：${esc(card.game_role || '卡表未单列')}。硬件主控：${esc(card.hardware_controller || '卡表未单列，不从玩法反推')}。美术 type：${card.art_type == null ? '未填' : esc(card.art_type)}。</p>
+      <p>星级：${C.starOf(card) == null ? '卡上没写' : C.starOf(card) + ' 星'}。家族：${C.familyOf(card) == null ? '卡上没写' : esc(C.familyOf(card))}。</p>
       <p>${esc(card.role_note || '')}</p>
-      <p class="hint">系列 ${esc(card.series)} 只用于找图，不参与结算。本地没有这张图时就显示文字。</p>
+      <p class="hint">系列 ${esc(card.series)} 只用于找图，不参与结算，也不当成家族或星级。版本号不会换成星级。本地没有这张图时就显示文字。</p>
     </article>`).join('');
     const token = content.second_player_token;
-    return `<div class="catalog">${rows}<article><h4>${esc(token.name)}</h4><p>${esc(token.role_note)}</p><p class="hint">后手代币，不在 12 张代表卡里，也不在牌库里。</p></article></div>`;
+    return `<div class="catalog">${rows}<article><h4>${esc(token.name)}</h4><p>${esc(token.role_note)}</p><p class="hint">后手代币，不在代表卡列表里，也不在牌库里。当前代表卡 ${content.cards.length} 张。</p></article></div>`;
   }
 
   function actions() {
@@ -786,11 +860,11 @@ nav span[data-nav="wiki"] { color: #6f7c74; border-bottom: 1px dashed #6f7c74; }
         <a data-nav="clash" href="./index.html" aria-current="page">回合战</a>
         <a data-nav="legacy" href="../index.html" title="旧版点数对局在上一级页面。只发回合战压缩包时，这个链接不在包内。">旧版点数对局</a>
         <!-- wiki-slot: 图鉴分支把下一行换成 <a data-nav="wiki" href="../wiki/">卡片图鉴</a>。不要把图鉴元数据当玩法数据。 -->
-        <span data-nav="wiki" data-wiki-slot="pending" title="图鉴由另一条分支接入。本页只有 12 张可玩代表卡。">图鉴</span>
+        <span data-nav="wiki" data-wiki-slot="pending" title="图鉴由另一条分支接入。玩法数据只认卡表，不认图鉴，也不从版本号推星级。">图鉴</span>
       </nav>
       <div class="top-actions">
         <button type="button" class="btn" data-action="toggle-reveal" aria-pressed="${ui.reveal}">${ui.reveal ? '遮住对方手牌' : '教学明牌'}</button>
-        <button type="button" class="btn" data-action="toggle-catalog">${ui.catalog ? '收起卡表' : '12 张卡表'}</button>
+        <button type="button" class="btn" data-action="toggle-catalog">${ui.catalog ? '收起卡表' : content.cards.length + ' 张卡表'}</button>
         <button type="button" class="btn" data-action="restart">重新开局</button>
       </div>
     </header>
@@ -813,7 +887,7 @@ nav span[data-nav="wiki"] { color: #6f7c74; border-bottom: 1px dashed #6f7c74; }
       </section>
       ${side(0)}
       ${catalog()}
-      <p class="foot">规则 ${esc(content.ruleset_id)} · 来源提交 ${esc(C.SOURCE_COMMIT)} · 只使用这 12 张代表卡和后手代币。系列图片按 series 从本目录 series/ 读取，缺图就用文字，不借用别的卡图。结算不看硬件型号。</p>
+      <p class="foot">规则 ${esc(content.ruleset_id)} · 来源提交 ${esc(C.SOURCE_COMMIT)} · 当前卡表 ${content.cards.length} 张，另加后手代币。星级和家族只在卡数据写了才显示，不从版本号推断，升星还没接。系列图片按 series 从本目录 series/ 读取，缺图就用文字。结算不看硬件型号。</p>
     </main>`;
     document.body.dataset.ready = '1';
     document.body.dataset.ruleset = content.ruleset_id;
@@ -854,7 +928,7 @@ nav span[data-nav="wiki"] { color: #6f7c74; border-bottom: 1px dashed #6f7c74; }
     const seat = Number(el.dataset.seat);
     const card = selectedCard();
     if (ui.knob) {
-      try { game.knob(game.seat, 'xuan_niu', iid); }
+      try { game.knob(game.seat, pack.capabilities.bindings.knob.source, iid); }
       catch (error) { return note(error); }
       push(`旋钮台强化了${cards[game.find(iid)[2].card_id].name}，本回合攻击 +1。`);
       clearChoice();

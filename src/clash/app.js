@@ -2,23 +2,27 @@
   'use strict';
   const C = root.PCGClash;
   const content = root.PCGClashContent;
+  const pack = C.loadPack(content, root.PCGClashCapabilities);
   const $ = document.querySelector.bind(document);
   const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
-  const rules = C.rulesFromPayload(content);
-  const cards = C.loadCards(content);
-  const tokenId = content.second_player_token.template_id;
+  const rules = pack.rules;
+  const cards = pack.cards;
+  const tokenId = pack.tokenId;
   const seatName = seat => seat === 0 ? '先手' : '后手';
   const kindName = kind => kind === 'main' ? '主控' : kind === 'attachment' ? '配件' : '战术';
   function blurb(card) {
-    if (card.kind === 'main') return `主控 · 攻${card.attack} 耐${card.durability}${card.guard ? ' · 护卫' : ''}`;
-    if (card.attack_bonus) return `配件 · 攻击 +${card.attack_bonus}`;
-    if (card.grants_guard) return '配件 · 获得护卫';
-    if (card.bypass_guard) return '配件 · 无视护卫';
-    if (card.effect === 'supply') return `战术 · 供电 +${card.amount}`;
-    if (card.effect === 'heal_base') return `战术 · 基地 +${card.amount}`;
-    if (card.effect === 'damage') return `战术 · 敌方 -${card.amount} 耐久`;
-    if (card.effect === 'mend') return `战术 · 修复 ${card.amount} 或攻击 +1`;
-    return kindName(card.kind);
+    let text = kindName(card.kind);
+    if (card.kind === 'main') text = `主控 · 攻${card.attack} 耐${card.durability}${card.guard ? ' · 护卫' : ''}`;
+    else if (card.attack_bonus) text = `配件 · 攻击 +${card.attack_bonus}`;
+    else if (card.grants_guard) text = '配件 · 获得护卫';
+    else if (card.bypass_guard) text = '配件 · 无视护卫';
+    else if (card.effect === 'supply') text = `战术 · 供电 +${card.amount}`;
+    else if (card.effect === 'heal_base') text = `战术 · 基地 +${card.amount}`;
+    else if (card.effect === 'damage') text = `战术 · 敌方 -${card.amount} 耐久`;
+    else if (card.effect === 'mend') text = `战术 · 修复 ${card.amount} 或攻击 +1`;
+    const star = C.starOf(card);
+    if (star != null) text += ` · ${star}星`;
+    return text;
   }
 
   let game = null;
@@ -52,11 +56,11 @@
     ui = blankUi(scenario);
     ui.reveal = keepReveal;
     if (scenario === 'lesson') {
-      game = new C.Game(cards, content.decks.first.slice(), content.decks.second.slice(), rules, tokenId);
+      game = new C.Game(cards, content.decks.first.slice(), content.decks.second.slice(), rules, tokenId, pack.capabilities);
       game.start_turn();
       push('教学局。牌序固定，不洗牌。先手第 1 回合不抽牌，供电已回满。');
     } else if (scenario === 'support-present') {
-      game = C.Game.empty(cards, rules);
+      game = C.Game.empty(cards, rules, pack.capabilities);
       game.supply = [6, 6];
       game.max_supply = [6, 6];
       game.bases = [16, 18];
@@ -66,14 +70,14 @@
       game.spawn(1, 'dian_zhen', 0);
       push('摆阵：小印已经在场，厚壳在自己的墓地。支援叫回厚壳，小印留在场上。');
     } else if (scenario === 'support-deploy') {
-      game = C.Game.empty(cards, rules);
+      game = C.Game.empty(cards, rules, pack.capabilities);
       game.supply = [6, 6];
       game.max_supply = [6, 6];
       game.hands = [['xiao_yin'], []];
       game.graves = [['hou_ke'], []];
       push('摆阵：厚壳已在墓地，小印还在手牌。没有小印在场时支援不会扣电。');
     } else if (scenario === 'support-again') {
-      game = C.Game.empty(cards, rules);
+      game = C.Game.empty(cards, rules, pack.capabilities);
       game.supply = [0, 2];
       game.max_supply = [3, 2];
       game.bases = [16, 18];
@@ -167,11 +171,12 @@
       <h4>${esc(card.name)} · ${card.cost} 费</h4>
       <p>${kindName(card.kind)}${card.kind === 'main' ? ` · 攻 ${card.attack} · 耐 ${card.durability}` : ''}${card.guard ? ' · 护卫' : ''}</p>
       <p>玩法种类：${kindName(card.kind)}。游戏角色：${esc(card.game_role || '卡表未单列')}。硬件主控：${esc(card.hardware_controller || '卡表未单列，不从玩法反推')}。美术 type：${card.art_type == null ? '未填' : esc(card.art_type)}。</p>
+      <p>星级：${C.starOf(card) == null ? '卡上没写' : C.starOf(card) + ' 星'}。家族：${C.familyOf(card) == null ? '卡上没写' : esc(C.familyOf(card))}。</p>
       <p>${esc(card.role_note || '')}</p>
-      <p class="hint">系列 ${esc(card.series)} 只用于找图，不参与结算。本地没有这张图时就显示文字。</p>
+      <p class="hint">系列 ${esc(card.series)} 只用于找图，不参与结算，也不当成家族或星级。版本号不会换成星级。本地没有这张图时就显示文字。</p>
     </article>`).join('');
     const token = content.second_player_token;
-    return `<div class="catalog">${rows}<article><h4>${esc(token.name)}</h4><p>${esc(token.role_note)}</p><p class="hint">后手代币，不在 12 张代表卡里，也不在牌库里。</p></article></div>`;
+    return `<div class="catalog">${rows}<article><h4>${esc(token.name)}</h4><p>${esc(token.role_note)}</p><p class="hint">后手代币，不在代表卡列表里，也不在牌库里。当前代表卡 ${content.cards.length} 张。</p></article></div>`;
   }
 
   function actions() {
@@ -199,11 +204,11 @@
         <a data-nav="clash" href="./index.html" aria-current="page">回合战</a>
         <a data-nav="legacy" href="../index.html" title="旧版点数对局在上一级页面。只发回合战压缩包时，这个链接不在包内。">旧版点数对局</a>
         <!-- wiki-slot: 图鉴分支把下一行换成 <a data-nav="wiki" href="../wiki/">卡片图鉴</a>。不要把图鉴元数据当玩法数据。 -->
-        <span data-nav="wiki" data-wiki-slot="pending" title="图鉴由另一条分支接入。本页只有 12 张可玩代表卡。">图鉴</span>
+        <span data-nav="wiki" data-wiki-slot="pending" title="图鉴由另一条分支接入。玩法数据只认卡表，不认图鉴，也不从版本号推星级。">图鉴</span>
       </nav>
       <div class="top-actions">
         <button type="button" class="btn" data-action="toggle-reveal" aria-pressed="${ui.reveal}">${ui.reveal ? '遮住对方手牌' : '教学明牌'}</button>
-        <button type="button" class="btn" data-action="toggle-catalog">${ui.catalog ? '收起卡表' : '12 张卡表'}</button>
+        <button type="button" class="btn" data-action="toggle-catalog">${ui.catalog ? '收起卡表' : content.cards.length + ' 张卡表'}</button>
         <button type="button" class="btn" data-action="restart">重新开局</button>
       </div>
     </header>
@@ -226,7 +231,7 @@
       </section>
       ${side(0)}
       ${catalog()}
-      <p class="foot">规则 ${esc(content.ruleset_id)} · 来源提交 ${esc(C.SOURCE_COMMIT)} · 只使用这 12 张代表卡和后手代币。系列图片按 series 从本目录 series/ 读取，缺图就用文字，不借用别的卡图。结算不看硬件型号。</p>
+      <p class="foot">规则 ${esc(content.ruleset_id)} · 来源提交 ${esc(C.SOURCE_COMMIT)} · 当前卡表 ${content.cards.length} 张，另加后手代币。星级和家族只在卡数据写了才显示，不从版本号推断，升星还没接。系列图片按 series 从本目录 series/ 读取，缺图就用文字。结算不看硬件型号。</p>
     </main>`;
     document.body.dataset.ready = '1';
     document.body.dataset.ruleset = content.ruleset_id;
@@ -267,7 +272,7 @@
     const seat = Number(el.dataset.seat);
     const card = selectedCard();
     if (ui.knob) {
-      try { game.knob(game.seat, 'xuan_niu', iid); }
+      try { game.knob(game.seat, pack.capabilities.bindings.knob.source, iid); }
       catch (error) { return note(error); }
       push(`旋钮台强化了${cards[game.find(iid)[2].card_id].name}，本回合攻击 +1。`);
       clearChoice();
