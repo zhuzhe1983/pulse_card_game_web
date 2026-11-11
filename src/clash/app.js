@@ -261,23 +261,30 @@
     const url = sceneUrl(slot);
     return `data-scene-slot="${slot}" data-scene-ready="${url ? '1' : '0'}"${url ? ` style="--scene-url:url('${esc(url)}')"` : ''}`;
   }
-  function circuitFace(card) {
-    const seed = [...(card && card.template_id || '?')].reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
-    const y1 = 22 + (seed % 18);
-    const y2 = 52 + (seed % 14);
-    const tone = card && card.kind === 'spell' ? '#7dfff0' : card && card.kind === 'attachment' ? '#ffb020' : '#9dcec4';
-    return `<svg class="circuit-face" viewBox="0 0 88 104" aria-hidden="true"><rect x="6" y="6" width="76" height="92" rx="8" fill="#0c1612" stroke="${tone}"/><path d="M16 18 H72 M16 ${y1} H42 V${y2} H72 M18 80 H70" fill="none" stroke="${tone}" stroke-width="1.4"/><circle cx="42" cy="${y1}" r="3" fill="${tone}"/><circle cx="72" cy="${y2}" r="3" fill="#ffb020"/><rect x="24" y="62" width="26" height="12" rx="2" fill="#10281c" stroke="${tone}"/></svg>`;
-  }
+  const painted = {
+    xi_tiao: 'scene/cards/art-stick-432x576.webp',
+    bu_ji: 'scene/cards/art-supply-432x576.webp',
+    uiflow_blocks: 'scene/cards/art-uiflow-432x576.webp',
+    ezdata_note: 'scene/cards/art-ezdata-432x576.webp',
+    aiflow_say: 'scene/cards/art-aiflow-432x576.webp',
+    burner_seize: 'scene/cards/art-seize-432x576.webp'
+  };
   function picture(card, kind) {
+    const paintedSrc = card && painted[card.template_id];
+    if (paintedSrc) return `<img src="${esc(paintedSrc)}" alt="" draggable="false">`;
     const shot = card && artbook[card.rid];
-    if (!shot) return circuitFace(card);
+    if (!shot) return `<img src="scene/cardback/pulse-cardback-192x256.webp" alt="" draggable="false">`;
     return `<img src="${esc(kind === 'board' ? shot.char : shot.card)}" alt="" draggable="false">`;
   }
   function mana(seat) {
-    const max = game.max_supply[seat];
-    const cur = game.supply[seat];
-    const count = Math.max(max, Math.min(cur, 10));
-    return `<div class="mana">${Array.from({length: count}, (_, i) => `<i class="${i < cur ? 'on' : ''}"></i>`).join('')}</div>`;
+    const max = Math.max(0, Math.min(10, game.max_supply[seat]));
+    const cur = Math.max(0, Math.min(10, game.supply[seat]));
+    const bits = [];
+    for (let i = 0; i < 10; i++) {
+      const state = i < cur ? 'on' : i < max ? 'off' : 'locked';
+      bits.push(`<i class="${state}"></i>`);
+    }
+    return `<div class="mana" data-mana="${seat}">${bits.join('')}</div>`;
   }
   function handHtml(seat, dock) {
     const show = ui.reveal || seat === game.seat;
@@ -381,14 +388,15 @@
     const hot = ui.attacker && seat !== game.seat;
     const dropped = ui.fx && ui.fx.bases && ui.fx.bases[seat] > game.bases[seat];
     const delta = dropped ? ui.fx.bases[seat] - game.bases[seat] : 0;
+    const portrait = seat === 0 ? 'scene/ui/core-first-warm-inner-256.webp' : 'scene/ui/core-second-cold-inner-256.webp';
     return `<div class="core-wrap${active ? ' active' : ''}${hot ? ' hot' : ''}">
       <button type="button" class="base-btn core${dropped ? ' flash' : ''}" ${sceneAttr('core_frame')} data-action="hit-base" data-seat="${seat}" aria-label="${seatName(seat)}核心">
-        <span class="core-face">${coreSvg()}</span>
+        <img class="core-portrait" src="${portrait}" alt="">
         <span class="core-name">${seatName(seat)}核心</span>
         <span class="hp" data-seat="${seat}" data-stat="base">${game.bases[seat]}</span>
         ${delta ? `<span class="floater">-${delta}</span>` : ''}
       </button>
-      ${seat === game.seat ? '' : supply(seat)}
+      ${supply(seat)}
     </div>`;
   }
   function supply(seat) {
@@ -574,20 +582,19 @@
       <div class="opp-dock">${handHtml(other, false)}</div>
       <aside class="bays">${stack(other)}${stack(active)}</aside>
       <div class="core-slot foe">${core(other)}</div>
-      <div class="slots foe"><span class="lane-label">对方战线</span>${lane(other)}</div>
+      <div class="slots foe">${lane(other)}</div>
       <div class="midline">
         <h3 id="turn-label" data-seat="${game.seat}">${esc(turnText)}</h3>
         <p class="formation" data-formation="${game.formationState(active).percent}">${esc(formationLine(active))}</p>
-        ${game.units(active).some(unit => cards[unit.card_id].upper_host && !unit.link) ? `<button type="button" class="upper-btn${ui.linking ? ' on' : ''}" data-action="upper-link">上位连接</button>` : ''}
+        ${game.units(active).some(unit => cards[unit.card_id].upper_host && !unit.link) ? `<button type="button" class="upper-btn${ui.linking ? ' on' : ''}" data-action="upper-link"><img src="scene/cards/art-hostlove-432x576.webp" alt="">上位连接</button>` : ''}
         ${strikeHint()}
         <p id="coach">${esc(coach())}</p>
         <p id="last-error" data-code="${esc(ui.error ? ui.error.code : '')}">${ui.error ? esc(ui.error.message) : ''}</p>
       </div>
-      <div class="slots mine"><span class="lane-label">我方战线</span>${lane(active)}</div>
+      <div class="slots mine">${lane(active)}</div>
       <div class="core-slot mine">${core(active)}</div>
       <section class="hand-dock" aria-label="当前手牌">${handHtml(active, true)}</section>
       <aside class="rail tools">
-        ${supply(active)}
         <button type="button" class="end-turn${canEnd ? ' hot' : ' wait'}" ${sceneAttr('end_turn')} data-action="end-turn">结束回合</button>
         <div class="pads">${actions()}</div>
       </aside>
