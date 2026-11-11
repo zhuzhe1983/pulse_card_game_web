@@ -318,6 +318,12 @@ async function main() {
     eq(await attr('[data-board-seat="1"][data-card="xi_tiao"]', 'data-durability'), '4', '旁边的细条没有被误伤');
     if (await value(`document.querySelectorAll('.socket').length`) !== 0) throw new Error('还在画固定空槽');
     await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
+    const desk = await value(`(() => {
+      const unit = document.querySelector('.slots.mine .minion').getBoundingClientRect();
+      const card = document.querySelector('.hands .playcard').getBoundingClientRect();
+      return { unitW: unit.width, unitH: unit.height, cardW: card.width, cardH: card.height };
+    })()`);
+    if (desk.unitW < 120 || desk.cardH < 140) throw new Error('桌面牌没有用上工作面 ' + JSON.stringify(desk));
     await shot('10b-seven-units');
     await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
     await shot('11-narrow-table');
@@ -366,6 +372,30 @@ async function main() {
     if (narrow.artSrc.includes('/card/')) throw new Error('手牌用了整张印刷卡');
     if (narrow.artWidth < 8) throw new Error('手牌主体图没有画出来');
     if (narrow.supplyTall > 28) throw new Error('供电数字被拆行');
+    const phoneFit = await value(`(() => {
+      const arena = document.querySelector('.arena').getBoundingClientRect();
+      const card = document.querySelector('.hands .playcard').getBoundingClientRect();
+      const unit = document.querySelector('.minion').getBoundingClientRect();
+      const end = document.querySelector('.end-turn');
+      const black = window.innerHeight - arena.height;
+      return { arenaH: arena.height, view: window.innerHeight, black, cardW: card.width, unitW: unit.width, endLines: end.scrollHeight > end.clientHeight + 2 };
+    })()`);
+    if (phoneFit.black > phoneFit.view * 0.5) throw new Error('手机空白超过半屏');
+    if (phoneFit.cardW < 90 || phoneFit.unitW < 72) throw new Error('手机牌太小');
+    if (phoneFit.endLines) throw new Error('结束回合被拆行');
+    await value(`document.querySelector('[data-card="art_h039a"]').scrollIntoView({inline:'center', block:'nearest'})`);
+    const phonePlay = await value(`(() => {
+      const card = document.querySelector('[data-action="select-hand"][data-card="art_h039a"]');
+      card.click();
+      return 'selected';
+    })()`);
+    if (phonePlay !== 'selected') throw new Error('手机点选手牌失败');
+    await click('[data-action="play"]');
+    await value(`document.querySelector('[data-board-seat="0"][data-card="art_h039a"]').scrollIntoView({inline:'center', block:'nearest'})`);
+    await click('[data-board-seat="0"][data-card="art_h039a"]');
+    await click('[data-board-seat="1"][data-card="hou_ke"]');
+    eq(await attr('[data-board-seat="1"][data-card="hou_ke"]', 'data-durability'), '2', '手机点选后打中指定目标');
+    eq(await attr('[data-board-seat="1"][data-card="xi_tiao"]', 'data-durability'), '4', '手机攻击没有打到旁边的牌');
     await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
     await send('Page.navigate', { url: `http://127.0.0.1:${port}/` });
     await waitFor(async () => { if (!(await value('document.body && document.body.innerText')).includes('同一套牌')) throw new Error('lobby'); }, 'lobby');
