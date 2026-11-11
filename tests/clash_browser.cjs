@@ -137,7 +137,7 @@ async function main() {
     }
 
     eq(await attr('main.table', 'data-ruleset'), 'pcg.clash.v0', '规则编号');
-    eq(await attr('main.table', 'data-source-commit'), '9171f2594608b5e43b1aef66ed04feb21c902cf6', '来源提交');
+    eq(await attr('main.table', 'data-source-commit'), '8a9acd2e221708835dab446d019a47dcd90896c6', '来源提交');
     eq(await attr('.nfc-entry', 'data-nfc'), 'off', '这台桌面浏览器不能刷卡');
     if (await value(`document.querySelector('.nfc-entry').disabled`) !== true) throw new Error('刷卡入口没有禁用');
     const nfcText = await text('.nfc-entry');
@@ -346,6 +346,8 @@ async function main() {
     await shot('10-roster-play');
     await click('[data-action="scenario"][data-scenario="grow"]');
     const kept = await attr('[data-board-seat="0"][data-slot="0"]', 'data-iid');
+    const neighborTitle = await attr('[data-board-seat="0"][data-slot="4"] .atk', 'title');
+    if (!neighborTitle.includes('左邻同系 +1/+1') || neighborTitle.includes('最左主控')) throw new Error('悬停明细 ' + neighborTitle);
     await click('[data-action="select-hand"][data-card="art_h024"]');
     await click('[data-action="play"]');
     eq(await value(`document.querySelectorAll('[data-board-seat="0"][data-card]').length`), 6, '第 6 台排到最右');

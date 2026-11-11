@@ -421,6 +421,9 @@
     const card = cards[unit.card_id];
     const profile = game.profile(seat, unit, false);
     const title = profile.parts.map(part => {
+      if ((part[0] === '左邻同系' || part[0] === '右邻同系') && part[1] && part[2]) {
+        return part[0] + ' +' + part[1] + '/+' + part[2];
+      }
       const bits = [part[0]];
       if (part[1]) bits.push((part[1] > 0 ? '+' : '') + part[1] + '攻');
       if (part[2]) bits.push((part[2] > 0 ? '+' : '') + part[2] + '耐');

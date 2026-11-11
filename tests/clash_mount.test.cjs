@@ -109,6 +109,7 @@ check('same-series neighbors add one each and leave when the row dies', () => {
   const leftProfile = game.profile(0, left);
   assert.equal(leftProfile.attack, game.cards.art_h024.attack + 1);
   assert.ok(leftProfile.parts.some(part => part[0] === '右邻同系' && part[1] === 1 && part[2] === 1));
+  assert.equal(JSON.stringify(leftProfile.parts).includes('最左主控'), false);
   const rightProfile = game.profile(0, right);
   assert.ok(rightProfile.parts.some(part => part[0] === '左邻同系'));
   const third = game.spawn(0, 'art_h023', null, null, false);

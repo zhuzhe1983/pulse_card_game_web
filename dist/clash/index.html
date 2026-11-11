@@ -674,14 +674,14 @@ globalThis.PCGClashArt={"A001":{"card":"../../wiki/assets/card/A001__Hat_DAC2.we
 globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pulse-arena-bg-16x9.webp","core_frame":"scene/ui/core-portrait-frame-a.webp","core_frame_small":"scene/ui/core-portrait-frame-b.webp","unit_frame":"scene/ui/device-card-frame-c.webp","hand_frame":"scene/ui/device-card-frame-b.webp","end_turn":"scene/ui/end-turn-button-primary.webp","end_turn_compact":"scene/ui/end-turn-button-compact.webp","lamp_cost":"scene/ui/lamp-cost-cyan.webp","lamp_attack":"scene/ui/lamp-attack-amber.webp","lamp_durability":"scene/ui/lamp-durability-teal.webp"}};
 </script>
 <script>/* pcg.clash.v0 table rules.
- * Bound to prompt commit 9171f2594608b5e43b1aef66ed04feb21c902cf6.
+ * Bound to prompt commit 8a9acd2e221708835dab446d019a47dcd90896c6.
  * Card numbers come from the playtest JSON. Combat reads kind, cost, attack,
  * durability, guard, bonuses and the closed effect list only.
  * star, family and version are stored when a pack supplies them and are not read here. */
 (function (root) {
   'use strict';
   const RULESET = 'pcg.clash.v0';
-  const SOURCE_COMMIT = '9171f2594608b5e43b1aef66ed04feb21c902cf6';
+  const SOURCE_COMMIT = '8a9acd2e221708835dab446d019a47dcd90896c6';
   const IMPLEMENTED_EFFECTS = Object.freeze(['support', 'knob', 'mend', 'damage', 'heal_base', 'supply', 'play_draw', 'play_damage', 'draw_one', 'retrieve_grave', 'arm_aiflow', 'seize']);
   const IMPLEMENTED = new Set(IMPLEMENTED_EFFECTS);
   const REASON_TEXT = Object.freeze({
@@ -2674,6 +2674,9 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
     const card = cards[unit.card_id];
     const profile = game.profile(seat, unit, false);
     const title = profile.parts.map(part => {
+      if ((part[0] === '左邻同系' || part[0] === '右邻同系') && part[1] && part[2]) {
+        return part[0] + ' +' + part[1] + '/+' + part[2];
+      }
       const bits = [part[0]];
       if (part[1]) bits.push((part[1] > 0 ? '+' : '') + part[1] + '攻');
       if (part[2]) bits.push((part[2] > 0 ? '+' : '') + part[2] + '耐');

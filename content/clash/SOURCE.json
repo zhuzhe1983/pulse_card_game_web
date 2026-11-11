@@ -2,9 +2,9 @@
   "ruleset_id": "pcg.clash.v0",
   "prompt_repo": "https://github.com/zhuzhe1983/pulse_card_game_prompt",
   "prompt_pr": 3,
-  "prompt_commit": "9171f2594608b5e43b1aef66ed04feb21c902cf6",
+  "prompt_commit": "8a9acd2e221708835dab446d019a47dcd90896c6",
   "prompt_commit_merged": false,
-  "previous_playtest_commit": "0309ed8334491c3f1693a42ad068be82f5bb46a7",
+  "previous_playtest_commit": "9171f2594608b5e43b1aef66ed04feb21c902cf6",
   "copied_from_handoff": {
     "HEAD.txt": "7ba58fb399956409ebc60323e2cca595c46112a0",
     "content/clash_playtest.json": {
@@ -13,11 +13,11 @@
     },
     "fixtures/clash_v0_lesson.json": {
       "repo_path": "content/clash/clash_v0_lesson.json",
-      "sha256": "d146ca765a840584b92cba942dc49f1d768940a4ecdde08e7f48e14c0f199942"
+      "sha256": "0077bfd4dd52fed9e3808fac42337f0e301430d7ac4bbee2905a83b6af2a24c7"
     },
     "docs/01_GAMEPLAY.md": {
       "repo_path": "content/clash/01_GAMEPLAY.md",
-      "sha256": "105f651212ff6f1eef244b6a32a62c897f1aac10bc90046864216715cca594aa"
+      "sha256": "432b81027299b4d81549a6cfc5a86fd287556121305c54412a48a2940e0e4acd"
     },
     "content/clash_roster_96.json": {
       "repo_path": "content/clash/clash_roster_96.json",
@@ -25,11 +25,11 @@
     },
     "docs/18_ROSTER_AND_GROWTH.md": {
       "repo_path": "content/clash/18_ROSTER_AND_GROWTH.md",
-      "sha256": "6e8278d148a423a91a043b64dcfc0c6dcc92f3c049a248b39a1c957081f3b00d"
+      "sha256": "49251ace2cd43c8181d87b147d8cf5fd134c6646a9162723596e32a235cf7c73"
     },
     "WEB_IMPLEMENTATION_HANDOFF.md": {
       "repo_path": "content/clash/WEB_IMPLEMENTATION_HANDOFF.md",
-      "sha256": "ab21910eae2a9df6cec26fcdf09cac72c56424562fe787491d45dac0d1004746"
+      "sha256": "28987a0a41bc853c031f5fa5acf56d9b59a094a9687456c1880aa0cefd38ec03"
     },
     "content/clash_services.json": {
       "repo_path": "content/clash/clash_services.json",
@@ -37,12 +37,12 @@
     },
     "docs/19_SYNERGY_AND_SERVICES.md": {
       "repo_path": "content/clash/19_SYNERGY_AND_SERVICES.md",
-      "sha256": "eaff6b74435b3ad9a6cdbcbb76e722333bd62ac8af3bbd6477296c9b2710382f"
+      "sha256": "bc8cef831b32024542c7706da77d94334d948e304e4c89a2ba88e1d35a1dac20"
     },
     "docs/20_POINTER_AND_MODES.md": {
       "repo_path": "content/clash/20_POINTER_AND_MODES.md",
-      "sha256": "9f4f0afbf8a8f803856ca331ae36550e43c3e30969f2c08f83530aedd1b35437"
+      "sha256": "8fa5b0a990b31d044fead84a576b05c9c34f24a28a1fbec161bde4d715d595c8"
     }
   },
-  "note": "装配改第二排和整数加成。最左主控 +1 按玩家要求取消，不实现。"
+  "note": "8a9acd2 正式去掉最左主控加攻，教学局结束是基地 19 对 20。交接「局面」一节仍写着百分比公式，和同一份交接后面的整数规则以及教学局 19 对 20 冲突，本地按整数保留。"
 }

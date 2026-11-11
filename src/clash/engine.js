@@ -1,12 +1,12 @@
 /* pcg.clash.v0 table rules.
- * Bound to prompt commit 9171f2594608b5e43b1aef66ed04feb21c902cf6.
+ * Bound to prompt commit 8a9acd2e221708835dab446d019a47dcd90896c6.
  * Card numbers come from the playtest JSON. Combat reads kind, cost, attack,
  * durability, guard, bonuses and the closed effect list only.
  * star, family and version are stored when a pack supplies them and are not read here. */
 (function (root) {
   'use strict';
   const RULESET = 'pcg.clash.v0';
-  const SOURCE_COMMIT = '9171f2594608b5e43b1aef66ed04feb21c902cf6';
+  const SOURCE_COMMIT = '8a9acd2e221708835dab446d019a47dcd90896c6';
   const IMPLEMENTED_EFFECTS = Object.freeze(['support', 'knob', 'mend', 'damage', 'heal_base', 'supply', 'play_draw', 'play_damage', 'draw_one', 'retrieve_grave', 'arm_aiflow', 'seize']);
   const IMPLEMENTED = new Set(IMPLEMENTED_EFFECTS);
   const REASON_TEXT = Object.freeze({
