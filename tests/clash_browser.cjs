@@ -124,7 +124,7 @@ async function main() {
     }
 
     eq(await attr('main.table', 'data-ruleset'), 'pcg.clash.v0', '规则编号');
-    eq(await attr('main.table', 'data-source-commit'), '2752e13b584c184bd073cc31f139802237cb5f66', '来源提交');
+    eq(await attr('main.table', 'data-source-commit'), '64848ae38b276e370ec225f88f1498424ff68497', '来源提交');
     eq(await text('[data-seat="0"][data-stat="base"]'), '20', '先手基地');
     eq(await text('[data-seat="1"][data-stat="base"]'), '20', '后手基地');
     eq(await text('[data-seat="0"][data-stat="supply"]'), '1', '先手供电');
@@ -173,11 +173,11 @@ async function main() {
     await click('[data-action="play"]');
     await click('[data-board-seat="0"][data-card="xi_tiao"]');
     await click('[data-action="attack-base"]');
-    eq(await text('[data-seat="1"][data-stat="base"]'), '19', '打基地不反击');
+    eq(await text('[data-seat="1"][data-stat="base"]'), '18', '领队加成打基地');
     await click('[data-board-seat="0"][data-card="xi_tiao"]');
     await click('[data-action="attack-base"]');
     eq(await attr('#last-error', 'data-code'), 'already_attacked', '不能连打');
-    eq(await text('[data-seat="1"][data-stat="base"]'), '19', '连打不重复扣血');
+    eq(await text('[data-seat="1"][data-stat="base"]'), '18', '连打不重复扣血');
     await click('[data-action="end-turn"]');
 
     await click('[data-action="select-hand"][data-card="xi_tiao"]');
@@ -185,21 +185,22 @@ async function main() {
     await click('[data-board-seat="1"][data-card="xiao_yin"]');
     await click('[data-board-seat="0"][data-card="xi_tiao"]');
     eq(await cardsIn('[data-grave="0"]'), 'xi_tiao', '先手细条进墓地');
-    eq(await attr('[data-board-seat="1"][data-card="xiao_yin"]', 'data-durability'), '1', '后手小印剩 1');
+    eq(await cardsIn('[data-grave="1"]'), 'jie_yi_ge_dian,xiao_yin', '后手小印同时死亡');
+    eq(await attr('[data-board-seat="1"][data-card="xi_tiao"]', 'data-durability'), '2', '后手刚打出的细条还在');
     await click('[data-action="end-turn"]');
 
     await click('[data-action="select-hand"][data-card="dian_zhen"]');
     await click('[data-action="play"]');
     await click('[data-board-seat="0"][data-card="xiao_yin"]');
-    await click('[data-board-seat="1"][data-card="xiao_yin"]');
+    await click('[data-board-seat="1"][data-card="xi_tiao"]');
     eq(await text('[data-seat="0"][data-stat="base"]'), '20', '对砍后先手基地');
-    eq(await text('[data-seat="1"][data-stat="base"]'), '19', '对砍后后手基地');
+    eq(await text('[data-seat="1"][data-stat="base"]'), '18', '对砍后后手基地');
     eq(await attr('[data-board-seat="0"][data-slot="0"]', 'data-card'), 'dian_zhen', '先手只剩点阵哨');
     eq(await attr('[data-board-seat="0"][data-slot="0"]', 'data-sick'), 'true', '点阵哨新入场');
     eq(await attr('[data-board-seat="0"][data-slot="0"]', 'data-guard'), 'true', '点阵哨护卫');
-    eq(await attr('[data-board-seat="1"][data-slot="0"]', 'data-card'), 'xi_tiao', '后手细条收紧到最左');
+    eq(await value(`document.querySelectorAll('[data-board-seat="1"][data-card]').length`), 0, '后手单位互相打空');
     eq(await cardsIn('[data-grave="0"]'), 'xi_tiao,xiao_yin', '先手墓地顺序');
-    eq(await cardsIn('[data-grave="1"]'), 'jie_yi_ge_dian,xiao_yin', '后手墓地顺序');
+    eq(await cardsIn('[data-grave="1"]'), 'jie_yi_ge_dian,xiao_yin,xi_tiao', '后手墓地顺序');
     await shot('03-turn-three');
     await click('[data-action="end-turn"]');
     eq(await attr('#turn-label', 'data-seat'), '1', '第三回合结束后立刻后手');
@@ -299,7 +300,7 @@ async function main() {
     eq(await attr('[data-board-seat="0"][data-card="art_h039a"]', 'data-sick'), 'false', '冲锋打出后可以攻击');
     await click('[data-board-seat="0"][data-card="art_h039a"]');
     await click('[data-action="attack-base"]');
-    eq(await text('[data-seat="1"][data-stat="base"]'), '18', '扩展对局里的牌能造成伤害');
+    eq(await text('[data-seat="1"][data-stat="base"]'), '17', '扩展对局里的牌能造成伤害');
     await shot('10-roster-play');
     await click('[data-action="scenario"][data-scenario="grow"]');
     const kept = await attr('[data-board-seat="0"][data-slot="0"]', 'data-iid');
@@ -314,7 +315,7 @@ async function main() {
     eq(await attr('[data-board-seat="0"][data-slot="1"]', 'data-iid'), kept, '原来的最左只是右移');
     await click(`[data-iid="${kept}"]`);
     await click('[data-board-seat="1"][data-card="hou_ke"]');
-    eq(await attr('[data-board-seat="1"][data-card="hou_ke"]', 'data-durability'), '4', '打中指定的厚壳');
+    eq(await attr('[data-board-seat="1"][data-card="hou_ke"]', 'data-durability'), '3', '打中指定的厚壳');
     eq(await attr('[data-board-seat="1"][data-card="xi_tiao"]', 'data-durability'), '4', '旁边的细条没有被误伤');
     if (await value(`document.querySelectorAll('.socket').length`) !== 0) throw new Error('还在画固定空槽');
     await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
@@ -394,14 +395,89 @@ async function main() {
     await value(`document.querySelector('[data-board-seat="0"][data-card="art_h039a"]').scrollIntoView({inline:'center', block:'nearest'})`);
     await click('[data-board-seat="0"][data-card="art_h039a"]');
     await click('[data-board-seat="1"][data-card="hou_ke"]');
-    eq(await attr('[data-board-seat="1"][data-card="hou_ke"]', 'data-durability'), '2', '手机点选后打中指定目标');
+    eq(await cardsIn('[data-grave="1"]'), 'hou_ke', '手机点选后打中指定的厚壳');
     eq(await attr('[data-board-seat="1"][data-card="xi_tiao"]', 'data-durability'), '4', '手机攻击没有打到旁边的牌');
+    await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
+    await click('[data-action="scenario"][data-scenario="synergy"]');
+    eq(await attr('.formation', 'data-formation'), '10', '零键在最左，领队 10%');
+    await click('[data-action="upper-link"]');
+    await click('[data-board-seat="0"][data-card="art_h050"]');
+    await click('[data-board-seat="0"][data-card="qiao_jian"]');
+    eq(await text('[data-seat="0"][data-stat="supply"]'), '9', '第一次上位连接把当前电补回有效上限');
+    if (!(await text('.formation')).includes('上位')) throw new Error('上位连接没有显示');
+    await click('[data-action="select-hand"][data-card="lian_jie"]');
+    await click('[data-action="insert"][data-index="1"]');
+    await click('[data-board-seat="0"][data-card="qiao_jian"]');
+    eq(await attr('.formation', 'data-formation'), '15', '链节紧挨领队是 15%');
+    eq(await value(`document.querySelectorAll('.link-mark').length`), 1, '链节标记在队列里');
+    await click('[data-board-seat="0"][data-card="qiao_jian"]');
+    eq(await attr('.strike', 'data-strike'), '7', '链节和上位加在 15% 之前');
+    await shot('16-synergy-desktop');
+    await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+    await shot('17-synergy-phone');
+    const synergyPhone = await value(`(() => {
+      const clipped = node => {
+        let parent = node.parentElement;
+        while (parent) {
+          const style = getComputedStyle(parent);
+          if (/(auto|scroll|hidden)/.test(style.overflowX) && parent.scrollWidth > parent.clientWidth + 1) return true;
+          parent = parent.parentElement;
+        }
+        return false;
+      };
+      const end = document.querySelector('.end-turn');
+      const formation = document.querySelector('.formation');
+      const spilled = [...document.querySelectorAll('.end-turn, .playcard, .minion, .link-mark, .base-btn')].some(node => {
+        const box = node.getBoundingClientRect();
+        if (box.width <= 8 || clipped(node)) return false;
+        return box.right > window.innerWidth + 4 || box.left < -4;
+      });
+      return { spilled, pageWider: document.documentElement.scrollWidth > window.innerWidth + 4, endLines: end.scrollHeight > end.clientHeight + 2, formation: formation.textContent };
+    })()`);
+    if (synergyPhone.spilled || synergyPhone.pageWider) throw new Error('协同牌桌在手机上伸出屏幕');
+    if (synergyPhone.endLines) throw new Error('结束回合被拆行');
+    if (!synergyPhone.formation.includes('15%')) throw new Error('手机上看不到阵型');
+    await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
+    await click('[data-action="scenario"][data-scenario="synergy"]');
+    await click('[data-action="select-hand"][data-card="uiflow_blocks"]');
+    await click('[data-action="play"]');
+    eq(await attr('[data-hand-seat="0"] [data-card="hou_ke"]', 'data-card'), 'hou_ke', '积木开工抽到厚壳');
+    await click('[data-action="select-hand"][data-card="ezdata_note"]');
+    await click('[data-action="play"]');
+    eq(await attr('[data-hand-seat="0"] [data-card="uiflow_blocks"]', 'data-card'), 'uiflow_blocks', '记一笔取回积木开工');
+    await click('[data-action="select-hand"][data-card="aiflow_say"]');
+    await click('[data-action="play"]');
+    if (!(await text('.formation')).includes('说人话')) throw new Error('说人话没有武装');
+    await click('[data-board-seat="0"][data-card="qiao_jian"]');
+    eq(await attr('.strike', 'data-strike'), '7', '说人话在 10% 之前加 2');
+    await click('[data-action="scenario"][data-scenario="synergy"]');
+    await click('[data-action="select-hand"][data-card="burner_seize"]');
+    await click('[data-board-seat="1"][data-card="hou_ke"]');
+    eq(await text('[data-seat="0"][data-stat="supply"]'), '3', '夺舍花 7');
+    eq(await attr('[data-board-seat="0"][data-card="hou_ke"]', 'data-durability'), '4', '夺舍保留当前耐久');
+    eq(await attr('[data-board-seat="0"][data-card="hou_ke"]', 'data-sick'), 'true', '夺来的单位本回合不能攻击');
+    eq(await value(`document.querySelector('[data-board-seat="1"][data-card="hou_ke"]')`), null, '厚壳离开对方队列');
+    await click('[data-board-seat="0"][data-card="hou_ke"]');
+    await click('[data-action="attack-base"]');
+    eq(await attr('#last-error', 'data-code'), 'summoning_sickness', '刚夺来的单位攻击被拒绝');
+    await shot('18-seize');
+    await click('[data-action="scenario"][data-scenario="builder"]');
+    await click('[data-action="pool-filter"][data-value="service"]');
+    const servicePool = await text('.pool');
+    if (!servicePool.includes('积木开工') || !servicePool.includes('树莓台')) throw new Error('组牌软件分区缺牌');
+    if (servicePool.includes('小印')) throw new Error('软件分区混进了硬件牌');
+    await shot('19-service-builder');
     await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
     await send('Page.navigate', { url: `http://127.0.0.1:${port}/` });
     await waitFor(async () => { if (!(await value('document.body && document.body.innerText')).includes('同一套牌')) throw new Error('lobby'); }, 'lobby');
     await shot('12-lobby');
     await send('Page.navigate', { url: `http://127.0.0.1:${port}/wiki/` });
     await waitFor(async () => { if ((await value('document.querySelector("#result-count") && document.querySelector("#result-count").textContent')) !== '96') throw new Error('wiki count'); }, 'wiki');
+    await waitFor(async () => {
+      const names = await value('document.querySelector("#service-grid") ? document.querySelector("#service-grid").innerText : ""');
+      if (!names.includes('积木开工') || !names.includes('树莓台')) throw new Error('wiki services');
+      if ((await value('document.querySelectorAll("#service-grid [data-sku=\\"none\\"]").length')) !== 5) throw new Error('service sku');
+    }, 'wiki services');
     await shot('13-wiki-desktop');
     await value(`document.querySelector('#q').value = '二代壳'; document.querySelector('#q').dispatchEvent(new Event('input', {bubbles:true}));`);
     await waitFor(async () => { if ((await value('document.querySelector("#result-count").textContent')) !== '2') throw new Error('search'); }, 'wiki search');

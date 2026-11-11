@@ -109,5 +109,15 @@ const dist = fs.readFileSync(path.join(root, 'dist/index.html'), 'utf8');
 ok(app.includes('wikiHref') && app.split('卡牌图鉴').length === 2, 'one wiki link in the game source');
 ok(dist.includes('wikiHref') && !dist.includes('wiki.js'), 'playable page links out and does not embed the wiki');
 ok(!/https?:\/\//.test(fs.readFileSync(path.join(wikiRoot, 'index.html'), 'utf8')), 'wiki html has no absolute http url');
+const serviceFile = path.join(wikiRoot, 'data/clash_services.json');
+const servicePack = JSON.parse(fs.readFileSync(serviceFile, 'utf8'));
+ok(fs.readFileSync(serviceFile, 'utf8') === fs.readFileSync(path.join(root, 'content/clash/clash_services.json'), 'utf8'), 'wiki services match the clash service file');
+ok(servicePack.cards.length === 4 && servicePack.design_hosts.length === 1, 'four services and one design host');
+const hardwareIds = new Set(roster.cards.map(card => card.template_id));
+servicePack.cards.concat(servicePack.design_hosts).forEach(card => {
+  ok(!hardwareIds.has(card.template_id), card.template_id + ' stays out of the 96');
+  ok(card.trusted_sku == null && card.artwork == null, card.template_id + ' has no invented sku or art');
+});
+ok(fs.readFileSync(path.join(wikiRoot, 'index.html'), 'utf8').includes('id="services"'), 'wiki keeps a software section');
 
 console.log('PASS wiki catalog ' + checks + ' checks');

@@ -11,14 +11,21 @@
   const cards = Object.create(null);
   Object.keys(pack.cards).forEach(id => { cards[id] = pack.cards[id]; });
   roster.cards.forEach(card => { cards[card.template_id] = card; });
+  const services = root.PCGClashServices || { cards: [], design_hosts: [] };
+  services.cards.concat(services.design_hosts || []).forEach(card => { cards[card.template_id] = card; });
   const presetFirst = ['art_h039a', 'xiao_yin', 'art_h038a', 'hou_ke', 'dian_zhen', 'art_h027a', 'xuan_niu', 'art_h003', 'art_h025', 'lian_jie'];
   const presetSecond = ['art_h005', 'art_h007', 'qiao_jian', 'art_h032', 'art_h036', 'art_h036a', 'art_c004c', 'art_c004d', 'gan_rao', 'hu_zhao'];
   const seatName = seat => seat === 0 ? '先手' : '后手';
   const kindName = kind => kind === 'main' ? '主控' : kind === 'attachment' ? '配件' : '战术';
   function blurb(card) {
     let text = kindName(card.kind);
-    if (card.kind === 'main') text = `主控 · 攻${card.attack} 耐${card.durability}${card.guard ? ' · 护卫' : ''}`;
-    else if (card.attack_bonus) text = `配件 · 攻击 +${card.attack_bonus}`;
+    if (card.kind === 'main') text = `主控 · 攻${card.attack} 耐${card.durability}${card.guard ? ' · 护卫' : ''}${card.upper_host ? ' · 上位机' : ''}`;
+    else if (card.effect === 'draw_one') text = '服务 · 抽 1 张';
+    else if (card.effect === 'retrieve_grave') text = '服务 · 取回墓地顶';
+    else if (card.effect === 'arm_aiflow') text = '服务 · 下一击 +2';
+    else if (card.effect === 'seize') text = '服务 · 夺走敌方主控';
+    else if (card.attack_bonus) text = `配件 · 攻击 +${card.attack_bonus}${card.chain_piece ? ' · 链节' : ''}`;
+    else if (card.chain_piece) text = '配件 · 链节';
     else if (card.grants_guard) text = '配件 · 获得护卫';
     else if (card.bypass_guard) text = '配件 · 无视护卫';
     else if (card.effect === 'supply') text = `战术 · 供电 +${card.amount}`;
@@ -34,7 +41,7 @@
   let ui = blankUi('lesson');
 
   function blankUi(scenario) {
-    return { scenario, reveal: false, catalog: false, handIndex: null, attacker: null, target: null, knob: false, aiming: false, error: null, log: [] };
+    return { scenario, reveal: false, catalog: false, handIndex: null, attacker: null, target: null, knob: false, aiming: false, linking: false, linkSource: null, chainIndex: null, error: null, log: [] };
   }
 
   function push(text, code) {
@@ -54,6 +61,9 @@
     ui.target = null;
     ui.knob = false;
     ui.aiming = false;
+    ui.linking = false;
+    ui.linkSource = null;
+    ui.chainIndex = null;
     ui.error = null;
   }
 
@@ -117,6 +127,16 @@
       game.spawn(1, 'xi_tiao', 0, 4, false);
       game.spawn(1, 'hou_ke', 1, 6, false);
       push('摆阵：先手已经有 5 台。再打出细条会排到最右，支援把厚壳插到最左。');
+    } else if (scenario === 'synergy') {
+      game = C.Game.empty(cards, rules, pack.capabilities);
+      game.supply = [10, 10];
+      game.max_supply = [8, 8];
+      game.decks = [['hou_ke'], []];
+      game.hands = [['lian_jie', 'uiflow_blocks', 'ezdata_note', 'aiflow_say', 'burner_seize'], []];
+      game.spawn(0, 'art_h050', 0, null, false).sick = false;
+      game.spawn(0, 'qiao_jian', 1, null, false).sick = false;
+      game.spawn(1, 'hou_ke', 0, 4, false);
+      push('协同：零键可以连敲键。链节紧挨领队是 15%。手牌里有三张服务牌和夺舍。');
     } else if (scenario === 'builder') {
       game = null;
       ui.decks = [presetFirst.slice(), presetSecond.slice()];
@@ -136,11 +156,11 @@
   function wantsTarget(card) {
     if (!card) return false;
     if (card.kind === 'attachment') return true;
-    return card.effect === 'damage' || card.effect === 'mend' || card.effect === 'play_damage';
+    return card.effect === 'damage' || card.effect === 'mend' || card.effect === 'play_damage' || card.effect === 'seize';
   }
 
   function directPlay(card) {
-    return !!(card && !wantsTarget(card) && (card.kind === 'main' || card.effect === 'supply' || card.effect === 'heal_base'));
+    return !!(card && !wantsTarget(card) && (card.kind === 'main' || card.kind === 'spell'));
   }
 
   function canDeploy() {
@@ -160,6 +180,9 @@
     ui.attacker = null;
     ui.target = null;
     ui.knob = false;
+    ui.linking = false;
+    ui.linkSource = null;
+    ui.chainIndex = null;
     ui.error = null;
     if (wantsTarget(card)) {
       ui.aiming = true;
@@ -209,11 +232,17 @@
       if (card.kind === 'attachment') return `请选择目标：点一台己方主控，装上${card.name}。一台只能挂一个。`;
       if (card.effect === 'damage') return '请选择目标：点一台敌方单位。护卫拦不住，也没有反击。';
       if (card.effect === 'play_damage') return '请选择目标：点一台敌方单位造成 1 点伤害，或按焊装不造成伤害。';
+      if (card.effect === 'seize') return '请选择目标：点一台敌方主控。链节标记、基地和己方单位都不能夺。';
       if (card.effect === 'mend') return '请选择目标：点一台己方单位，再选修复或临时强化。不能治疗基地。';
+      if (card.chain_piece) return '链节会挂到点中的己方主控上。先点插入位置，标记就放在那里；不点就排到最右。';
     }
+    if (ui.linking) return ui.linkSource ? '点一台己方 ESP32 主控。费用 1。本回合第一次接上时当前供电 +1。' : '点一台己方上位机。零键和树莓台可以发动。';
     if (card && card.kind === 'main') return `准备打出${card.name}。双击排到最右，也可以点队列里的插入位置。本回合不能攻击，技能不受这个限制。`;
     if (card && card.effect === 'supply') return '打出后当前供电 +1，可以暂时高于上限。回合结束会清零。';
     if (card && card.effect === 'heal_base') return '打出后己方基地恢复 4，不超过 20。';
+    if (card && card.effect === 'draw_one') return '积木开工：抽 1 张。手牌满了就亮出进墓地。';
+    if (card && card.effect === 'retrieve_grave') return '记一笔：取回自己墓地最上面一张。墓地是空的也会消耗这张牌。';
+    if (card && card.effect === 'arm_aiflow') return '说人话：本回合下一次打击在百分比之前攻击 +2。已经武装时不能再打。';
     if (card && card.effect === 'play_draw') return '打出后额外抽 1 张。手牌满了会亮出进墓地。';
     if (card && card.rush) return '这张有冲锋，打出后本回合可以攻击。升星进来的仍不能攻击。';
     if (card && card.effect === 'mend' && !ui.target) return '点一台己方单位。可以修复耐久，或让它本回合攻击 +1。不能治疗基地。';
@@ -269,12 +298,18 @@
     const card = cards[unit.card_id];
     const selected = ui.attacker === unit.iid;
     const hot = ui.attacker && seat !== game.seat;
+    const linked = game.upper_links[seat].some(item => item.source === unit.iid || item.target === unit.iid);
     const ribbons = [
       unit.sick ? '新入场' : '',
+      unit.ability_lock ? '本回合锁定' : '',
       unit.attacked ? '已攻击' : '',
       C.hasGuard(cards, unit) ? '护卫' : '',
+      linked ? '上位' : '',
       unit.attachments.map(id => cards[id].name).join(' ')
     ].filter(Boolean).join(' · ');
+    if (unit.link) {
+      return `<button type="button" class="link-mark" data-action="select-unit" data-link="1" data-board-seat="${seat}" data-slot="${slot}" data-seat="${seat}" data-iid="${esc(unit.iid)}" data-card="${esc(unit.card_id)}" data-host="${esc(unit.host_iid)}"><span class="mname">链</span><span class="ribbon">${esc(card.name)}</span></button>`;
+    }
     return `<button type="button" class="minion${selected ? ' selected' : ''}${hot ? ' hot' : ''}${C.hasGuard(cards, unit) ? ' guard' : ''}${unit.sick ? ' sick' : ''}${unit.attacked ? ' spent' : ''}" ${sceneAttr('unit_frame')} data-action="select-unit" data-board-seat="${seat}" data-slot="${slot}" data-seat="${seat}" data-iid="${esc(unit.iid)}" data-card="${esc(unit.card_id)}" data-sick="${unit.sick}" data-guard="${C.hasGuard(cards, unit)}" data-attack="${C.attackOf(cards, unit)}" data-durability="${unit.durability}">
       <span class="portrait">${picture(card, 'board')}</span>
       <span class="atk">${C.attackOf(cards, unit)}</span>
@@ -285,12 +320,27 @@
   }
   function insertMark(index) {
     const label = index === 0 ? '最左' : '插入';
-    return `<button type="button" class="insert" data-action="insert" data-index="${index}">${label}</button>`;
+    const on = ui.chainIndex === index ? ' on' : '';
+    return `<button type="button" class="insert${on}" data-action="insert" data-index="${index}">${label}</button>`;
+  }
+  function formationLine(seat) {
+    const state = game.formationState(seat);
+    const head = state.leader ? `领队${state.percent}%` : '无领队';
+    const extra = [];
+    if (game.upper_links[seat].length) extra.push('上位+1');
+    if (game.aiflow_armed[seat]) extra.push('说人话');
+    return [head].concat(extra).join(' ');
+  }
+  function strikeHint() {
+    if (!ui.attacker) return '';
+    const unit = game.find(ui.attacker)[2];
+    const damage = game.strikePreview(game.seat, C.attackOf(cards, unit));
+    return `<p class="strike" data-strike="${damage}">这一击 ${damage}</p>`;
   }
   function lane(seat) {
     const row = game.boards[seat];
     const card = selectedCard();
-    const inserting = seat === game.seat && card && card.kind === 'main' && directPlay(card);
+    const inserting = seat === game.seat && card && ((card.kind === 'main' && directPlay(card)) || card.chain_piece);
     const bits = [];
     row.forEach((unit, slot) => {
       if (inserting) bits.push(insertMark(slot));
@@ -357,8 +407,8 @@
   function actions() {
     const card = selectedCard();
     const bits = [];
-    if (card && (card.kind === 'main' || card.effect === 'supply' || card.effect === 'heal_base')) {
-      const label = card.effect === 'play_damage' ? '直接焊装' : '焊装';
+    if (card && directPlay(card)) {
+      const label = card.effect === 'play_damage' ? '直接焊装' : card.kind === 'spell' ? '打出' : '焊装';
       bits.push(`<button type="button" class="pad live" data-action="play">${label}</button>`);
     }
     if (card && card.effect === 'mend' && ui.target) {
@@ -367,6 +417,8 @@
     }
     bits.push(`<button type="button" class="pad${ui.attacker ? ' live' : ''}" data-action="attack-base">打核心</button>`);
     bits.push(promoteButtons());
+    const uppers = game.units(game.seat).some(unit => cards[unit.card_id].upper_host && !unit.ability_lock && !unit.link);
+    if (uppers) bits.push(`<button type="button" class="pad${ui.linking ? ' live' : ''}" data-action="upper-link">上位连接</button>`);
     bits.push('<button type="button" class="pad" data-action="support">支援</button>');
     bits.push(`<button type="button" class="pad${ui.knob ? ' live' : ''}" data-action="arm-knob">旋钮</button>`);
     return bits.join('');
@@ -408,13 +460,14 @@
   function renderBuilder() {
     const seat = ui.builderSeat || 0;
     const deck = ui.decks[seat];
-    const filters = [['all', '全部'], ['main', '主控'], ['attachment', '配件'], ['chain', '可升星'], ['baseline', '基线无图']];
+    const filters = [['all', '全部'], ['main', '主控'], ['attachment', '配件'], ['chain', '可升星'], ['baseline', '基线无图'], ['service', '软件服务']];
     const baselineOnly = new Set(content.cards.map(card => card.template_id).filter(id => !roster.cards.some(card => card.template_id === id)));
     const list = Object.keys(cards).filter(id => id !== tokenId).map(id => cards[id]).filter(card => {
       if (ui.poolFilter === 'main') return card.kind === 'main';
       if (ui.poolFilter === 'attachment') return card.kind === 'attachment';
       if (ui.poolFilter === 'chain') return card.growth_kind === 'chain';
       if (ui.poolFilter === 'baseline') return baselineOnly.has(card.template_id);
+      if (ui.poolFilter === 'service') return card.record_kind === 'game_service' || card.record_kind === 'design_only_host';
       return true;
     }).sort((a, b) => a.name.localeCompare(b.name, 'zh'));
     $('#app').innerHTML = `<header class="top">
@@ -423,7 +476,7 @@
       <button type="button" class="btn" data-action="scenario" data-scenario="lesson">返回教学局</button>
     </header>
     <main class="builder" data-scenario="builder" data-ruleset="${esc(content.ruleset_id)}">
-      <p class="balance">96 张扩展加 7 张没有对应图的基线牌。每副 8 到 12 张，至少 4 张主控，同名 1 张。星级只认卡上的 star，不认版本号。数值待试玩。</p>
+      <p class="balance">96 张硬件图册，加 7 张没有对应图的基线牌，再加没有 SKU、没有图的软件服务和设计牌树莓台。每副 8 到 12 张，至少 4 张主控，同名 1 张。星级只认卡上的 star，不认版本号。数值待试玩。</p>
       <div class="scenario-row">
         <button type="button" data-action="builder-seat" data-seat="0">先手 ${ui.decks[0].length} 张</button>
         <button type="button" data-action="builder-seat" data-seat="1">后手 ${ui.decks[1].length} 张</button>
@@ -437,7 +490,8 @@
       <div class="pool">${list.map(card => {
         const star = C.starOf(card);
         const picked = deck.includes(card.template_id);
-        return `<button type="button" class="${picked ? 'picked' : ''}" data-action="toggle-pool" data-card="${esc(card.template_id)}">${esc(card.name)} · ${card.cost}费 · ${kindName(card.kind)}${star ? ' · ' + star + '星' : ''}${card.growth_kind === 'chain' ? ' · 可升星' : ''}<br><span class="hint">${esc(card.game_description || card.role_note || '基线牌，没有 96 图')}</span></button>`;
+        const label = card.record_kind === 'game_service' ? '服务' : card.record_kind === 'design_only_host' ? '设计' : kindName(card.kind);
+        return `<button type="button" class="${picked ? 'picked' : ''}" data-action="toggle-pool" data-card="${esc(card.template_id)}">${esc(card.name)} · ${card.cost}费 · ${label}${star ? ' · ' + star + '星' : ''}${card.growth_kind === 'chain' ? ' · 可升星' : ''}<br><span class="hint">${esc(card.game_description || card.role_note || '基线牌，没有 96 图')}</span></button>`;
       }).join('')}</div>
     </main>`;
     document.body.dataset.ready = '1';
@@ -484,6 +538,7 @@
           <button type="button" data-action="scenario" data-scenario="support-again">厚壳再死</button>
           <button type="button" data-action="scenario" data-scenario="promote-stamp">小印升星</button>
           <button type="button" data-action="scenario" data-scenario="grow">超过五台</button>
+          <button type="button" data-action="scenario" data-scenario="synergy">协同与夺舍</button>
           <button type="button" data-action="scenario" data-scenario="builder">扩展组牌</button>
         </div></details>
         <details class="quiet-log"><summary>记录</summary><ol id="action-log" class="log">${ui.log.slice(-6).reverse().map(item => `<li${item.code ? ` class="bad" data-error-code="${esc(item.code)}"` : ''}>${esc(item.text)}</li>`).join('')}</ol></details>
@@ -492,6 +547,9 @@
       <div class="slots foe">${lane(other)}</div>
       <div class="midline">
         <h3 id="turn-label" data-seat="${game.seat}">${over || seatName(active) + '的回合'}</h3>
+        <p class="formation" data-formation="${game.formationState(active).percent}">${esc(formationLine(active))}</p>
+        ${game.units(active).some(unit => cards[unit.card_id].upper_host && !unit.link) ? `<button type="button" class="upper-btn${ui.linking ? ' on' : ''}" data-action="upper-link">上位连接</button>` : ''}
+        ${strikeHint()}
         <p id="coach">${esc(coach())}</p>
         <p id="last-error" data-code="${esc(ui.error ? ui.error.code : '')}">${ui.error ? esc(ui.error.message) : ''}</p>
       </div>
@@ -542,7 +600,23 @@
   function onUnit(el) {
     const iid = el.dataset.iid;
     const seat = Number(el.dataset.seat);
+    const unit = game.find(iid)[2];
+    if (unit.link) return note(new C.ClashError('链节标记不能被选中', 'bad_target'));
     const card = selectedCard();
+    if (ui.linking) {
+      if (seat !== game.seat) return note(new C.ClashError('来自上位的爱只能连己方单位', 'bad_target'));
+      if (!ui.linkSource) {
+        if (!cards[unit.card_id].upper_host) return note(new C.ClashError('来自上位的爱只能由己方上位机发动', 'bad_target'));
+        ui.linkSource = iid;
+        ui.error = null;
+        return render();
+      }
+      try { game.upperLink(game.seat, ui.linkSource, iid); }
+      catch (error) { return note(error); }
+      push(`来自上位的爱接上。当前供电 ${game.supply[game.seat]}，有效上限 ${game.effectiveMax(game.seat)}。`);
+      clearChoice();
+      return render();
+    }
     if (ui.knob) {
       try { game.knob(game.seat, pack.capabilities.bindings.knob.source, iid); }
       catch (error) { return note(error); }
@@ -550,11 +624,19 @@
       clearChoice();
       return render();
     }
+    if (card && card.effect === 'seize') {
+      if (seat === game.seat) return note(new C.ClashError('夺舍只能指定敌方场上的主控', 'bad_target'));
+      return play(iid);
+    }
+    if (card && card.kind === 'attachment') {
+      if (seat !== game.seat) return note(new C.ClashError('配件只能装在己方主控上', 'bad_target'));
+      return play(iid, null, card.chain_piece ? ui.chainIndex : null);
+    }
     if (card && card.effect === 'play_damage') {
       if (seat === game.seat) return note(new C.ClashError('入场伤害只能指定敌方单位', 'bad_target'));
       return play(iid);
     }
-    if (card && (card.kind === 'attachment' || card.effect === 'damage')) return play(iid);
+    if (card && card.effect === 'damage') return play(iid);
     if (card && card.effect === 'mend') {
       ui.target = iid;
       ui.error = null;
@@ -610,13 +692,33 @@
       ui.attacker = null;
       ui.target = null;
       ui.knob = false;
+      ui.linking = false;
+      ui.linkSource = null;
+      ui.chainIndex = null;
       ui.aiming = wantsTarget(cards[el.dataset.card]);
       ui.error = null;
       return paintSelection();
     }
     if (action === 'select-unit') return onUnit(el);
     if (action === 'play') return play(null);
-    if (action === 'insert') return play(null, null, Number(el.dataset.index));
+    if (action === 'insert') {
+      const held = selectedCard();
+      if (held && held.chain_piece) {
+        ui.chainIndex = Number(el.dataset.index);
+        ui.error = null;
+        return render();
+      }
+      return play(null, null, Number(el.dataset.index));
+    }
+    if (action === 'upper-link') {
+      ui.linking = !ui.linking;
+      ui.linkSource = null;
+      ui.handIndex = null;
+      ui.attacker = null;
+      ui.knob = false;
+      ui.error = null;
+      return render();
+    }
     if (action === 'mend-heal') return play(ui.target, 'heal');
     if (action === 'mend-temp') return play(ui.target, 'temp');
     if (action === 'attack-base') return attack('base');

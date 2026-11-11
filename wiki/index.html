@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="PULSE 卡牌图鉴。96 张待验收美术、官方硬件资料，以及 pcg.clash.v0 待试玩设计。">
+<meta name="description" content="PULSE 卡牌图鉴。96 张待验收硬件美术，以及单独分区的软件服务牌。">
 <title>PULSE 卡牌图鉴</title>
 <link rel="stylesheet" href="../shared/pulse.css">
 <link rel="stylesheet" href="wiki.css">
@@ -28,6 +28,13 @@
   <p class="banner art" id="art-banner">美术预览，尚未验收。图鉴里的图就是对应的卡，对战牌桌用其中的主体图。</p>
   <p class="banner wait" id="design-banner">设计状态是 playtest_draft、待试玩。中文名和技能不是官方规格。回合战已经按这套规则可玩。</p>
 </div>
+<section class="service-band" id="services">
+  <div class="service-copy">
+    <h2>软件服务</h2>
+    <p>这 4 张服务牌和设计牌树莓台不在下面的 96 张硬件图册里。没有 SKU，没有实体图。对局不会登录 UIFlow、EzData、AiFlow 或 M5Burner。</p>
+  </div>
+  <div id="service-grid" class="service-grid"></div>
+</section>
 <div class="layout">
   <form id="filters" role="search">
     <label class="search" for="q">搜索中文名、官方型号或 rid
