@@ -93,9 +93,17 @@ async function main() {
     }, 'app render');
 
     const q = selector => JSON.stringify(selector);
+    async function settle() {
+      await sleep(40);
+      for (let i = 0; i < 40; i++) {
+        if ((await value('document.body.dataset.animating || ""')) !== '1') return;
+        await sleep(80);
+      }
+    }
     async function click(selector) {
       const found = await value(`(() => { const el = document.querySelector(${q(selector)}); if (!el) return ''; el.click(); return 'ok'; })()`);
       if (found !== 'ok') throw new Error('找不到 ' + selector);
+      await settle();
       if (String(selector).includes('end-turn')) {
         await sleep(60);
         await value(`(() => { const el = document.querySelector('[data-action="handoff-confirm"]'); if (el) el.click(); return 'ok'; })()`);
@@ -185,8 +193,13 @@ async function main() {
     eq(await attr('#turn-label', 'data-seat'), '0', '回到先手');
     eq(await cardsIn('[data-hand-seat="0"]'), 'art_h024,bu_ji,dian_zhen', '先手第二回合抽牌');
     await click('[data-board-seat="0"][data-card="xiao_yin"]');
+    eq(await text('[data-board-seat="0"][data-card="xiao_yin"] .atk'), '2', '卡面攻击等于实际伤害');
+    eq(await value(`document.querySelector('[data-board-seat="0"][data-card="xiao_yin"] .atk').classList.contains('boosted')`), true, '加成后攻击变绿');
+    if (!(await attr('[data-board-seat="0"][data-card="xiao_yin"] .atk', 'title') || '').includes('领队 10%')) throw new Error('悬停没有写明领队来源');
+    eq(await text('.trade'), '受 2 · 反 2', '攻击预览写出双方伤害');
     await click('[data-board-seat="1"][data-card="dian_zhen"]');
     eq(await cardsIn('[data-grave="0"]'), 'xiao_yin', '领队小印被反击打死');
+    if (!(await text('#action-log')).includes('小印 攻击 点阵哨，造成 2')) throw new Error('记录没有写清这一击');
     eq(await attr('[data-board-seat="1"][data-card="dian_zhen"]', 'data-durability'), '1', '点阵哨被打到 1');
     eq(await text('[data-seat="1"][data-stat="base"]'), '20', '这一击没有打基地');
     await click('[data-action="end-turn"]');
@@ -490,6 +503,27 @@ async function main() {
     await click('[data-action="attack-base"]');
     eq(await attr('#last-error', 'data-code'), 'summoning_sickness', '刚夺来的单位攻击被拒绝');
     await shot('18-seize');
+    await click('[data-action="scenario"][data-scenario="grow"]');
+    eq(await attr('#turn-label', 'data-seat'), '0', '摆阵仍是先手');
+    await click('.rail .end-turn');
+    if (!(await text('.end-confirm')).includes('还有 5 个单位没攻击，确定结束？')) throw new Error('还能攻击时没有确认 ' + await text('.end-confirm'));
+    eq(await value(`document.querySelectorAll('.minion.nag').length`), 5, '没攻击的单位被高亮');
+    eq(await attr('#turn-label', 'data-seat'), '0', '第一次结束没有换人');
+    await shot('22-end-confirm');
+    await click('[data-action="cancel-end"]');
+    eq(await value(`document.querySelector('.end-confirm')`), null, '继续之后提示消失');
+    eq(await attr('#turn-label', 'data-seat'), '0', '继续不结束回合');
+    await click('.rail .end-turn');
+    await click('.rail .end-turn');
+    eq(await attr('#turn-label', 'data-seat'), '1', '再点结束回合等于确认');
+    await click('[data-action="scenario"][data-scenario="grow"]');
+    await click('.rail .end-turn');
+    await click('[data-action="mute-end"]');
+    eq(await attr('#turn-label', 'data-seat'), '1', '不再提醒会结束这一回合');
+    await click('[data-action="handoff-confirm"]');
+    await click('.rail .end-turn');
+    eq(await value(`document.querySelector('.end-confirm')`), null, '本局不再提醒之后直接结束');
+    eq(await attr('#turn-label', 'data-seat'), '0', '后手也能直接结束');
     await click('[data-action="scenario"][data-scenario="builder"]');
     await click('[data-action="pool-filter"][data-value="service"]');
     const servicePool = await text('.pool');

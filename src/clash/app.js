@@ -53,7 +53,7 @@
       aiming: false, linking: false, linkSource: null, chainIndex: null, menu: false, logOpen: false,
       showBanner: true, fresh: true, seen: new Set(), fx: null, error: null, log: [],
       handoff: false, seed: 0, opening: scenario === 'sim' ? 'sim' : 'lesson', simPool: 0, simExcluded: '', simNotes: '',
-      nfcPanel: false, nfcRid: '', nfcStatus: ''
+      nfcPanel: false, nfcRid: '', nfcStatus: '', confirmEnd: false, muteAttackRemind: false, idleIds: []
     };
   }
 
@@ -97,7 +97,7 @@
 
   function canAct() {
     if (!game || game.winner != null || game.phase !== 'main') return false;
-    if (ui.handoff || ui.aiBusy) return false;
+    if (ui.handoff || ui.aiBusy || ui.animating) return false;
     if (ui.mode === 'ai' && game.seat !== 0) return false;
     return true;
   }
@@ -411,10 +411,23 @@
     if (!unit) return { code: 'no_stamp_on_board', why: C.reasonText('no_stamp_on_board') };
     return blockFrom(C.probe(game, () => game.support(game.seat)));
   }
+  function strikeParts(seat, unit) {
+    const printed = C.attackOf(cards, unit);
+    if (printed <= 0) return { damage: 0, printed, boosted: false, title: '攻击栏为 0，这次伤害是 0' };
+    const bits = [`攻击栏 ${printed}`];
+    if (game.upper_links[seat].length) bits.push('来自上位的爱 +1');
+    if (game.aiflow_armed[seat]) bits.push('说人话 +2');
+    const form = game.formationState(seat);
+    if (form.percent) bits.push(form.chain_run ? `领队 ${form.percent}%（连续链节 ${form.chain_run} 段）` : `领队 ${form.percent}%`);
+    const damage = game.strikePreview(seat, printed);
+    if (damage !== printed) bits.push('向上取整');
+    return { damage, printed, boosted: damage !== printed, title: `${bits.join('，')}，伤害 ${damage}` };
+  }
   function unitMenu(unit) {
     const card = cards[unit.card_id];
+    const blow = strikeParts(game.seat, unit);
     const bits = [];
-    bits.push(actButton('attack-base', 'scene/ui/lamp-attack-amber.webp', '打基地', '打对方基地。对方有护卫，且这台没有千里眼时，只能打护卫。', attackBlock(unit, 'base')));
+    bits.push(actButton('attack-base', 'scene/ui/lamp-attack-amber.webp', `打基地 · 造成 ${blow.damage}`, `打对方基地，造成 ${blow.damage}，没有反击。${blow.title}`, attackBlock(unit, 'base')));
     if (card.effect === 'support') {
       const cost = card.amount;
       bits.push(actButton('support', 'scene/ui/lamp-durability-teal.webp', `复活厚壳 · ${cost}电`, `花 ${cost} 点电，把自己墓地里的厚壳叫回最左边，满耐久。小印留在场上。`, supportBlock(unit)));
@@ -473,12 +486,15 @@
     const lunge = ui.fx && ui.fx.attacker === unit.iid;
     const hit = ui.fx && ui.fx.target === unit.iid;
     const canAttack = seat === game.seat && game.phase === 'main' && game.winner == null && !unit.sick && !unit.attacked;
+    const blow = strikeParts(seat, unit);
+    const nag = !!(ui.idleIds && ui.idleIds.indexOf(unit.iid) >= 0);
     if (unit.link) {
       return `<button type="button" class="link-mark${arrive ? ' arrive' : ''}" data-action="select-unit" data-link="1" data-board-seat="${seat}" data-slot="${slot}" data-seat="${seat}" data-iid="${esc(unit.iid)}" data-card="${esc(unit.card_id)}" data-host="${esc(unit.host_iid)}"><span class="mname">链</span><span class="ribbon">${esc(card.name)}</span></button>`;
     }
-    return `<button type="button" class="minion${selected ? ' selected' : ''}${hot ? ' hot' : ''}${canAttack ? ' can-attack' : ''}${arrive ? ' arrive' : ''}${lunge ? ' lunge' : ''}${hit ? ' hit' : ''}${C.hasGuard(cards, unit) ? ' guard' : ''}${unit.sick ? ' sick' : ''}${unit.attacked ? ' spent' : ''}" ${sceneAttr('unit_frame')} data-action="select-unit" data-board-seat="${seat}" data-slot="${slot}" data-seat="${seat}" data-iid="${esc(unit.iid)}" data-card="${esc(unit.card_id)}" data-sick="${unit.sick}" data-attacked="${unit.attacked}" data-guard="${C.hasGuard(cards, unit)}" data-attack="${C.attackOf(cards, unit)}" data-durability="${unit.durability}">
+    return `<button type="button" class="minion${selected ? ' selected' : ''}${hot ? ' hot' : ''}${canAttack ? ' can-attack' : ''}${arrive ? ' arrive' : ''}${lunge ? ' lunge' : ''}${hit ? ' hit' : ''}${nag ? ' nag' : ''}${C.hasGuard(cards, unit) ? ' guard' : ''}${unit.sick ? ' sick' : ''}${unit.attacked ? ' spent' : ''}" ${sceneAttr('unit_frame')} data-action="select-unit" data-board-seat="${seat}" data-slot="${slot}" data-seat="${seat}" data-iid="${esc(unit.iid)}" data-card="${esc(unit.card_id)}" data-sick="${unit.sick}" data-attacked="${unit.attacked}" data-guard="${C.hasGuard(cards, unit)}" data-attack="${blow.printed}" data-strike="${blow.damage}" data-nag="${nag ? '1' : '0'}" data-durability="${unit.durability}">
       <span class="portrait">${picture(card, 'board')}</span>
-      <span class="atk">${C.attackOf(cards, unit)}</span>
+      <span class="atk${blow.boosted ? ' boosted' : ''}" title="${esc(blow.title)}">${blow.damage}</span>
+      ${blow.boosted ? `<span class="atk-src">${esc(blow.title)}</span>` : ''}
       <span class="hp">${unit.durability}</span>
       <span class="mname">${esc(card.name)}</span>
       ${ribbons ? `<span class="ribbon">${esc(ribbons)}</span>` : ''}
@@ -499,9 +515,23 @@
   }
   function strikeHint() {
     if (!ui.attacker) return '';
-    const unit = game.find(ui.attacker)[2];
-    const damage = game.strikePreview(game.seat, C.attackOf(cards, unit));
-    return `<p class="strike" data-strike="${damage}">这一击 ${damage}</p>`;
+    let unit;
+    try { unit = game.find(ui.attacker)[2]; } catch (error) { return ''; }
+    const blow = strikeParts(game.seat, unit);
+    return `<p class="strike" data-strike="${blow.damage}">这一击造成 ${blow.damage}${blow.boosted ? '。' + blow.title : ''}</p>`;
+  }
+  function idleAttackers() {
+    if (!game || game.phase !== 'main' || game.winner != null) return [];
+    const seat = game.seat;
+    return game.units(seat).filter(unit => {
+      if (unit.link || unit.sick || unit.attacked) return false;
+      if (C.probe(game, () => game.attack(seat, unit.iid, 'base')).ok) return true;
+      return game.units(1 - seat).some(foe => C.probe(game, () => game.attack(seat, unit.iid, foe.iid)).ok);
+    });
+  }
+  function endPrompt() {
+    const count = (ui.idleIds || []).length;
+    return `<div class="end-confirm" data-end-confirm="1"><p>还有 ${count} 个单位没攻击，确定结束？</p><div class="end-actions"><button type="button" data-action="end-turn">结束回合</button><button type="button" data-action="cancel-end">继续</button><button type="button" data-action="mute-end">本局不再提醒</button></div></div>`;
   }
   function lane(seat) {
     const row = game.boards[seat];
@@ -696,7 +726,7 @@
       card.style.height = ghost.height + 'px';
       card.style.margin = '0';
       arena.appendChild(card);
-      setTimeout(() => card.remove(), 460);
+      setTimeout(() => card.remove(), 720);
     });
   }
 
@@ -776,6 +806,7 @@
         ? '固定教学：你在下方，对方在上方。结束回合后对方自动行动。这不是模拟战。'
         : '两人轮流，共用这一块屏幕。座位 0 在下方，座位 1 在上方。';
     const canEnd = canAct();
+    ui.idleIds = ui.confirmEnd ? idleAttackers().map(unit => unit.iid) : [];
     const scenarios = [['versus', '固定教学'], ['sim', '模拟战'], ['lesson', '本地双人'], ['support-present', '小印已在场'], ['support-deploy', '先打出小印'], ['support-again', '厚壳再死'], ['promote-stamp', '小印升星'], ['grow', '超过五台'], ['crowd', '两边七台'], ['synergy', '协同与夺舍'], ['builder', '扩展组牌']];
     $('#app').innerHTML = `<div class="table-page">
     <button type="button" class="menu-toggle" data-action="toggle-menu" aria-expanded="${ui.menu ? 'true' : 'false'}">菜单</button>
@@ -806,7 +837,7 @@
         </div>
         <p class="mode-note">${esc(modeNote)}</p>
       </div>
-      <div class="core-slot foe">${core(other)}</div>
+      <div class="core-slot foe${ui.attacker && other !== game.seat ? ' aim-target' : ''}">${core(other)}</div>
       <div class="slots foe" style="--n:${Math.max(1, game.units(other).length)}">${lane(other)}</div>
       <div class="midline">
         <h3 id="turn-label" data-seat="${game.seat}">${esc(turnText)}</h3>
@@ -819,9 +850,10 @@
       ${ui.aiBusy ? '<p class="ai-banner">对方正在行动</p>' : ''}
       ${ui.handoff ? `<div class="handoff-mask" data-handoff="1"><div class="handoff-card"><p>轮到座位 ${game.seat}，请交给对方</p><p>两人轮流，共用这一块屏幕。确认之前不能替对方行动。</p><button type="button" data-action="handoff-confirm">交给座位 ${game.seat}</button></div></div>` : ''}
       <div class="slots mine" style="--n:${Math.max(1, game.units(bottom).length)}">${lane(bottom)}</div>
-      <div class="core-slot mine">${core(bottom)}</div>
+      <div class="core-slot mine${ui.attacker && bottom !== game.seat ? ' aim-target' : ''}">${core(bottom)}</div>
       ${skillBar()}
       <section class="hand-dock" aria-label="当前手牌">${handHtml(bottom, true)}</section>
+      ${ui.confirmEnd ? endPrompt() : ''}
       <aside class="rail tools">
         <button type="button" class="end-turn${canEnd && !ui.aiBusy && (ui.mode !== 'ai' || game.seat === 0) ? ' hot' : ' wait'}" ${sceneAttr('end_turn')} data-action="end-turn">结束回合</button>
         <div class="pads">${actions()}</div>
@@ -845,46 +877,177 @@
   }
 
   function play(target, mode, index) {
+    if (ui.animating) return;
     if (!canAct()) return note(new C.ClashError(C.reasonText('not_your_turn'), 'not_your_turn'));
     const card = selectedCard();
     if (!card) return note(new C.ClashError('请先选择手牌', 'not_in_hand'));
-    const seat = game.seat;
-    const bases = game.bases.slice();
-    const logBefore = game.log.length;
+    const commit = () => {
+      const seat = game.seat;
+      const bases = game.bases.slice();
+      const logBefore = game.log.length;
+      try {
+        game.play(seat, card.template_id, target == null ? null : target, mode || null, index == null ? null : index);
+      } catch (error) {
+        return note(error);
+      }
+      ui.fx = { bases };
+      let text = `${sideLabel(seat)}打出${card.name}，费用 ${card.cost}。`;
+      if (card.effect === 'supply') text += `当前供电 ${game.supply[seat]}，上限仍是 ${game.max_supply[seat]}。`;
+      if (card.effect === 'seize' && target != null) {
+        const moved = game.find(target)[2];
+        text += ` 夺舍：${cards[moved.card_id].name}改由${sideLabel(seat)}控制，移到${sideLabel(seat)}这一侧最右。`;
+      }
+      soakLog(logBefore);
+      push(text);
+      clearChoice();
+      render();
+    };
+    if (target != null) {
+      const from = document.querySelector('.playcard.selected') || document.querySelector('.slots.mine');
+      const to = document.querySelector(`[data-iid="${target}"]`) || document.querySelector('.slots.foe');
+      lockAnim(true);
+      showBeam(card.name, from, to).then(() => {
+        commit();
+        lockAnim(false);
+      });
+      return;
+    }
+    commit();
+  }
+
+  function motion() {
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    return reduce
+      ? { lift: 40, lunge: 50, back: 40, hold: 220, pause: 80, show: 120, die: 180 }
+      : { lift: 200, lunge: 280, back: 180, hold: 600, pause: 700, show: 800, die: 420 };
+  }
+
+  function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
+  function lockAnim(on) {
+    ui.animating = on;
+    document.body.dataset.animating = on ? '1' : '0';
+  }
+
+  function spawnFloater(el, text) {
+    const rect = el && el.getBoundingClientRect ? el.getBoundingClientRect() : el;
+    if (!rect || rect.left == null) return;
+    const node = document.createElement('div');
+    node.className = 'dmg-float';
+    node.textContent = text;
+    node.style.left = (rect.left + rect.width / 2) + 'px';
+    node.style.top = (rect.top + 6) + 'px';
+    document.body.appendChild(node);
+    setTimeout(() => node.remove(), motion().hold + 180);
+  }
+
+  function unitHp(iid) {
+    try { return game.find(iid)[2].durability; } catch (error) { return 0; }
+  }
+
+  function attackNames(attackerId, target) {
+    const attacker = game.find(attackerId)[2];
+    const targetName = target === 'base' ? '核心' : cards[game.find(target)[2].card_id].name;
+    return { attackerName: cards[attacker.card_id].name, targetName };
+  }
+
+  async function presentAttack(seat, attackerId, target) {
+    const preview = attackNames(attackerId, target);
+    const beforeTarget = target === 'base' ? game.bases[1 - seat] : unitHp(target);
+    const beforeAttacker = unitHp(attackerId);
+    const timing = motion();
+    const atkNode = document.querySelector(`[data-iid="${attackerId}"]`);
+    const tgtNode = target === 'base'
+      ? document.querySelector(`.core-slot.${seat === viewerBottom() ? 'foe' : 'mine'} .base-btn`)
+      : document.querySelector(`[data-iid="${target}"]`);
+    lockAnim(true);
     try {
-      game.play(seat, card.template_id, target == null ? null : target, mode || null, index == null ? null : index);
-    } catch (error) {
-      return note(error);
+      if (atkNode) atkNode.classList.add('combat-lift');
+      await sleep(timing.lift);
+      if (atkNode && tgtNode && timing.lunge > 80) {
+        const from = atkNode.getBoundingClientRect();
+        const to = tgtNode.getBoundingClientRect();
+        const dx = (to.left + to.width / 2) - (from.left + from.width / 2);
+        const dy = (to.top + to.height / 2) - (from.top + from.height / 2);
+        atkNode.style.transition = `transform ${timing.lunge}ms ease-in`;
+        atkNode.style.transform = `translate(${dx}px, ${dy}px) scale(1.08)`;
+        await sleep(timing.lunge);
+        if (tgtNode) tgtNode.classList.add('combat-hit');
+        atkNode.style.transition = `transform ${timing.back}ms ease-out`;
+        atkNode.style.transform = 'translate(0, 0) scale(1)';
+        await sleep(timing.back);
+      } else {
+        if (tgtNode) tgtNode.classList.add('combat-hit');
+        await sleep(timing.lunge);
+      }
+      const bases = game.bases.slice();
+      try {
+        game.attack(seat, attackerId, target);
+      } catch (error) {
+        note(error);
+        throw error;
+      }
+      const deal = beforeTarget - (target === 'base' ? game.bases[1 - seat] : unitHp(target));
+      const back = beforeAttacker - unitHp(attackerId);
+      const targetPoint = tgtNode ? tgtNode.getBoundingClientRect() : null;
+      const attackerPoint = atkNode ? atkNode.getBoundingClientRect() : null;
+      ui.fx = { attacker: attackerId, target, bases };
+      push(`${preview.attackerName} 攻击 ${preview.targetName}，造成 ${deal}`);
+      if (back) push(`${preview.targetName} 攻击 ${preview.attackerName}，造成 ${back}`);
+      clearChoice();
+      render();
+      spawnFloater(targetPoint, '-' + deal);
+      if (back) spawnFloater(attackerPoint, '-' + back);
+      await sleep(timing.hold);
+    } finally {
+      lockAnim(false);
     }
-    ui.fx = { bases };
-    let text = `${sideLabel(seat)}打出${card.name}，费用 ${card.cost}。`;
-    if (card.effect === 'supply') text += `当前供电 ${game.supply[seat]}，上限仍是 ${game.max_supply[seat]}。`;
-    if (card.effect === 'seize' && target != null) {
-      const moved = game.find(target)[2];
-      text += ` 夺舍：${cards[moved.card_id].name}改由${sideLabel(seat)}控制，移到${sideLabel(seat)}这一侧最右。`;
-    }
-    soakLog(logBefore);
-    push(text);
-    clearChoice();
-    render();
   }
 
   function attack(target) {
+    if (ui.animating) return;
     if (!canAct()) return note(new C.ClashError(C.reasonText('not_your_turn'), 'not_your_turn'));
     if (!ui.attacker) return note(new C.ClashError('请先点一台己方单位', 'bad_target'));
-    const attacker = game.find(ui.attacker)[2];
     const attackerId = ui.attacker;
-    const bases = game.bases.slice();
-    try {
-      game.attack(game.seat, ui.attacker, target);
-    } catch (error) {
-      return note(error);
+    const probe = C.probe(game, () => game.attack(game.seat, attackerId, target));
+    if (!probe.ok) return note(new C.ClashError(probe.message, probe.code));
+    presentAttack(game.seat, attackerId, target).catch(() => {});
+  }
+
+  async function showAiCard(card) {
+    const node = document.createElement('div');
+    node.className = 'ai-showcard';
+    node.innerHTML = `<div>${esc(card.name)}</div><div>${card.cost}费</div>`;
+    document.body.appendChild(node);
+    await sleep(motion().show);
+    node.remove();
+  }
+
+  async function showBeam(caption, fromEl, toEl) {
+    const nodes = [];
+    if (fromEl && toEl && fromEl.getBoundingClientRect && toEl.getBoundingClientRect) {
+      const from = fromEl.getBoundingClientRect();
+      const to = toEl.getBoundingClientRect();
+      const x1 = from.left + from.width / 2;
+      const y1 = from.top + from.height / 2;
+      const x2 = to.left + to.width / 2;
+      const y2 = to.top + to.height / 2;
+      const beam = document.createElement('div');
+      beam.className = 'fx-beam';
+      beam.style.left = x1 + 'px';
+      beam.style.top = y1 + 'px';
+      beam.style.width = Math.hypot(x2 - x1, y2 - y1) + 'px';
+      beam.style.transform = `rotate(${Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI}deg)`;
+      document.body.appendChild(beam);
+      nodes.push(beam);
     }
-    ui.fx = { attacker: attackerId, target, bases };
-    const name = cards[attacker.card_id].name;
-    push(target === 'base' ? `${name}攻击了对方基地。` : `${name}与对方单位同时结算伤害。`);
-    clearChoice();
-    render();
+    const node = document.createElement('div');
+    node.className = 'fx-caption';
+    node.textContent = caption;
+    document.body.appendChild(node);
+    nodes.push(node);
+    await sleep(motion().lunge);
+    nodes.forEach(item => item.remove());
   }
 
   function onUnit(el) {
@@ -955,7 +1118,7 @@
     const failed = new Set();
     push('对方正在行动。');
     render();
-    const step = () => {
+    const step = async () => {
       if (!ui.aiBusy || !game || ui.mode !== 'ai') return;
       if (game.winner != null || game.seat !== 1 || game.phase !== 'main' || ui.aiSteps >= 16) {
         if (game && game.winner == null && game.seat === 1 && game.phase === 'main') {
@@ -976,17 +1139,23 @@
         return;
       }
       try {
-        C.applyAi(game, action);
+        if (action.type === 'attack') await presentAttack(1, action.iid, action.target);
+        else {
+          if (action.type === 'play') await showAiCard(cards[action.card]);
+          else await showBeam(describeAi(action));
+          C.applyAi(game, action);
+          push(describeAi(action));
+          render();
+        }
       } catch (error) {
         failed.add(action.key);
         aiTimer = setTimeout(step, 160);
         return;
       }
-      push(describeAi(action));
-      render();
-      aiTimer = setTimeout(step, 220);
+      await sleep(motion().pause);
+      if (ui.aiBusy) step();
     };
-    aiTimer = setTimeout(step, 220);
+    aiTimer = setTimeout(step, motion().pause);
   }
 
   function soakLog(before) {
@@ -1000,8 +1169,15 @@
   }
 
   function endTurn() {
-    if (ui.aiBusy) return;
+    if (ui.aiBusy || ui.animating) return;
     if (ui.mode === 'ai' && game.seat !== 0) return;
+    if (!ui.confirmEnd && !ui.muteAttackRemind && idleAttackers().length) {
+      ui.confirmEnd = true;
+      ui.error = null;
+      render();
+      return;
+    }
+    ui.confirmEnd = false;
     const logBefore = game.log.length;
     const next = 1 - game.seat;
     const deckBefore = game.decks[next].length;
@@ -1036,6 +1212,7 @@
   }
 
   function act(action, el, event) {
+    if (ui.animating) return;
     if (el && el.dataset && el.dataset.block) {
       const why = el.querySelector('.act-why');
       return note(new C.ClashError(why ? why.textContent : C.reasonText(el.dataset.block), el.dataset.block));
@@ -1044,6 +1221,16 @@
     if ((ui.aiBusy || ui.handoff || (ui.mode === 'ai' && game && game.seat !== 0)) && !free.includes(action)) {
       return note(new C.ClashError(C.reasonText('not_your_turn'), 'not_your_turn'));
     }
+    if (action === 'mute-end') {
+      ui.muteAttackRemind = true;
+      ui.confirmEnd = false;
+      return endTurn();
+    }
+    if (action === 'cancel-end') {
+      ui.confirmEnd = false;
+      return render();
+    }
+    if (ui.confirmEnd && action !== 'end-turn') ui.confirmEnd = false;
     if (action === 'handoff-confirm') {
       ui.handoff = false;
       return render();
@@ -1206,7 +1393,7 @@
 
   function clearMarkAttrs() {
     document.querySelectorAll('[data-mark]').forEach(node => node.removeAttribute('data-mark'));
-    document.querySelectorAll('.reject-badge').forEach(node => node.remove());
+    document.querySelectorAll('.reject-badge, .trade').forEach(node => node.remove());
   }
 
   function intentKind() {
@@ -1333,6 +1520,24 @@
       const node = markHost(key);
       if (!node) return;
       node.dataset.mark = key === focusKey ? 'hot' : 'legal';
+      if (!ui.attacker || (!key.startsWith('unit:') && !key.startsWith('core:'))) return;
+      let attacker;
+      try { attacker = game.find(ui.attacker)[2]; } catch (error) { return; }
+      const deal = strikeParts(game.seat, attacker);
+      let text = `受 ${deal.damage}`;
+      let title = `你造成 ${deal.damage}（${deal.title}）。打核心没有反击。`;
+      if (key.startsWith('unit:')) {
+        let foe;
+        try { foe = game.find(key.slice(5))[2]; } catch (error) { return; }
+        const back = strikeParts(foe.seat, foe);
+        text = `受 ${deal.damage} · 反 ${back.damage}`;
+        title = `你造成 ${deal.damage}（${deal.title}）。对方反击 ${back.damage}（${back.title}）。`;
+      }
+      const badge = document.createElement('span');
+      badge.className = 'trade';
+      badge.textContent = text;
+      badge.title = title;
+      node.appendChild(badge);
     });
     const reasonNode = document.querySelector('#last-error');
     if (!ui.error && reasonNode && marks.reason.code && !marks.legal.size) {

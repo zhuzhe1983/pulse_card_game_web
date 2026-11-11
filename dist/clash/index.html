@@ -174,8 +174,9 @@ button { border: 0; color: inherit; background: none; font: inherit; }
 .deck-stack span, .grave-stack span { position: absolute; bottom: 6px; font-size: 14px; font-weight: 800; letter-spacing: .04em; }
 .silk { color: #f4fff8; font-size: 15px; font-weight: 750; }
 .core-slot { position: absolute; z-index: 4; display: grid; place-items: center; }
-.core-slot.foe { top: 58px; left: 50%; width: 124px; height: var(--core-h); transform: translateX(-50%); z-index: 7; }
-.core-slot.mine { top: auto; bottom: calc(var(--hand-h) - var(--sink) + 2px); left: 50%; width: 124px; height: var(--core-h); transform: translateX(-50%); z-index: 8; }
+.core-slot.foe { top: 58px; left: 50%; width: 124px; height: var(--core-h); transform: translateX(-50%); z-index: 4; }
+.core-slot.mine { top: auto; bottom: calc(var(--hand-h) - var(--sink) + 2px); left: 50%; width: 124px; height: var(--core-h); transform: translateX(-50%); z-index: 4; }
+.core-slot.aim-target { z-index: 16; }
 .core-wrap { width: 100%; height: 100%; text-align: center; }
 .base-btn.core {
   position: relative; width: 100%; height: 78%; padding: 0;
@@ -228,8 +229,8 @@ button { border: 0; color: inherit; background: none; font: inherit; }
 }
 .supply-read b { font-family: "Pulse Numeral", "Arial Narrow", sans-serif; font-size: 28px; font-weight: 800; letter-spacing: .02em; }
 .slots {
-  position: absolute; z-index: 3; display: flex; align-items: center; justify-content: safe center;
-  gap: 8px; overflow: hidden; padding: 4px 8px;
+  position: absolute; z-index: 3; display: flex; align-items: flex-end; justify-content: safe center;
+  gap: 10px; overflow: visible; padding: 26px 8px 4px;
 }
 .slots.foe, .slots.mine { left: 220px; width: calc(100% - 430px); height: var(--lane-h); }
 .slots.foe { top: 156px; }
@@ -252,7 +253,7 @@ button { border: 0; color: inherit; background: none; font: inherit; }
 #last-error { position: relative; margin: 0; min-height: 0; font-size: 14px; font-weight: 750; color: #ffb0a4; }
 #last-error:empty { display: none; }
 .table-notice { margin: 6px auto 0; max-width: 34em; padding: 6px 10px; border-radius: 10px; background: #3a2218f2; color: #fff6d8; border: 1px solid #e8a56a; font-size: 15px; font-weight: 800; line-height: 1.35; }
-.hand-dock { position: absolute; z-index: 6; left: 8%; right: 8%; bottom: calc(var(--sink) * -1); height: var(--hand-h); pointer-events: none; overflow: visible; }
+.hand-dock { position: absolute; z-index: 20; left: 8%; right: 8%; bottom: calc(var(--sink) * -1); height: var(--hand-h); pointer-events: none; overflow: visible; }
 .hand-dock .playcard, .hand-dock .hands { pointer-events: auto; }
 .hands.fan { height: 100%; display: flex; justify-content: center; align-items: flex-end; overflow: visible; }
 .unit-wrap {
@@ -261,7 +262,7 @@ button { border: 0; color: inherit; background: none; font: inherit; }
   aspect-ratio: 132 / 169;
 }
 .minion, .playcard { position: relative; border: 0; background: transparent; color: #f4f7f8; text-align: center; }
-.minion { width: 100%; height: 100%; flex: none; padding: 0; overflow: hidden; }
+.minion { width: 100%; height: 100%; flex: none; padding: 0; overflow: visible; }
 .act-menu {
   position: absolute; left: 50%; bottom: calc(100% + 8px); transform: translateX(-50%); z-index: 12;
   width: max-content; max-width: min(280px, 70vw); display: grid; gap: 6px; padding: 8px;
@@ -306,6 +307,31 @@ button { border: 0; color: inherit; background: none; font: inherit; }
   color: #f7fbff; font-weight: 900; font-size: clamp(16px, 1.5vw, 26px); text-shadow: 0 1px 1px #000;
 }
 .minion .atk, .playcard .patk { left: 7%; bottom: 6%; background-image: url("scene/ui/lamp-attack-amber.webp"); color: #2a1a08; }
+.minion .atk.boosted { color: #39ff7a; text-shadow: 0 0 2px #04140a, 0 1px 0 #04140a; }
+.minion .atk-src {
+  display: none; position: absolute; z-index: 8; left: 50%; bottom: calc(100% + 28px); transform: translateX(-50%);
+  width: max-content; max-width: 240px; padding: 4px 8px; border-radius: 8px; pointer-events: none;
+  background: #102018f8; color: #d9ffe4; border: 1px solid #39ff7a; font-size: 12px; font-weight: 800; white-space: normal;
+}
+.minion:hover .atk-src, .minion.selected .atk-src { display: block; }
+.minion.nag { box-shadow: 0 0 0 3px #ffe14a, 0 0 16px #ffe14a; }
+.trade {
+  position: absolute; z-index: 7; left: 50%; top: 6px; transform: translateX(-50%);
+  padding: 2px 6px; border-radius: 999px; background: #102018f2; color: #e8ffe8;
+  border: 1px solid #39ff7a; font-size: 12px; font-weight: 800; white-space: nowrap; pointer-events: none;
+}
+.end-confirm {
+  position: absolute; z-index: 18; right: 12px; width: 188px;
+  bottom: calc(var(--hand-h) - var(--sink) + 18px);
+  padding: 8px 10px; border-radius: 12px; pointer-events: auto;
+  background: #102018f8; color: #fff6d8; border: 1px solid #e8a56a; text-align: center;
+}
+.end-confirm p { margin: 0 0 6px; font-size: 15px; font-weight: 850; line-height: 1.35; }
+.end-confirm .end-actions { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.end-confirm button {
+  min-height: 32px; padding: 4px 10px; border-radius: 8px; background: #1a3a2c; color: #f7fffb;
+  border: 1px solid #7dfff0; font-weight: 800;
+}
 .minion .hp, .playcard .php { right: 7%; bottom: 6%; background-image: url("scene/ui/lamp-durability-teal.webp"); }
 .playcard .cost { left: 7%; top: 6%; background-image: url("scene/ui/lamp-cost-cyan.webp"); }
 .playcard .star { right: 7%; top: 6%; width: 16%; background-image: url("scene/ui/lamp-attack-amber.webp"); color: #2a1a08; font-size: 12px; }
@@ -315,11 +341,12 @@ button { border: 0; color: inherit; background: none; font: inherit; }
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .playcard .detail {
-  display: none; position: absolute; left: 14px; right: 14px; top: 62px; z-index: 2;
-  padding: 6px; font-size: 14px; line-height: 1.35; color: #f4f7f8; text-align: left;
-  background: #07110ee6; border-radius: 8px; max-height: 7em; overflow: hidden;
+  display: none; position: absolute; left: 50%; right: auto; top: auto; bottom: calc(100% + 8px);
+  transform: translateX(-50%); z-index: 3; width: max-content; max-width: 220px;
+  padding: 6px 8px; font-size: 14px; line-height: 1.35; color: #f4f7f8; text-align: left;
+  background: #07110ef2; border: 1px solid #e8a56a; border-radius: 8px; pointer-events: none;
 }
-.playcard:hover, .playcard.selected { transform: translateY(-72px) scale(1.14) rotate(0deg); z-index: 8; overflow: visible; }
+.playcard:hover, .playcard.selected { transform: translateY(-72px) scale(1.14) rotate(0deg); z-index: 30; overflow: visible; }
 .playcard:hover .detail, .playcard.selected .detail { display: block; }
 .playcard.ready { filter: drop-shadow(0 0 8px #7dfff0); }
 .minion.can-attack { border-radius: 12px; }
@@ -334,15 +361,18 @@ button { border: 0; color: inherit; background: none; font: inherit; }
   border-radius: 8px; background: #10281ccc; color: #7dfff0; border: 1px dashed #39f3d4;
 }
 .link-mark .mname { position: absolute; inset: 8px 0 auto; text-align: center; font-weight: 800; }
-.link-mark .ribbon { top: auto; bottom: 8px; font-size: 11px; color: #d7fff6; }
+.link-mark .ribbon { font-size: 12px; color: #d7fff6; }
 .insert {
-  flex: 0 0 28px; align-self: center; min-height: 64px; border-radius: 8px;
-  color: #071014; background: #7dfff0cc; font-size: 12px; font-weight: 800;
+  box-sizing: border-box; flex: 0 0 auto; align-self: center; min-height: 36px; min-width: 4.5em;
+  padding: 6px 12px; border-radius: 8px; color: #071014; background: #7dfff0cc;
+  font-size: 14px; font-weight: 800; white-space: nowrap; overflow: visible; z-index: 2;
 }
 .insert.on { outline: 2px solid #fff; }
 .ribbon {
-  position: absolute; top: 10px; left: 10px; right: 10px; z-index: 1; color: #ffd27a; font-size: 12px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  position: absolute; top: auto; bottom: calc(100% + 4px); left: 50%; right: auto; z-index: 2;
+  transform: translateX(-50%); width: max-content; max-width: none;
+  padding: 1px 8px; border-radius: 999px; background: #102018f2; border: 1px solid #e8a56a;
+  color: #ffd27a; font-size: 12px; font-weight: 800; white-space: nowrap; overflow: visible;
 }
 .rail.tools { position: absolute; z-index: 6; left: 83.6%; top: 34.8%; width: 7.6%; aspect-ratio: 1; height: auto; display: grid; place-items: center; }
 .end-turn {
@@ -360,7 +390,28 @@ button { border: 0; color: inherit; background: none; font: inherit; }
 .log { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.45; }
 .log .bad { color: #ffb0a4; }
 .log-panel h3 { margin: 0; font-size: 16px; }
-.dying { pointer-events: none; z-index: 9; animation: shatter .45s ease forwards; }
+.dying { pointer-events: none; z-index: 9; animation: shatter .7s ease forwards; }
+.dmg-float {
+  position: fixed; z-index: 70; transform: translate(-50%, 0); pointer-events: none;
+  color: #ff5a3c; font-family: "Pulse Numeral", "Arial Narrow", sans-serif;
+  font-size: 34px; font-weight: 800; text-shadow: 0 2px 0 #000;
+  animation: dmgfloat 600ms ease forwards;
+}
+.ai-showcard, .fx-caption {
+  position: fixed; z-index: 68; left: 50%; top: 40%; transform: translate(-50%, -50%);
+  padding: 16px 18px; border-radius: 14px; background: #102018f8; color: #f7fffb;
+  border: 1px solid #7dfff0; font-weight: 900; pointer-events: none; text-align: center;
+}
+.ai-showcard { width: 180px; min-height: 120px; font-size: 22px; }
+.fx-beam { position: fixed; z-index: 64; height: 5px; background: #7dfff0; border-radius: 4px; pointer-events: none; transform-origin: left center; }
+.combat-hit { animation: strike 280ms ease; }
+.minion.combat-lift { z-index: 40; transform: translateY(-22px) scale(1.14); transition: transform 200ms ease; }
+@keyframes dmgfloat { 0% { opacity: 0; transform: translate(-50%, 6px); } 18% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -40px); } }
+@media (prefers-reduced-motion: reduce) {
+  .dmg-float { animation-duration: 200ms; }
+  .dying { animation-duration: 180ms; }
+  .combat-hit { animation-duration: 80ms; }
+}
 .builder { max-width: 1100px; margin: 16px auto; padding: 16px; background: var(--paper); color: var(--ink); border-radius: 16px; }
 .builder .scenario-row { flex-direction: row; flex-wrap: wrap; }
 .top { display: flex; gap: 12px; align-items: center; padding: 12px 16px; background: var(--paper); color: var(--ink); }
@@ -477,8 +528,10 @@ body.hand-out .playcard { width: 72px !important; height: 34px !important; margi
   .deck-stack span, .grave-stack span { font-size: 8px; bottom: 0; }
   .silk { display: none; }
   .core-slot.foe, .core-slot.mine {
-    left: 50%; width: 84px; height: 78px; transform: translateX(-50%); z-index: 8;
+    left: 50%; width: 84px; height: 78px; transform: translateX(-50%); z-index: 5;
   }
+  .core-slot.aim-target { z-index: 18; }
+  .hand-dock { z-index: 22; }
   .core-slot.foe { top: 72px; }
   .core-slot.mine { top: auto; bottom: 178px; }
   .core-name { font-size: 10px; }
@@ -517,7 +570,7 @@ body.hand-out .playcard { width: 72px !important; height: 34px !important; margi
   .table-page, .arena { width: 100%; max-width: 100%; overflow: hidden; }
   .hand-dock {
     left: 0; right: 0; bottom: 0; width: 100%; max-width: 100%; height: 168px;
-    overflow: hidden; z-index: 6; box-sizing: border-box;
+    overflow: hidden; z-index: 22; box-sizing: border-box;
   }
   .hands.fan {
     box-sizing: border-box; width: 100%; min-width: 0; max-width: 100%; height: 100%;
@@ -540,6 +593,9 @@ body.hand-out .playcard { width: 72px !important; height: 34px !important; margi
     background-size: 100% 100%;
   }
   .act-menu { max-width: 70vw; }
+  .end-confirm { top: 288px; right: 8px; left: 8px; bottom: auto; width: auto; padding: 6px; }
+  .end-confirm p { font-size: 13px; }
+  .end-confirm button { min-height: 28px; font-size: 12px; padding: 2px 8px; }
   .skill-bar.bottom { left: 8px; right: 120px; bottom: 232px; height: 36px; }
   .skill-bar.top { left: 8px; right: 8px; top: 248px; }
   .reject-badge { bottom: calc(100% + 18px); }
@@ -2005,7 +2061,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
       aiming: false, linking: false, linkSource: null, chainIndex: null, menu: false, logOpen: false,
       showBanner: true, fresh: true, seen: new Set(), fx: null, error: null, log: [],
       handoff: false, seed: 0, opening: scenario === 'sim' ? 'sim' : 'lesson', simPool: 0, simExcluded: '', simNotes: '',
-      nfcPanel: false, nfcRid: '', nfcStatus: ''
+      nfcPanel: false, nfcRid: '', nfcStatus: '', confirmEnd: false, muteAttackRemind: false, idleIds: []
     };
   }
 
@@ -2049,7 +2105,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
 
   function canAct() {
     if (!game || game.winner != null || game.phase !== 'main') return false;
-    if (ui.handoff || ui.aiBusy) return false;
+    if (ui.handoff || ui.aiBusy || ui.animating) return false;
     if (ui.mode === 'ai' && game.seat !== 0) return false;
     return true;
   }
@@ -2363,10 +2419,23 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
     if (!unit) return { code: 'no_stamp_on_board', why: C.reasonText('no_stamp_on_board') };
     return blockFrom(C.probe(game, () => game.support(game.seat)));
   }
+  function strikeParts(seat, unit) {
+    const printed = C.attackOf(cards, unit);
+    if (printed <= 0) return { damage: 0, printed, boosted: false, title: '攻击栏为 0，这次伤害是 0' };
+    const bits = [`攻击栏 ${printed}`];
+    if (game.upper_links[seat].length) bits.push('来自上位的爱 +1');
+    if (game.aiflow_armed[seat]) bits.push('说人话 +2');
+    const form = game.formationState(seat);
+    if (form.percent) bits.push(form.chain_run ? `领队 ${form.percent}%（连续链节 ${form.chain_run} 段）` : `领队 ${form.percent}%`);
+    const damage = game.strikePreview(seat, printed);
+    if (damage !== printed) bits.push('向上取整');
+    return { damage, printed, boosted: damage !== printed, title: `${bits.join('，')}，伤害 ${damage}` };
+  }
   function unitMenu(unit) {
     const card = cards[unit.card_id];
+    const blow = strikeParts(game.seat, unit);
     const bits = [];
-    bits.push(actButton('attack-base', 'scene/ui/lamp-attack-amber.webp', '打基地', '打对方基地。对方有护卫，且这台没有千里眼时，只能打护卫。', attackBlock(unit, 'base')));
+    bits.push(actButton('attack-base', 'scene/ui/lamp-attack-amber.webp', `打基地 · 造成 ${blow.damage}`, `打对方基地，造成 ${blow.damage}，没有反击。${blow.title}`, attackBlock(unit, 'base')));
     if (card.effect === 'support') {
       const cost = card.amount;
       bits.push(actButton('support', 'scene/ui/lamp-durability-teal.webp', `复活厚壳 · ${cost}电`, `花 ${cost} 点电，把自己墓地里的厚壳叫回最左边，满耐久。小印留在场上。`, supportBlock(unit)));
@@ -2425,12 +2494,15 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
     const lunge = ui.fx && ui.fx.attacker === unit.iid;
     const hit = ui.fx && ui.fx.target === unit.iid;
     const canAttack = seat === game.seat && game.phase === 'main' && game.winner == null && !unit.sick && !unit.attacked;
+    const blow = strikeParts(seat, unit);
+    const nag = !!(ui.idleIds && ui.idleIds.indexOf(unit.iid) >= 0);
     if (unit.link) {
       return `<button type="button" class="link-mark${arrive ? ' arrive' : ''}" data-action="select-unit" data-link="1" data-board-seat="${seat}" data-slot="${slot}" data-seat="${seat}" data-iid="${esc(unit.iid)}" data-card="${esc(unit.card_id)}" data-host="${esc(unit.host_iid)}"><span class="mname">链</span><span class="ribbon">${esc(card.name)}</span></button>`;
     }
-    return `<button type="button" class="minion${selected ? ' selected' : ''}${hot ? ' hot' : ''}${canAttack ? ' can-attack' : ''}${arrive ? ' arrive' : ''}${lunge ? ' lunge' : ''}${hit ? ' hit' : ''}${C.hasGuard(cards, unit) ? ' guard' : ''}${unit.sick ? ' sick' : ''}${unit.attacked ? ' spent' : ''}" ${sceneAttr('unit_frame')} data-action="select-unit" data-board-seat="${seat}" data-slot="${slot}" data-seat="${seat}" data-iid="${esc(unit.iid)}" data-card="${esc(unit.card_id)}" data-sick="${unit.sick}" data-attacked="${unit.attacked}" data-guard="${C.hasGuard(cards, unit)}" data-attack="${C.attackOf(cards, unit)}" data-durability="${unit.durability}">
+    return `<button type="button" class="minion${selected ? ' selected' : ''}${hot ? ' hot' : ''}${canAttack ? ' can-attack' : ''}${arrive ? ' arrive' : ''}${lunge ? ' lunge' : ''}${hit ? ' hit' : ''}${nag ? ' nag' : ''}${C.hasGuard(cards, unit) ? ' guard' : ''}${unit.sick ? ' sick' : ''}${unit.attacked ? ' spent' : ''}" ${sceneAttr('unit_frame')} data-action="select-unit" data-board-seat="${seat}" data-slot="${slot}" data-seat="${seat}" data-iid="${esc(unit.iid)}" data-card="${esc(unit.card_id)}" data-sick="${unit.sick}" data-attacked="${unit.attacked}" data-guard="${C.hasGuard(cards, unit)}" data-attack="${blow.printed}" data-strike="${blow.damage}" data-nag="${nag ? '1' : '0'}" data-durability="${unit.durability}">
       <span class="portrait">${picture(card, 'board')}</span>
-      <span class="atk">${C.attackOf(cards, unit)}</span>
+      <span class="atk${blow.boosted ? ' boosted' : ''}" title="${esc(blow.title)}">${blow.damage}</span>
+      ${blow.boosted ? `<span class="atk-src">${esc(blow.title)}</span>` : ''}
       <span class="hp">${unit.durability}</span>
       <span class="mname">${esc(card.name)}</span>
       ${ribbons ? `<span class="ribbon">${esc(ribbons)}</span>` : ''}
@@ -2451,9 +2523,23 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
   }
   function strikeHint() {
     if (!ui.attacker) return '';
-    const unit = game.find(ui.attacker)[2];
-    const damage = game.strikePreview(game.seat, C.attackOf(cards, unit));
-    return `<p class="strike" data-strike="${damage}">这一击 ${damage}</p>`;
+    let unit;
+    try { unit = game.find(ui.attacker)[2]; } catch (error) { return ''; }
+    const blow = strikeParts(game.seat, unit);
+    return `<p class="strike" data-strike="${blow.damage}">这一击造成 ${blow.damage}${blow.boosted ? '。' + blow.title : ''}</p>`;
+  }
+  function idleAttackers() {
+    if (!game || game.phase !== 'main' || game.winner != null) return [];
+    const seat = game.seat;
+    return game.units(seat).filter(unit => {
+      if (unit.link || unit.sick || unit.attacked) return false;
+      if (C.probe(game, () => game.attack(seat, unit.iid, 'base')).ok) return true;
+      return game.units(1 - seat).some(foe => C.probe(game, () => game.attack(seat, unit.iid, foe.iid)).ok);
+    });
+  }
+  function endPrompt() {
+    const count = (ui.idleIds || []).length;
+    return `<div class="end-confirm" data-end-confirm="1"><p>还有 ${count} 个单位没攻击，确定结束？</p><div class="end-actions"><button type="button" data-action="end-turn">结束回合</button><button type="button" data-action="cancel-end">继续</button><button type="button" data-action="mute-end">本局不再提醒</button></div></div>`;
   }
   function lane(seat) {
     const row = game.boards[seat];
@@ -2648,7 +2734,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
       card.style.height = ghost.height + 'px';
       card.style.margin = '0';
       arena.appendChild(card);
-      setTimeout(() => card.remove(), 460);
+      setTimeout(() => card.remove(), 720);
     });
   }
 
@@ -2728,6 +2814,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
         ? '固定教学：你在下方，对方在上方。结束回合后对方自动行动。这不是模拟战。'
         : '两人轮流，共用这一块屏幕。座位 0 在下方，座位 1 在上方。';
     const canEnd = canAct();
+    ui.idleIds = ui.confirmEnd ? idleAttackers().map(unit => unit.iid) : [];
     const scenarios = [['versus', '固定教学'], ['sim', '模拟战'], ['lesson', '本地双人'], ['support-present', '小印已在场'], ['support-deploy', '先打出小印'], ['support-again', '厚壳再死'], ['promote-stamp', '小印升星'], ['grow', '超过五台'], ['crowd', '两边七台'], ['synergy', '协同与夺舍'], ['builder', '扩展组牌']];
     $('#app').innerHTML = `<div class="table-page">
     <button type="button" class="menu-toggle" data-action="toggle-menu" aria-expanded="${ui.menu ? 'true' : 'false'}">菜单</button>
@@ -2758,7 +2845,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
         </div>
         <p class="mode-note">${esc(modeNote)}</p>
       </div>
-      <div class="core-slot foe">${core(other)}</div>
+      <div class="core-slot foe${ui.attacker && other !== game.seat ? ' aim-target' : ''}">${core(other)}</div>
       <div class="slots foe" style="--n:${Math.max(1, game.units(other).length)}">${lane(other)}</div>
       <div class="midline">
         <h3 id="turn-label" data-seat="${game.seat}">${esc(turnText)}</h3>
@@ -2771,9 +2858,10 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
       ${ui.aiBusy ? '<p class="ai-banner">对方正在行动</p>' : ''}
       ${ui.handoff ? `<div class="handoff-mask" data-handoff="1"><div class="handoff-card"><p>轮到座位 ${game.seat}，请交给对方</p><p>两人轮流，共用这一块屏幕。确认之前不能替对方行动。</p><button type="button" data-action="handoff-confirm">交给座位 ${game.seat}</button></div></div>` : ''}
       <div class="slots mine" style="--n:${Math.max(1, game.units(bottom).length)}">${lane(bottom)}</div>
-      <div class="core-slot mine">${core(bottom)}</div>
+      <div class="core-slot mine${ui.attacker && bottom !== game.seat ? ' aim-target' : ''}">${core(bottom)}</div>
       ${skillBar()}
       <section class="hand-dock" aria-label="当前手牌">${handHtml(bottom, true)}</section>
+      ${ui.confirmEnd ? endPrompt() : ''}
       <aside class="rail tools">
         <button type="button" class="end-turn${canEnd && !ui.aiBusy && (ui.mode !== 'ai' || game.seat === 0) ? ' hot' : ' wait'}" ${sceneAttr('end_turn')} data-action="end-turn">结束回合</button>
         <div class="pads">${actions()}</div>
@@ -2797,46 +2885,177 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
   }
 
   function play(target, mode, index) {
+    if (ui.animating) return;
     if (!canAct()) return note(new C.ClashError(C.reasonText('not_your_turn'), 'not_your_turn'));
     const card = selectedCard();
     if (!card) return note(new C.ClashError('请先选择手牌', 'not_in_hand'));
-    const seat = game.seat;
-    const bases = game.bases.slice();
-    const logBefore = game.log.length;
+    const commit = () => {
+      const seat = game.seat;
+      const bases = game.bases.slice();
+      const logBefore = game.log.length;
+      try {
+        game.play(seat, card.template_id, target == null ? null : target, mode || null, index == null ? null : index);
+      } catch (error) {
+        return note(error);
+      }
+      ui.fx = { bases };
+      let text = `${sideLabel(seat)}打出${card.name}，费用 ${card.cost}。`;
+      if (card.effect === 'supply') text += `当前供电 ${game.supply[seat]}，上限仍是 ${game.max_supply[seat]}。`;
+      if (card.effect === 'seize' && target != null) {
+        const moved = game.find(target)[2];
+        text += ` 夺舍：${cards[moved.card_id].name}改由${sideLabel(seat)}控制，移到${sideLabel(seat)}这一侧最右。`;
+      }
+      soakLog(logBefore);
+      push(text);
+      clearChoice();
+      render();
+    };
+    if (target != null) {
+      const from = document.querySelector('.playcard.selected') || document.querySelector('.slots.mine');
+      const to = document.querySelector(`[data-iid="${target}"]`) || document.querySelector('.slots.foe');
+      lockAnim(true);
+      showBeam(card.name, from, to).then(() => {
+        commit();
+        lockAnim(false);
+      });
+      return;
+    }
+    commit();
+  }
+
+  function motion() {
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    return reduce
+      ? { lift: 40, lunge: 50, back: 40, hold: 220, pause: 80, show: 120, die: 180 }
+      : { lift: 200, lunge: 280, back: 180, hold: 600, pause: 700, show: 800, die: 420 };
+  }
+
+  function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
+  function lockAnim(on) {
+    ui.animating = on;
+    document.body.dataset.animating = on ? '1' : '0';
+  }
+
+  function spawnFloater(el, text) {
+    const rect = el && el.getBoundingClientRect ? el.getBoundingClientRect() : el;
+    if (!rect || rect.left == null) return;
+    const node = document.createElement('div');
+    node.className = 'dmg-float';
+    node.textContent = text;
+    node.style.left = (rect.left + rect.width / 2) + 'px';
+    node.style.top = (rect.top + 6) + 'px';
+    document.body.appendChild(node);
+    setTimeout(() => node.remove(), motion().hold + 180);
+  }
+
+  function unitHp(iid) {
+    try { return game.find(iid)[2].durability; } catch (error) { return 0; }
+  }
+
+  function attackNames(attackerId, target) {
+    const attacker = game.find(attackerId)[2];
+    const targetName = target === 'base' ? '核心' : cards[game.find(target)[2].card_id].name;
+    return { attackerName: cards[attacker.card_id].name, targetName };
+  }
+
+  async function presentAttack(seat, attackerId, target) {
+    const preview = attackNames(attackerId, target);
+    const beforeTarget = target === 'base' ? game.bases[1 - seat] : unitHp(target);
+    const beforeAttacker = unitHp(attackerId);
+    const timing = motion();
+    const atkNode = document.querySelector(`[data-iid="${attackerId}"]`);
+    const tgtNode = target === 'base'
+      ? document.querySelector(`.core-slot.${seat === viewerBottom() ? 'foe' : 'mine'} .base-btn`)
+      : document.querySelector(`[data-iid="${target}"]`);
+    lockAnim(true);
     try {
-      game.play(seat, card.template_id, target == null ? null : target, mode || null, index == null ? null : index);
-    } catch (error) {
-      return note(error);
+      if (atkNode) atkNode.classList.add('combat-lift');
+      await sleep(timing.lift);
+      if (atkNode && tgtNode && timing.lunge > 80) {
+        const from = atkNode.getBoundingClientRect();
+        const to = tgtNode.getBoundingClientRect();
+        const dx = (to.left + to.width / 2) - (from.left + from.width / 2);
+        const dy = (to.top + to.height / 2) - (from.top + from.height / 2);
+        atkNode.style.transition = `transform ${timing.lunge}ms ease-in`;
+        atkNode.style.transform = `translate(${dx}px, ${dy}px) scale(1.08)`;
+        await sleep(timing.lunge);
+        if (tgtNode) tgtNode.classList.add('combat-hit');
+        atkNode.style.transition = `transform ${timing.back}ms ease-out`;
+        atkNode.style.transform = 'translate(0, 0) scale(1)';
+        await sleep(timing.back);
+      } else {
+        if (tgtNode) tgtNode.classList.add('combat-hit');
+        await sleep(timing.lunge);
+      }
+      const bases = game.bases.slice();
+      try {
+        game.attack(seat, attackerId, target);
+      } catch (error) {
+        note(error);
+        throw error;
+      }
+      const deal = beforeTarget - (target === 'base' ? game.bases[1 - seat] : unitHp(target));
+      const back = beforeAttacker - unitHp(attackerId);
+      const targetPoint = tgtNode ? tgtNode.getBoundingClientRect() : null;
+      const attackerPoint = atkNode ? atkNode.getBoundingClientRect() : null;
+      ui.fx = { attacker: attackerId, target, bases };
+      push(`${preview.attackerName} 攻击 ${preview.targetName}，造成 ${deal}`);
+      if (back) push(`${preview.targetName} 攻击 ${preview.attackerName}，造成 ${back}`);
+      clearChoice();
+      render();
+      spawnFloater(targetPoint, '-' + deal);
+      if (back) spawnFloater(attackerPoint, '-' + back);
+      await sleep(timing.hold);
+    } finally {
+      lockAnim(false);
     }
-    ui.fx = { bases };
-    let text = `${sideLabel(seat)}打出${card.name}，费用 ${card.cost}。`;
-    if (card.effect === 'supply') text += `当前供电 ${game.supply[seat]}，上限仍是 ${game.max_supply[seat]}。`;
-    if (card.effect === 'seize' && target != null) {
-      const moved = game.find(target)[2];
-      text += ` 夺舍：${cards[moved.card_id].name}改由${sideLabel(seat)}控制，移到${sideLabel(seat)}这一侧最右。`;
-    }
-    soakLog(logBefore);
-    push(text);
-    clearChoice();
-    render();
   }
 
   function attack(target) {
+    if (ui.animating) return;
     if (!canAct()) return note(new C.ClashError(C.reasonText('not_your_turn'), 'not_your_turn'));
     if (!ui.attacker) return note(new C.ClashError('请先点一台己方单位', 'bad_target'));
-    const attacker = game.find(ui.attacker)[2];
     const attackerId = ui.attacker;
-    const bases = game.bases.slice();
-    try {
-      game.attack(game.seat, ui.attacker, target);
-    } catch (error) {
-      return note(error);
+    const probe = C.probe(game, () => game.attack(game.seat, attackerId, target));
+    if (!probe.ok) return note(new C.ClashError(probe.message, probe.code));
+    presentAttack(game.seat, attackerId, target).catch(() => {});
+  }
+
+  async function showAiCard(card) {
+    const node = document.createElement('div');
+    node.className = 'ai-showcard';
+    node.innerHTML = `<div>${esc(card.name)}</div><div>${card.cost}费</div>`;
+    document.body.appendChild(node);
+    await sleep(motion().show);
+    node.remove();
+  }
+
+  async function showBeam(caption, fromEl, toEl) {
+    const nodes = [];
+    if (fromEl && toEl && fromEl.getBoundingClientRect && toEl.getBoundingClientRect) {
+      const from = fromEl.getBoundingClientRect();
+      const to = toEl.getBoundingClientRect();
+      const x1 = from.left + from.width / 2;
+      const y1 = from.top + from.height / 2;
+      const x2 = to.left + to.width / 2;
+      const y2 = to.top + to.height / 2;
+      const beam = document.createElement('div');
+      beam.className = 'fx-beam';
+      beam.style.left = x1 + 'px';
+      beam.style.top = y1 + 'px';
+      beam.style.width = Math.hypot(x2 - x1, y2 - y1) + 'px';
+      beam.style.transform = `rotate(${Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI}deg)`;
+      document.body.appendChild(beam);
+      nodes.push(beam);
     }
-    ui.fx = { attacker: attackerId, target, bases };
-    const name = cards[attacker.card_id].name;
-    push(target === 'base' ? `${name}攻击了对方基地。` : `${name}与对方单位同时结算伤害。`);
-    clearChoice();
-    render();
+    const node = document.createElement('div');
+    node.className = 'fx-caption';
+    node.textContent = caption;
+    document.body.appendChild(node);
+    nodes.push(node);
+    await sleep(motion().lunge);
+    nodes.forEach(item => item.remove());
   }
 
   function onUnit(el) {
@@ -2907,7 +3126,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
     const failed = new Set();
     push('对方正在行动。');
     render();
-    const step = () => {
+    const step = async () => {
       if (!ui.aiBusy || !game || ui.mode !== 'ai') return;
       if (game.winner != null || game.seat !== 1 || game.phase !== 'main' || ui.aiSteps >= 16) {
         if (game && game.winner == null && game.seat === 1 && game.phase === 'main') {
@@ -2928,17 +3147,23 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
         return;
       }
       try {
-        C.applyAi(game, action);
+        if (action.type === 'attack') await presentAttack(1, action.iid, action.target);
+        else {
+          if (action.type === 'play') await showAiCard(cards[action.card]);
+          else await showBeam(describeAi(action));
+          C.applyAi(game, action);
+          push(describeAi(action));
+          render();
+        }
       } catch (error) {
         failed.add(action.key);
         aiTimer = setTimeout(step, 160);
         return;
       }
-      push(describeAi(action));
-      render();
-      aiTimer = setTimeout(step, 220);
+      await sleep(motion().pause);
+      if (ui.aiBusy) step();
     };
-    aiTimer = setTimeout(step, 220);
+    aiTimer = setTimeout(step, motion().pause);
   }
 
   function soakLog(before) {
@@ -2952,8 +3177,15 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
   }
 
   function endTurn() {
-    if (ui.aiBusy) return;
+    if (ui.aiBusy || ui.animating) return;
     if (ui.mode === 'ai' && game.seat !== 0) return;
+    if (!ui.confirmEnd && !ui.muteAttackRemind && idleAttackers().length) {
+      ui.confirmEnd = true;
+      ui.error = null;
+      render();
+      return;
+    }
+    ui.confirmEnd = false;
     const logBefore = game.log.length;
     const next = 1 - game.seat;
     const deckBefore = game.decks[next].length;
@@ -2988,6 +3220,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
   }
 
   function act(action, el, event) {
+    if (ui.animating) return;
     if (el && el.dataset && el.dataset.block) {
       const why = el.querySelector('.act-why');
       return note(new C.ClashError(why ? why.textContent : C.reasonText(el.dataset.block), el.dataset.block));
@@ -2996,6 +3229,16 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
     if ((ui.aiBusy || ui.handoff || (ui.mode === 'ai' && game && game.seat !== 0)) && !free.includes(action)) {
       return note(new C.ClashError(C.reasonText('not_your_turn'), 'not_your_turn'));
     }
+    if (action === 'mute-end') {
+      ui.muteAttackRemind = true;
+      ui.confirmEnd = false;
+      return endTurn();
+    }
+    if (action === 'cancel-end') {
+      ui.confirmEnd = false;
+      return render();
+    }
+    if (ui.confirmEnd && action !== 'end-turn') ui.confirmEnd = false;
     if (action === 'handoff-confirm') {
       ui.handoff = false;
       return render();
@@ -3158,7 +3401,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
 
   function clearMarkAttrs() {
     document.querySelectorAll('[data-mark]').forEach(node => node.removeAttribute('data-mark'));
-    document.querySelectorAll('.reject-badge').forEach(node => node.remove());
+    document.querySelectorAll('.reject-badge, .trade').forEach(node => node.remove());
   }
 
   function intentKind() {
@@ -3285,6 +3528,24 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
       const node = markHost(key);
       if (!node) return;
       node.dataset.mark = key === focusKey ? 'hot' : 'legal';
+      if (!ui.attacker || (!key.startsWith('unit:') && !key.startsWith('core:'))) return;
+      let attacker;
+      try { attacker = game.find(ui.attacker)[2]; } catch (error) { return; }
+      const deal = strikeParts(game.seat, attacker);
+      let text = `受 ${deal.damage}`;
+      let title = `你造成 ${deal.damage}（${deal.title}）。打核心没有反击。`;
+      if (key.startsWith('unit:')) {
+        let foe;
+        try { foe = game.find(key.slice(5))[2]; } catch (error) { return; }
+        const back = strikeParts(foe.seat, foe);
+        text = `受 ${deal.damage} · 反 ${back.damage}`;
+        title = `你造成 ${deal.damage}（${deal.title}）。对方反击 ${back.damage}（${back.title}）。`;
+      }
+      const badge = document.createElement('span');
+      badge.className = 'trade';
+      badge.textContent = text;
+      badge.title = title;
+      node.appendChild(badge);
     });
     const reasonNode = document.querySelector('#last-error');
     if (!ui.error && reasonNode && marks.reason.code && !marks.legal.size) {

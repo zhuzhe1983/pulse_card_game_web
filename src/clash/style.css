@@ -76,8 +76,9 @@ button { border: 0; color: inherit; background: none; font: inherit; }
 .deck-stack span, .grave-stack span { position: absolute; bottom: 6px; font-size: 14px; font-weight: 800; letter-spacing: .04em; }
 .silk { color: #f4fff8; font-size: 15px; font-weight: 750; }
 .core-slot { position: absolute; z-index: 4; display: grid; place-items: center; }
-.core-slot.foe { top: 58px; left: 50%; width: 124px; height: var(--core-h); transform: translateX(-50%); z-index: 7; }
-.core-slot.mine { top: auto; bottom: calc(var(--hand-h) - var(--sink) + 2px); left: 50%; width: 124px; height: var(--core-h); transform: translateX(-50%); z-index: 8; }
+.core-slot.foe { top: 58px; left: 50%; width: 124px; height: var(--core-h); transform: translateX(-50%); z-index: 4; }
+.core-slot.mine { top: auto; bottom: calc(var(--hand-h) - var(--sink) + 2px); left: 50%; width: 124px; height: var(--core-h); transform: translateX(-50%); z-index: 4; }
+.core-slot.aim-target { z-index: 16; }
 .core-wrap { width: 100%; height: 100%; text-align: center; }
 .base-btn.core {
   position: relative; width: 100%; height: 78%; padding: 0;
@@ -130,8 +131,8 @@ button { border: 0; color: inherit; background: none; font: inherit; }
 }
 .supply-read b { font-family: "Pulse Numeral", "Arial Narrow", sans-serif; font-size: 28px; font-weight: 800; letter-spacing: .02em; }
 .slots {
-  position: absolute; z-index: 3; display: flex; align-items: center; justify-content: safe center;
-  gap: 8px; overflow: hidden; padding: 4px 8px;
+  position: absolute; z-index: 3; display: flex; align-items: flex-end; justify-content: safe center;
+  gap: 10px; overflow: visible; padding: 26px 8px 4px;
 }
 .slots.foe, .slots.mine { left: 220px; width: calc(100% - 430px); height: var(--lane-h); }
 .slots.foe { top: 156px; }
@@ -154,7 +155,7 @@ button { border: 0; color: inherit; background: none; font: inherit; }
 #last-error { position: relative; margin: 0; min-height: 0; font-size: 14px; font-weight: 750; color: #ffb0a4; }
 #last-error:empty { display: none; }
 .table-notice { margin: 6px auto 0; max-width: 34em; padding: 6px 10px; border-radius: 10px; background: #3a2218f2; color: #fff6d8; border: 1px solid #e8a56a; font-size: 15px; font-weight: 800; line-height: 1.35; }
-.hand-dock { position: absolute; z-index: 6; left: 8%; right: 8%; bottom: calc(var(--sink) * -1); height: var(--hand-h); pointer-events: none; overflow: visible; }
+.hand-dock { position: absolute; z-index: 20; left: 8%; right: 8%; bottom: calc(var(--sink) * -1); height: var(--hand-h); pointer-events: none; overflow: visible; }
 .hand-dock .playcard, .hand-dock .hands { pointer-events: auto; }
 .hands.fan { height: 100%; display: flex; justify-content: center; align-items: flex-end; overflow: visible; }
 .unit-wrap {
@@ -163,7 +164,7 @@ button { border: 0; color: inherit; background: none; font: inherit; }
   aspect-ratio: 132 / 169;
 }
 .minion, .playcard { position: relative; border: 0; background: transparent; color: #f4f7f8; text-align: center; }
-.minion { width: 100%; height: 100%; flex: none; padding: 0; overflow: hidden; }
+.minion { width: 100%; height: 100%; flex: none; padding: 0; overflow: visible; }
 .act-menu {
   position: absolute; left: 50%; bottom: calc(100% + 8px); transform: translateX(-50%); z-index: 12;
   width: max-content; max-width: min(280px, 70vw); display: grid; gap: 6px; padding: 8px;
@@ -208,6 +209,31 @@ button { border: 0; color: inherit; background: none; font: inherit; }
   color: #f7fbff; font-weight: 900; font-size: clamp(16px, 1.5vw, 26px); text-shadow: 0 1px 1px #000;
 }
 .minion .atk, .playcard .patk { left: 7%; bottom: 6%; background-image: url("scene/ui/lamp-attack-amber.webp"); color: #2a1a08; }
+.minion .atk.boosted { color: #39ff7a; text-shadow: 0 0 2px #04140a, 0 1px 0 #04140a; }
+.minion .atk-src {
+  display: none; position: absolute; z-index: 8; left: 50%; bottom: calc(100% + 28px); transform: translateX(-50%);
+  width: max-content; max-width: 240px; padding: 4px 8px; border-radius: 8px; pointer-events: none;
+  background: #102018f8; color: #d9ffe4; border: 1px solid #39ff7a; font-size: 12px; font-weight: 800; white-space: normal;
+}
+.minion:hover .atk-src, .minion.selected .atk-src { display: block; }
+.minion.nag { box-shadow: 0 0 0 3px #ffe14a, 0 0 16px #ffe14a; }
+.trade {
+  position: absolute; z-index: 7; left: 50%; top: 6px; transform: translateX(-50%);
+  padding: 2px 6px; border-radius: 999px; background: #102018f2; color: #e8ffe8;
+  border: 1px solid #39ff7a; font-size: 12px; font-weight: 800; white-space: nowrap; pointer-events: none;
+}
+.end-confirm {
+  position: absolute; z-index: 18; right: 12px; width: 188px;
+  bottom: calc(var(--hand-h) - var(--sink) + 18px);
+  padding: 8px 10px; border-radius: 12px; pointer-events: auto;
+  background: #102018f8; color: #fff6d8; border: 1px solid #e8a56a; text-align: center;
+}
+.end-confirm p { margin: 0 0 6px; font-size: 15px; font-weight: 850; line-height: 1.35; }
+.end-confirm .end-actions { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.end-confirm button {
+  min-height: 32px; padding: 4px 10px; border-radius: 8px; background: #1a3a2c; color: #f7fffb;
+  border: 1px solid #7dfff0; font-weight: 800;
+}
 .minion .hp, .playcard .php { right: 7%; bottom: 6%; background-image: url("scene/ui/lamp-durability-teal.webp"); }
 .playcard .cost { left: 7%; top: 6%; background-image: url("scene/ui/lamp-cost-cyan.webp"); }
 .playcard .star { right: 7%; top: 6%; width: 16%; background-image: url("scene/ui/lamp-attack-amber.webp"); color: #2a1a08; font-size: 12px; }
@@ -217,11 +243,12 @@ button { border: 0; color: inherit; background: none; font: inherit; }
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .playcard .detail {
-  display: none; position: absolute; left: 14px; right: 14px; top: 62px; z-index: 2;
-  padding: 6px; font-size: 14px; line-height: 1.35; color: #f4f7f8; text-align: left;
-  background: #07110ee6; border-radius: 8px; max-height: 7em; overflow: hidden;
+  display: none; position: absolute; left: 50%; right: auto; top: auto; bottom: calc(100% + 8px);
+  transform: translateX(-50%); z-index: 3; width: max-content; max-width: 220px;
+  padding: 6px 8px; font-size: 14px; line-height: 1.35; color: #f4f7f8; text-align: left;
+  background: #07110ef2; border: 1px solid #e8a56a; border-radius: 8px; pointer-events: none;
 }
-.playcard:hover, .playcard.selected { transform: translateY(-72px) scale(1.14) rotate(0deg); z-index: 8; overflow: visible; }
+.playcard:hover, .playcard.selected { transform: translateY(-72px) scale(1.14) rotate(0deg); z-index: 30; overflow: visible; }
 .playcard:hover .detail, .playcard.selected .detail { display: block; }
 .playcard.ready { filter: drop-shadow(0 0 8px #7dfff0); }
 .minion.can-attack { border-radius: 12px; }
@@ -236,15 +263,18 @@ button { border: 0; color: inherit; background: none; font: inherit; }
   border-radius: 8px; background: #10281ccc; color: #7dfff0; border: 1px dashed #39f3d4;
 }
 .link-mark .mname { position: absolute; inset: 8px 0 auto; text-align: center; font-weight: 800; }
-.link-mark .ribbon { top: auto; bottom: 8px; font-size: 11px; color: #d7fff6; }
+.link-mark .ribbon { font-size: 12px; color: #d7fff6; }
 .insert {
-  flex: 0 0 28px; align-self: center; min-height: 64px; border-radius: 8px;
-  color: #071014; background: #7dfff0cc; font-size: 12px; font-weight: 800;
+  box-sizing: border-box; flex: 0 0 auto; align-self: center; min-height: 36px; min-width: 4.5em;
+  padding: 6px 12px; border-radius: 8px; color: #071014; background: #7dfff0cc;
+  font-size: 14px; font-weight: 800; white-space: nowrap; overflow: visible; z-index: 2;
 }
 .insert.on { outline: 2px solid #fff; }
 .ribbon {
-  position: absolute; top: 10px; left: 10px; right: 10px; z-index: 1; color: #ffd27a; font-size: 12px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  position: absolute; top: auto; bottom: calc(100% + 4px); left: 50%; right: auto; z-index: 2;
+  transform: translateX(-50%); width: max-content; max-width: none;
+  padding: 1px 8px; border-radius: 999px; background: #102018f2; border: 1px solid #e8a56a;
+  color: #ffd27a; font-size: 12px; font-weight: 800; white-space: nowrap; overflow: visible;
 }
 .rail.tools { position: absolute; z-index: 6; left: 83.6%; top: 34.8%; width: 7.6%; aspect-ratio: 1; height: auto; display: grid; place-items: center; }
 .end-turn {
@@ -262,7 +292,28 @@ button { border: 0; color: inherit; background: none; font: inherit; }
 .log { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.45; }
 .log .bad { color: #ffb0a4; }
 .log-panel h3 { margin: 0; font-size: 16px; }
-.dying { pointer-events: none; z-index: 9; animation: shatter .45s ease forwards; }
+.dying { pointer-events: none; z-index: 9; animation: shatter .7s ease forwards; }
+.dmg-float {
+  position: fixed; z-index: 70; transform: translate(-50%, 0); pointer-events: none;
+  color: #ff5a3c; font-family: "Pulse Numeral", "Arial Narrow", sans-serif;
+  font-size: 34px; font-weight: 800; text-shadow: 0 2px 0 #000;
+  animation: dmgfloat 600ms ease forwards;
+}
+.ai-showcard, .fx-caption {
+  position: fixed; z-index: 68; left: 50%; top: 40%; transform: translate(-50%, -50%);
+  padding: 16px 18px; border-radius: 14px; background: #102018f8; color: #f7fffb;
+  border: 1px solid #7dfff0; font-weight: 900; pointer-events: none; text-align: center;
+}
+.ai-showcard { width: 180px; min-height: 120px; font-size: 22px; }
+.fx-beam { position: fixed; z-index: 64; height: 5px; background: #7dfff0; border-radius: 4px; pointer-events: none; transform-origin: left center; }
+.combat-hit { animation: strike 280ms ease; }
+.minion.combat-lift { z-index: 40; transform: translateY(-22px) scale(1.14); transition: transform 200ms ease; }
+@keyframes dmgfloat { 0% { opacity: 0; transform: translate(-50%, 6px); } 18% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -40px); } }
+@media (prefers-reduced-motion: reduce) {
+  .dmg-float { animation-duration: 200ms; }
+  .dying { animation-duration: 180ms; }
+  .combat-hit { animation-duration: 80ms; }
+}
 .builder { max-width: 1100px; margin: 16px auto; padding: 16px; background: var(--paper); color: var(--ink); border-radius: 16px; }
 .builder .scenario-row { flex-direction: row; flex-wrap: wrap; }
 .top { display: flex; gap: 12px; align-items: center; padding: 12px 16px; background: var(--paper); color: var(--ink); }
@@ -379,8 +430,10 @@ body.hand-out .playcard { width: 72px !important; height: 34px !important; margi
   .deck-stack span, .grave-stack span { font-size: 8px; bottom: 0; }
   .silk { display: none; }
   .core-slot.foe, .core-slot.mine {
-    left: 50%; width: 84px; height: 78px; transform: translateX(-50%); z-index: 8;
+    left: 50%; width: 84px; height: 78px; transform: translateX(-50%); z-index: 5;
   }
+  .core-slot.aim-target { z-index: 18; }
+  .hand-dock { z-index: 22; }
   .core-slot.foe { top: 72px; }
   .core-slot.mine { top: auto; bottom: 178px; }
   .core-name { font-size: 10px; }
@@ -419,7 +472,7 @@ body.hand-out .playcard { width: 72px !important; height: 34px !important; margi
   .table-page, .arena { width: 100%; max-width: 100%; overflow: hidden; }
   .hand-dock {
     left: 0; right: 0; bottom: 0; width: 100%; max-width: 100%; height: 168px;
-    overflow: hidden; z-index: 6; box-sizing: border-box;
+    overflow: hidden; z-index: 22; box-sizing: border-box;
   }
   .hands.fan {
     box-sizing: border-box; width: 100%; min-width: 0; max-width: 100%; height: 100%;
@@ -442,6 +495,9 @@ body.hand-out .playcard { width: 72px !important; height: 34px !important; margi
     background-size: 100% 100%;
   }
   .act-menu { max-width: 70vw; }
+  .end-confirm { top: 288px; right: 8px; left: 8px; bottom: auto; width: auto; padding: 6px; }
+  .end-confirm p { font-size: 13px; }
+  .end-confirm button { min-height: 28px; font-size: 12px; padding: 2px 8px; }
   .skill-bar.bottom { left: 8px; right: 120px; bottom: 232px; height: 36px; }
   .skill-bar.top { left: 8px; right: 8px; top: 248px; }
   .reject-badge { bottom: calc(100% + 18px); }

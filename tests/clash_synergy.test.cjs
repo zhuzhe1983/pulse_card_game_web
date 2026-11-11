@@ -51,6 +51,34 @@ function check(name, fn) {
   console.log('ok', name);
 }
 
+check('two 1/2 leaders each strike for 2 once', () => {
+  const { game } = arena();
+  const mine = game.spawn(0, 'xiao_yin', null, null, false);
+  const foe = game.spawn(1, 'xiao_yin', null, null, false);
+  assert.equal(game.formationState(0).percent, 10);
+  assert.equal(game.formationState(1).percent, 10);
+  assert.equal(game.upper_links[0].length, 0);
+  assert.equal(game.upper_links[1].length, 0);
+  assert.equal(game.aiflow_armed[0], false);
+  assert.equal(game.aiflow_armed[1], false);
+  assert.equal(C.attackOf(game.cards, mine), 1);
+  assert.equal(game.strikePreview(0, 1), 2);
+  assert.equal(game.strikePreview(1, 1), 2);
+  const before = game.log.length;
+  game.attack(0, mine.iid, foe.iid);
+  const lines = game.log.slice(before).filter(line => String(line).includes('同时结算'));
+  assert.equal(lines.length, 1);
+  assert.equal(lines[0].includes('耐久变为0和0'), true);
+  assert.equal(game.units(0).length, 0);
+  assert.equal(game.units(1).length, 0);
+  const thick = arena().game;
+  const left = thick.spawn(0, 'xiao_yin', null, 5, false);
+  const right = thick.spawn(1, 'xiao_yin', null, 5, false);
+  thick.attack(0, left.iid, right.iid);
+  assert.equal(left.durability, 3);
+  assert.equal(right.durability, 3);
+});
+
 check('leader percent and low attack ceil', () => {
   const { game } = arena();
   game.spawn(0, 'xiao_yin', null, null, false);

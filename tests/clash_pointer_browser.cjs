@@ -97,6 +97,13 @@ async function main() {
     async function touch(type, points) {
       await send('Input.dispatchTouchEvent', { type, touchPoints: points });
     }
+    async function settle() {
+      await sleep(40);
+      for (let i = 0; i < 50; i++) {
+        if ((await value('document.body.dataset.animating || ""')) !== '1') return;
+        await sleep(80);
+      }
+    }
     async function shot(name) {
       const image = await send('Page.captureScreenshot', { format: 'png' });
       fs.writeFileSync(path.join(shotDir, name + '.png'), Buffer.from(image.data, 'base64'));
@@ -248,7 +255,7 @@ async function main() {
       const now = await state();
       if (now.ai !== 'idle' || now.seat !== '0') throw new Error(JSON.stringify(now));
       return now;
-    }, 'ai done', 40);
+    }, 'ai done', 80);
     snap = await state();
     eq(snap.max, '2', '结束回合没有连跳两回合');
     eq(snap.seat, '0', '对方行动结束后回到玩家');
@@ -272,7 +279,7 @@ async function main() {
     await sleep(40);
     await shot('06-attack-arrow-1280');
     await mouse('mouseReleased', foeCard.x, foeCard.y);
-    await sleep(80);
+    await settle();
     const hpAfter = await value(`document.querySelector('.slots.foe [data-card=${JSON.stringify(foeCard.card)}]') ? document.querySelector('.slots.foe [data-card=${JSON.stringify(foeCard.card)}]').dataset.durability : 'gone'`);
     const attacked = await value(`document.querySelector('[data-board-seat="0"][data-card="xiao_yin"]') ? document.querySelector('[data-board-seat="0"][data-card="xiao_yin"]').dataset.attacked : ''`);
     if (hpAfter === hpBefore && attacked !== 'true') throw new Error('拖拽攻击没有结算 ' + hpBefore + ' ' + hpAfter + ' ' + attacked);
@@ -293,10 +300,11 @@ async function main() {
     await waitFor(async () => {
       const now = await state();
       if (now.ai !== 'idle' || now.seat !== '0') throw new Error('wait');
-    }, 'second ai', 40);
+    }, 'second ai', 80);
     await value(`document.querySelector('[data-board-seat="0"][data-card="xiao_yin"]').click()`);
     const foeBefore = await value(`document.querySelector('.slots.foe .minion').dataset.durability`);
     await value(`document.querySelector('.slots.foe .minion').click()`);
+    await settle();
     const foeAfter = await value(`document.querySelector('.slots.foe .minion') ? document.querySelector('.slots.foe .minion').dataset.durability : 'gone'`);
     if (foeAfter === foeBefore) throw new Error('点选再点目标没有攻击');
     await value(`document.querySelector('.slots.foe .minion') && document.querySelector('.slots.foe .minion').click()`);
