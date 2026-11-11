@@ -72,12 +72,16 @@
   </section>
 </main>
 <script>
-fetch('data/design-pack.json').then(response => response.json()).then(pack => {
+fetch(new URL('data/design-pack.json', document.baseURI)).then(response => {
+  if (!response.ok) throw new Error(response.status + ' ' + response.url);
+  return response.json();
+}).then(pack => {
   const cards = Object.values(pack.cards || {});
   const counts = {};
   for (let cost = 1; cost <= 10; cost++) counts[cost] = 0;
   cards.forEach(card => {
-    const cost = card.design && card.design.gameplay && card.design.gameplay.cost;
+    const play = card.gameplay || (card.design && card.design.gameplay) || {};
+    const cost = Number(play.cost);
     if (counts[cost] != null) counts[cost] += 1;
   });
   const max = Math.max(1, ...Object.values(counts));
@@ -88,6 +92,8 @@ fetch('data/design-pack.json').then(response => response.json()).then(pack => {
   const mid = counts[3] + counts[4] + counts[5];
   document.getElementById('bar-note').textContent = `1 费 ${counts[1]} 张，2 费 ${counts[2]} 张，3 到 5 费 ${mid} 张。8 费 ${counts[8]} 张。`;
   document.getElementById('commit').textContent = (pack.source_commit || '').slice(0, 12);
+}).catch(error => {
+  document.getElementById('bar-note').textContent = '费用张数没有读到：' + error.message;
 });
 </script>
 </body>

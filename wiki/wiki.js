@@ -35,6 +35,7 @@
       star: params.get('star') || '',
       cost: params.get('cost') || '',
       band: params.get('band') || '',
+      sort: params.get('sort') || 'cost',
       card: params.get('card') || '',
       view: params.get('view') === 'card' ? 'card' : 'char'
     };
@@ -42,7 +43,7 @@
 
   function pageUrl(next) {
     const params = new URLSearchParams();
-    ['q', 'type', 'series', 'group', 'family', 'growth', 'star', 'cost', 'band', 'card'].forEach(key => {
+    ['q', 'type', 'series', 'group', 'family', 'growth', 'star', 'cost', 'band', 'sort', 'card'].forEach(key => {
       if (next[key]) params.set(key, next[key]);
     });
     if (next.view === 'card' && next.card) params.set('view', 'card');
@@ -61,7 +62,16 @@
   }
 
   function filtered() {
-    return api.filterCards(cards, state);
+    const list = api.filterCards(cards, state).slice();
+    const costOf = card => {
+      const play = card.design && card.design.gameplay;
+      return play && play.cost != null ? Number(play.cost) : 99;
+    };
+    const nameOf = card => (card.design && card.design.identity && card.design.identity.game_name_zh) || '';
+    if (state.sort === 'rid') list.sort((a, b) => a.rid.localeCompare(b.rid));
+    else if (state.sort === 'name') list.sort((a, b) => nameOf(a).localeCompare(nameOf(b), 'zh'));
+    else list.sort((a, b) => costOf(a) - costOf(b) || a.rid.localeCompare(b.rid));
+    return list;
   }
 
   function isOn(kind, value) {
@@ -112,6 +122,8 @@
     $('#cost-chips').innerHTML = chip('cost', '', '全部', cards.length) + nums.map(cost => chip('cost', cost, cost + ' 费', costs.get(cost))).join('');
     const bands = api.tally(cards, card => (card.design && card.design.gameplay && card.design.gameplay.cost_band) || '');
     $('#band-chips').innerHTML = chip('band', '', '全部档', cards.length) + ['series_core', 'series_machine', 'accessory'].filter(id => bands.has(id)).map(id => chip('band', id, BAND[id], bands.get(id))).join('');
+    const sortBox = document.querySelector('#sort-chips');
+    if (sortBox) sortBox.innerHTML = chip('sort', 'cost', '按费用', '') + chip('sort', 'rid', '按编号', '') + chip('sort', 'name', '按中文名', '');
   }
 
   function paintGrowth() {
