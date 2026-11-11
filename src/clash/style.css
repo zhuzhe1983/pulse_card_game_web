@@ -93,6 +93,11 @@ nav span[data-nav="wiki"] { color: #6f7c74; border-bottom: 1px dashed #6f7c74; }
 .catalog h4 { margin: 0 0 6px; }
 .catalog p { margin: 0 0 6px; font-size: 13px; line-height: 1.45; }
 .foot { color: var(--muted); font-size: 12px; margin-top: 12px; line-height: 1.5; }
+.builder { max-width: 1180px; margin: 0 auto; padding: 16px; }
+.pool { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; max-height: 520px; overflow: auto; }
+.pool button { text-align: left; padding: 8px; border-radius: 8px; border: 1px solid var(--line); background: #16302c; }
+.pool button.picked { outline: 2px solid var(--gold); }
+.deck-picks { display: flex; gap: 8px; flex-wrap: wrap; min-height: 42px; }
 @media (max-width: 800px) {
   .top { flex-direction: column; align-items: flex-start; }
   .slots { grid-template-columns: repeat(2, minmax(0, 1fr)); }

@@ -1,7 +1,7 @@
 {
   "ruleset_id": "pcg.clash.v0",
-  "baseline_commit": "5b85cc15305d3fcb1585d1096aa03b7c1766e3fe",
-  "effects": ["support", "knob", "mend", "damage", "heal_base", "supply"],
+  "baseline_commit": "704411fcb6138a05f9fdf8c168a366b7a2bb8237",
+  "effects": ["support", "knob", "mend", "damage", "heal_base", "supply", "play_draw", "play_damage"],
   "bindings": {
     "support": {
       "source": "xiao_yin",
@@ -19,6 +19,6 @@
     "family": "卡上可选的家族字符串。不是 series，也不是版本号，更不是星级。结算不读它。",
     "version": "卡上可选的不透明字符串。出现也不表示星级。"
   },
-  "not_implemented": ["star_upgrade"],
-  "note": "这里只登记基线已经实现的效果。多写一个效果名不会让引擎学会新技能。96 张扩展和升星动作等下一份交接包，再按权威契约加。"
+  "not_implemented": [],
+  "note": "已实现的效果只有这份清单。升星看卡上的 next_template_id、growth_kind 和 star，不从版本号推断。阵营和美术 type 按规则不进结算。多写一个效果名不会让引擎学会新技能。"
 }

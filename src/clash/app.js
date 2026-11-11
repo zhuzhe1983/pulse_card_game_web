@@ -3,11 +3,16 @@
   const C = root.PCGClash;
   const content = root.PCGClashContent;
   const pack = C.loadPack(content, root.PCGClashCapabilities);
+  const roster = root.PCGClashRoster;
   const $ = document.querySelector.bind(document);
   const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
   const rules = pack.rules;
-  const cards = pack.cards;
   const tokenId = pack.tokenId;
+  const cards = Object.create(null);
+  Object.keys(pack.cards).forEach(id => { cards[id] = pack.cards[id]; });
+  roster.cards.forEach(card => { cards[card.template_id] = card; });
+  const presetFirst = ['art_h039a', 'xiao_yin', 'art_h038a', 'hou_ke', 'dian_zhen', 'art_h027a', 'xuan_niu', 'art_h003', 'art_h025', 'lian_jie'];
+  const presetSecond = ['art_h005', 'art_h007', 'qiao_jian', 'art_h032', 'art_h036', 'art_h036a', 'art_c004c', 'art_c004d', 'gan_rao', 'hu_zhao'];
   const seatName = seat => seat === 0 ? '先手' : '后手';
   const kindName = kind => kind === 'main' ? '主控' : kind === 'attachment' ? '配件' : '战术';
   function blurb(card) {
@@ -87,6 +92,21 @@
       game.spawn(0, 'xiao_yin', 1, null, false);
       game.seat = 1;
       push('摆阵：后手用干扰打掉位置 0 的厚壳。小印留在位置 1。结束回合后先手可以再支援。');
+    } else if (scenario === 'promote-stamp') {
+      game = C.Game.empty(cards, rules, pack.capabilities);
+      game.supply = [5, 0];
+      game.max_supply = [5, 0];
+      game.hands = [['art_h038a'], []];
+      const stamp = game.spawn(0, 'xiao_yin', 2, null, false);
+      stamp.attachments = ['lian_jie'];
+      game.graves = [['hou_ke'], []];
+      push('摆阵：位置 2 的小印挂着链节，手牌是小印改。升星费用是差价 1。');
+    } else if (scenario === 'builder') {
+      game = null;
+      ui.decks = [presetFirst.slice(), presetSecond.slice()];
+      ui.builderSeat = 0;
+      ui.poolFilter = 'chain';
+      push('扩展组牌。点选顺序就是牌库从上到下的顺序，不洗牌。');
     }
     render();
   }
@@ -106,6 +126,9 @@
     if (card && card.effect === 'heal_base') return '打出后己方基地恢复 4，不超过 20。';
     if (card && card.kind === 'attachment') return `点一台己方主控，装上${card.name}。一台只能挂一个。护罩不能装到已有护卫的单位。`;
     if (card && card.effect === 'damage') return '点一台敌方单位。护卫拦不住，也没有反击。';
+    if (card && card.effect === 'play_damage') return '可以点一台敌方单位造成 1 点伤害，护卫拦不住。也可以不指定目标，那样不造成伤害。';
+    if (card && card.effect === 'play_draw') return '打出后额外抽 1 张。手牌满了会亮出进墓地。';
+    if (card && card.rush) return '这张有冲锋，打出后本回合可以攻击。升星进来的仍不能攻击。';
     if (card && card.effect === 'mend' && !ui.target) return '点一台己方单位。可以修复耐久，或让它本回合攻击 +1。不能治疗基地。';
     if (card && card.effect === 'mend') return '选择修复 2 点耐久（不超过卡面），或本回合攻击 +1。';
     if (ui.attacker) return '点敌方单位，或按“攻击对方基地”。新入场不能攻击。对方有护卫时，没有千里眼就只能打护卫。';
@@ -113,7 +136,7 @@
   }
 
   function art(card) {
-    const series = esc(card.series || '');
+    const series = esc(card.series || card.product_series || '');
     return `<span class="no-art">无图 · 系列 ${series}</span><img class="series-art" alt="" hidden data-series="${series}" src="series/${series}.png" onload="this.hidden=false;this.previousElementSibling.hidden=true" onerror="this.remove()">`;
   }
 
@@ -183,20 +206,94 @@
     const card = selectedCard();
     const bits = [];
     if (card && (card.kind === 'main' || card.effect === 'supply' || card.effect === 'heal_base')) {
-      bits.push(`<button type="button" class="primary" data-action="play">${card.kind === 'main' ? '打出到最左空位' : '打出'}</button>`);
+      const label = card.effect === 'play_damage' ? '不造成伤害，直接打出' : card.kind === 'main' ? '打出到最左空位' : '打出';
+      bits.push(`<button type="button" class="primary" data-action="play">${label}</button>`);
     }
     if (card && card.effect === 'mend' && ui.target) {
       bits.push('<button type="button" class="primary" data-action="mend-heal">修复 2 点耐久</button>');
       bits.push('<button type="button" class="primary" data-action="mend-temp">本回合攻击 +1</button>');
     }
     bits.push('<button type="button" data-action="attack-base">攻击对方基地</button>');
+    bits.push(promoteButtons());
     bits.push('<button type="button" data-action="support">小印支援厚壳</button>');
     bits.push('<button type="button" data-action="arm-knob">旋钮强化</button>');
     bits.push('<button type="button" class="primary" data-action="end-turn">结束回合</button>');
     return bits.join('');
   }
 
+  function promoteChoices() {
+    if (!game || game.phase !== 'main' || game.winner != null) return [];
+    const hand = game.hands[game.seat];
+    const found = [];
+    for (const unit of game.units(game.seat)) {
+      const card = cards[unit.card_id];
+      if (card && card.next_template_id && hand.includes(card.next_template_id)) {
+        found.push({ currentId: unit.card_id, where: '位置 ' + unit.slot });
+      }
+      for (const attachment of unit.attachments) {
+        const part = cards[attachment];
+        if (part && part.next_template_id && hand.includes(part.next_template_id)) {
+          found.push({ currentId: attachment, where: cards[unit.card_id].name + ' 的配件' });
+        }
+      }
+    }
+    return found;
+  }
+
+  function promoteButtons() {
+    return promoteChoices().map(choice => {
+      const current = cards[choice.currentId];
+      const next = cards[current.next_template_id];
+      const cost = Math.max(1, next.cost - current.cost);
+      const short = game.supply[game.seat] < cost ? '，电不够' : '';
+      return `<button type="button" class="primary" data-action="promote" data-current="${esc(choice.currentId)}">升到${esc(next.name)}，需要 ${cost} 电${short}（${esc(choice.where)}）</button>`;
+    }).join('');
+  }
+
+  function deckOk(deck) {
+    return deck.length >= 8 && deck.length <= 12 && new Set(deck).size === deck.length && deck.filter(id => cards[id].kind === 'main').length >= 4;
+  }
+
+  function renderBuilder() {
+    const seat = ui.builderSeat || 0;
+    const deck = ui.decks[seat];
+    const filters = [['all', '全部'], ['main', '主控'], ['attachment', '配件'], ['chain', '可升星'], ['baseline', '基线无图']];
+    const baselineOnly = new Set(content.cards.map(card => card.template_id).filter(id => !roster.cards.some(card => card.template_id === id)));
+    const list = Object.keys(cards).filter(id => id !== tokenId).map(id => cards[id]).filter(card => {
+      if (ui.poolFilter === 'main') return card.kind === 'main';
+      if (ui.poolFilter === 'attachment') return card.kind === 'attachment';
+      if (ui.poolFilter === 'chain') return card.growth_kind === 'chain';
+      if (ui.poolFilter === 'baseline') return baselineOnly.has(card.template_id);
+      return true;
+    }).sort((a, b) => a.name.localeCompare(b.name, 'zh'));
+    $('#app').innerHTML = `<header class="top">
+      <div class="brand"><b>PULSE</b><span>扩展组牌</span></div>
+      <nav data-shared-entry="clash-home"><a data-nav="clash" href="./index.html">回合战</a><a data-nav="legacy" href="../index.html">旧版点数对局</a><span data-nav="wiki" data-wiki-slot="pending">图鉴</span></nav>
+      <button type="button" class="btn" data-action="scenario" data-scenario="lesson">返回教学局</button>
+    </header>
+    <main class="builder" data-scenario="builder" data-ruleset="${esc(content.ruleset_id)}">
+      <p class="balance">96 张扩展加 7 张没有对应图的基线牌。每副 8 到 12 张，至少 4 张主控，同名 1 张。星级只认卡上的 star，不认版本号。数值待试玩。</p>
+      <div class="scenario-row">
+        <button type="button" data-action="builder-seat" data-seat="0">先手 ${ui.decks[0].length} 张</button>
+        <button type="button" data-action="builder-seat" data-seat="1">后手 ${ui.decks[1].length} 张</button>
+        <button type="button" data-action="preset" data-preset="first">先手示例：小印链</button>
+        <button type="button" data-action="preset" data-preset="second">后手示例：壳与表</button>
+        <button type="button" class="primary" data-action="start-free" ${deckOk(ui.decks[0]) && deckOk(ui.decks[1]) ? '' : 'disabled'}>开始扩展对局</button>
+      </div>
+      <p>${seatName(seat)}牌库：</p>
+      <div class="deck-picks" data-deck="${seat}">${deck.map(id => `<span data-card="${esc(id)}">${esc(cards[id].name)}</span>`).join('、') || '还没选'}</div>
+      <div class="scenario-row">${filters.map(([id, label]) => `<button type="button" data-action="pool-filter" data-value="${id}">${label}</button>`).join('')}</div>
+      <div class="pool">${list.map(card => {
+        const star = C.starOf(card);
+        const picked = deck.includes(card.template_id);
+        return `<button type="button" class="${picked ? 'picked' : ''}" data-action="toggle-pool" data-card="${esc(card.template_id)}">${esc(card.name)} · ${card.cost}费 · ${kindName(card.kind)}${star ? ' · ' + star + '星' : ''}${card.growth_kind === 'chain' ? ' · 可升星' : ''}<br><span class="hint">${esc(card.game_description || card.role_note || '基线牌，没有 96 图')}</span></button>`;
+      }).join('')}</div>
+    </main>`;
+    document.body.dataset.ready = '1';
+  }
+
   function render() {
+    if (ui.scenario === 'builder') return renderBuilder();
     const over = game.winner == null ? '' : game.winner === 'draw' ? '平局' : `${seatName(game.winner)}获胜`;
     $('#app').innerHTML = `<header class="top">
       <div class="brand"><b>PULSE</b><span>脉冲对决 · 回合战</span></div>
@@ -208,7 +305,7 @@
       </nav>
       <div class="top-actions">
         <button type="button" class="btn" data-action="toggle-reveal" aria-pressed="${ui.reveal}">${ui.reveal ? '遮住对方手牌' : '教学明牌'}</button>
-        <button type="button" class="btn" data-action="toggle-catalog">${ui.catalog ? '收起卡表' : content.cards.length + ' 张卡表'}</button>
+        <button type="button" class="btn" data-action="toggle-catalog">${ui.catalog ? '收起卡表' : '卡表 ' + roster.cards.length}</button>
         <button type="button" class="btn" data-action="restart">重新开局</button>
       </div>
     </header>
@@ -220,6 +317,8 @@
         <button type="button" data-action="scenario" data-scenario="support-present">战例：小印已在场</button>
         <button type="button" data-action="scenario" data-scenario="support-deploy">战例：先打出小印</button>
         <button type="button" data-action="scenario" data-scenario="support-again">战例：厚壳再死</button>
+        <button type="button" data-action="scenario" data-scenario="promote-stamp">战例：小印升星</button>
+        <button type="button" data-action="scenario" data-scenario="builder">扩展组牌</button>
       </div>
       ${side(1)}
       <section class="center">
@@ -231,7 +330,7 @@
       </section>
       ${side(0)}
       ${catalog()}
-      <p class="foot">规则 ${esc(content.ruleset_id)} · 来源提交 ${esc(C.SOURCE_COMMIT)} · 当前卡表 ${content.cards.length} 张，另加后手代币。星级和家族只在卡数据写了才显示，不从版本号推断，升星还没接。系列图片按 series 从本目录 series/ 读取，缺图就用文字。结算不看硬件型号。</p>
+      <p class="foot">规则 ${esc(content.ruleset_id)} · 来源提交 ${esc(C.SOURCE_COMMIT)} · 教学 ${content.cards.length} 张，扩展 ${roster.cards.length} 张，另有没有对应图的基线牌。星级只认卡上的数字，版本号不算星。缺图用文字，不借别的卡图。数值待试玩。结算不看阵营和硬件型号。</p>
     </main>`;
     document.body.dataset.ready = '1';
     document.body.dataset.ruleset = content.ruleset_id;
@@ -277,6 +376,10 @@
       push(`旋钮台强化了${cards[game.find(iid)[2].card_id].name}，本回合攻击 +1。`);
       clearChoice();
       return render();
+    }
+    if (card && card.effect === 'play_damage') {
+      if (seat === game.seat) return note(new C.ClashError('入场伤害只能指定敌方单位', 'bad_target'));
+      return play(iid);
     }
     if (card && (card.kind === 'attachment' || card.effect === 'damage')) return play(iid);
     if (card && card.effect === 'mend') {
@@ -356,6 +459,42 @@
       ui.handIndex = null;
       ui.attacker = null;
       ui.error = null;
+      return render();
+    }
+    if (action === 'promote') {
+      const currentId = el.dataset.current;
+      const current = cards[currentId];
+      const next = cards[current.next_template_id];
+      const cost = Math.max(1, next.cost - current.cost);
+      try { game.promote(game.seat, currentId); }
+      catch (error) { return note(error); }
+      push(`${current.name}升成${next.name}，花了 ${cost} 电。新牌在原处，满耐久，本回合不能攻击，旧配件不留下。`);
+      clearChoice();
+      return render();
+    }
+    if (action === 'builder-seat') { ui.builderSeat = Number(el.dataset.seat); return render(); }
+    if (action === 'pool-filter') { ui.poolFilter = el.dataset.value; return render(); }
+    if (action === 'preset') {
+      ui.decks[ui.builderSeat] = (el.dataset.preset === 'second' ? presetSecond : presetFirst).slice();
+      return render();
+    }
+    if (action === 'toggle-pool') {
+      const id = el.dataset.card;
+      const deck = ui.decks[ui.builderSeat];
+      const index = deck.indexOf(id);
+      if (index >= 0) deck.splice(index, 1);
+      else if (deck.length >= 12) return note(new C.ClashError('一副最多 12 张', 'bad_card'));
+      else deck.push(id);
+      ui.error = null;
+      return render();
+    }
+    if (action === 'start-free') {
+      if (!deckOk(ui.decks[0]) || !deckOk(ui.decks[1])) return note(new C.ClashError('两副都要 8 到 12 张，且至少 4 张主控', 'bad_card'));
+      const decks = ui.decks.map(deck => deck.slice());
+      ui = blankUi('free');
+      game = new C.Game(cards, decks[0], decks[1], rules, tokenId, pack.capabilities);
+      game.start_turn();
+      push('扩展对局开始。牌序按组牌时的点选顺序，不洗牌。');
       return render();
     }
     if (action === 'end-turn') return endTurn();

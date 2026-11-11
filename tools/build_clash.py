@@ -17,6 +17,7 @@ replacements = {
     '/*__CLASH_CSS__*/': (root / 'src/clash/style.css').read_text(),
     '/*__CLASH_CONTENT__*/': 'globalThis.PCGClashContent=' + embed('content/clash/clash_playtest.json') + ';\n',
     '/*__CLASH_CAPABILITIES__*/': 'globalThis.PCGClashCapabilities=' + embed('content/clash/capabilities.json') + ';\n',
+    '/*__CLASH_ROSTER__*/': 'globalThis.PCGClashRoster=' + embed('content/clash/clash_roster_96.json') + ';\n',
     '/*__CLASH_ENGINE__*/': script((root / 'src/clash/engine.js').read_text()),
     '/*__CLASH_APP__*/': script((root / 'src/clash/app.js').read_text()),
 }

@@ -6,8 +6,8 @@
 (function (root) {
   'use strict';
   const RULESET = 'pcg.clash.v0';
-  const SOURCE_COMMIT = '5b85cc15305d3fcb1585d1096aa03b7c1766e3fe';
-  const IMPLEMENTED_EFFECTS = Object.freeze(['support', 'knob', 'mend', 'damage', 'heal_base', 'supply']);
+  const SOURCE_COMMIT = '704411fcb6138a05f9fdf8c168a366b7a2bb8237';
+  const IMPLEMENTED_EFFECTS = Object.freeze(['support', 'knob', 'mend', 'damage', 'heal_base', 'supply', 'play_draw', 'play_damage']);
   const IMPLEMENTED = new Set(IMPLEMENTED_EFFECTS);
 
   class ClashError extends Error {
@@ -33,8 +33,10 @@
   }
 
   function familyOf(card) {
-    if (!card || typeof card.family !== 'string') return null;
-    const family = card.family.trim();
+    if (!card) return null;
+    const value = typeof card.family === 'string' ? card.family : card.growth_family;
+    if (typeof value !== 'string') return null;
+    const family = value.trim();
     return family ? family : null;
   }
 
@@ -42,10 +44,10 @@
     if (card.effect != null && !IMPLEMENTED.has(card.effect)) {
       throw new ClashError('还没有这个效果：' + card.effect, 'unsupported_effect');
     }
-    if (Object.prototype.hasOwnProperty.call(card, 'star') && starOf(card) == null) {
+    if (card.star != null && starOf(card) == null) {
       throw new ClashError('星级只能是卡数据里的 1、2 或 3', 'bad_star');
     }
-    if (Object.prototype.hasOwnProperty.call(card, 'family') && familyOf(card) == null) {
+    if (Object.prototype.hasOwnProperty.call(card, 'family') && card.family != null && familyOf(card) == null) {
       throw new ClashError('家族必须是卡面上的非空字符串', 'bad_family');
     }
   }
@@ -70,16 +72,16 @@
     validateCard(payload.second_player_token);
     const supportCards = payload.cards.filter(card => card.effect === 'support');
     const support = capabilities.bindings && capabilities.bindings.support;
-    if (!support || supportCards.length !== 1 || supportCards[0].template_id !== support.source || supportCards[0].kind !== 'main') {
+    if (!support || supportCards.some(card => card.kind !== 'main')) {
       throw new ClashError('支援绑定和卡表不一致', 'binding_mismatch');
     }
     const knobCards = payload.cards.filter(card => card.effect === 'knob');
     const knob = capabilities.bindings.knob;
-    if (!knob || knobCards.length !== 1 || knobCards[0].template_id !== knob.source || knobCards[0].kind !== 'main' || knob.temp_attack !== 1) {
+    if (!knob || knob.temp_attack !== 1 || knobCards.some(card => card.kind !== 'main')) {
       throw new ClashError('旋钮绑定和卡表不一致', 'binding_mismatch');
     }
     const cards = loadCards(payload);
-    if (!cards[support.revive]) throw new ClashError('支援目标不在卡表里', 'binding_mismatch');
+    if (supportCards.length && !cards[support.revive]) throw new ClashError('支援目标不在卡表里', 'binding_mismatch');
     return { cards, rules: rulesFromPayload(payload), tokenId: payload.second_player_token.template_id, capabilities };
   }
 
@@ -122,6 +124,7 @@
       game.boards = [Array(rules.boardLimit).fill(null), Array(rules.boardLimit).fill(null)];
       game.graves = [[], []];
       game.ability_used = [{}, {}];
+      game.promoteBan = [[], []];
       game.seat = 0;
       game.turns_started = [1, 0];
       game.phase = 'main';
@@ -144,6 +147,7 @@
       this.boards = [Array(rules.boardLimit).fill(null), Array(rules.boardLimit).fill(null)];
       this.graves = [[], []];
       this.ability_used = [{}, {}];
+      this.promoteBan = [[], []];
       this.seat = 0;
       this.turns_started = [0, 0];
       this.phase = 'opening';
@@ -191,6 +195,7 @@
       this.phase = 'start';
       this.turns_started[seat] += 1;
       this.ability_used[seat] = {};
+      this.promoteBan[seat] = [];
       const firstOpening = seat === 0 && this.turns_started[seat] === 1;
       if (firstOpening) {
         this.event(`座位${seat}回合开始：先手第1回合不抽牌`);
@@ -244,23 +249,24 @@
       return slot < 0 ? null : slot;
     }
 
-    placeNew(seat, cardId) {
-      const slot = this.emptySlot(seat);
+    placeNew(seat, cardId, slot = null, sick = true) {
+      if (slot == null) slot = this.emptySlot(seat);
       if (slot == null) throw new ClashError('场上没有空位', 'board_full');
+      if (this.boards[seat][slot] != null) throw new ClashError('位置已有单位', 'board_full');
       const unit = {
         iid: `u${this._nextId}`,
         card_id: cardId,
         seat,
         slot,
         durability: this.cards[cardId].durability,
-        sick: true,
+        sick,
         attacked: false,
         temp_attack: 0,
         attachments: []
       };
       this._nextId += 1;
       this.boards[seat][slot] = unit;
-      this.event(`座位${seat}${this.cards[cardId].name}进入位置${slot}，新入场不能攻击`);
+      this.event(`座位${seat}${this.cards[cardId].name}进入位置${slot}，${sick ? '本回合不能攻击' : '本回合可以攻击'}`);
       return unit;
     }
 
@@ -283,6 +289,10 @@
       let host = null;
       if (card.kind === 'main') {
         if (this.aliveCount(seat) >= this.rules.boardLimit) throw new ClashError('场位已满', 'board_full');
+        if (card.effect === 'play_damage' && target != null) {
+          const found = this.find(this.resolveIid(1 - seat, target));
+          if (found[0] === seat) throw new ClashError('入场伤害只能指定敌方单位', 'bad_target');
+        }
       } else if (card.kind === 'attachment') {
         if (target == null) throw new ClashError('配件必须指定己方主控', 'bad_target');
         const found = this.find(this.resolveIid(seat, target));
@@ -298,7 +308,14 @@
       this.pay(seat, card.cost);
       this.takeHand(seat, cardId);
       if (card.kind === 'main') {
-        this.placeNew(seat, cardId);
+        this.placeNew(seat, cardId, null, !card.rush);
+        if (card.effect === 'play_draw') this.draw(seat);
+        else if (card.effect === 'play_damage' && target != null) {
+          const foe = this.find(this.resolveIid(1 - seat, target))[2];
+          const amount = card.effect_amount || card.amount || 1;
+          foe.durability = Math.max(0, foe.durability - amount);
+          this.event(`入场打击，${this.cards[foe.card_id].name}耐久变为${foe.durability}`);
+        }
       } else if (card.kind === 'attachment') {
         host.attachments.push(cardId);
         this.event(`${card.name}装到${this.cards[host.card_id].name}上`);
@@ -364,42 +381,93 @@
 
     support(seat) {
       this.requireMain(seat);
-      const binding = this.capabilities.bindings.support;
-      const source = this.cards[binding.source];
-      const revived = this.cards[binding.revive];
-      const sources = this.units(seat).filter(unit => unit.card_id === binding.source);
-      if (sources.length !== 1) throw new ClashError(`场上要有一台${source.name}才能支援`, 'no_stamp_on_board');
-      if (this.ability_used[seat][binding.source]) throw new ClashError('本回合已经支援过', 'already_used_ability');
-      if (!this.graves[seat].includes(binding.revive)) throw new ClashError(`墓地里没有${revived.name}`, 'no_shell_in_grave');
+      const reviveId = this.capabilities.bindings.support.revive;
+      const sources = this.units(seat).filter(unit => this.cards[unit.card_id].effect === 'support');
+      if (sources.length < 1) throw new ClashError('场上要有一台小印才能支援', 'no_stamp_on_board');
+      if (this.ability_used[seat].support) throw new ClashError('本回合已经支援过', 'already_used_ability');
+      if (!this.graves[seat].includes(reviveId) || this.promoteBan[seat].includes(reviveId)) {
+        throw new ClashError('墓地里没有可支援的厚壳工控', 'no_shell_in_grave');
+      }
       if (this.aliveCount(seat) >= this.rules.boardLimit) throw new ClashError('场上没有空位', 'board_full');
-      const cost = source.amount;
+      const cost = this.cards[sources[0].card_id].amount;
       if (this.supply[seat] < cost) throw new ClashError('供电不足', 'not_enough_supply');
       this.pay(seat, cost);
-      this.ability_used[seat][binding.source] = 1;
-      this.graves[seat].splice(this.graves[seat].indexOf(binding.revive), 1);
-      this.event(`${source.name}支援，${revived.name}离开墓地`);
-      return this.placeNew(seat, binding.revive);
+      this.ability_used[seat].support = 1;
+      this.graves[seat].splice(this.graves[seat].indexOf(reviveId), 1);
+      this.event('小印支援，厚壳工控离开墓地');
+      return this.placeNew(seat, reviveId);
+    }
+
+    promoteCost(currentId, nextId) {
+      return Math.max(1, this.cards[nextId].cost - this.cards[currentId].cost);
+    }
+
+    promote(seat, currentId) {
+      this.requireMain(seat);
+      const current = this.cards[currentId];
+      if (!current || !current.next_template_id) throw new ClashError('这张牌没有下一星', 'no_growth');
+      const nextId = current.next_template_id;
+      const next = this.cards[nextId];
+      if (!next || current.growth_kind !== 'chain' || next.growth_family !== current.growth_family) {
+        throw new ClashError('这张牌没有下一星', 'no_growth');
+      }
+      if (next.star !== current.star + 1) throw new ClashError('星级没有接上', 'no_growth');
+      if (!this.hands[seat].includes(nextId)) throw new ClashError('手牌里没有下一星', 'not_in_hand');
+      let found = null;
+      for (const unit of this.units(seat)) {
+        if (unit.card_id === currentId) { found = ['main', unit]; break; }
+        if (unit.attachments.includes(currentId)) { found = ['attachment', unit]; break; }
+      }
+      if (!found) throw new ClashError('场上没有这一星', 'bad_target');
+      const kind = found[0];
+      const unit = found[1];
+      if (kind === 'attachment' && next.grants_guard && this.cards[unit.card_id].guard) {
+        throw new ClashError('这台主控已经有护卫', 'already_has_guard');
+      }
+      const cost = this.promoteCost(currentId, nextId);
+      if (this.supply[seat] < cost) throw new ClashError('供电不足', 'not_enough_supply');
+      this.pay(seat, cost);
+      this.takeHand(seat, nextId);
+      if (kind === 'main') {
+        const slot = unit.slot;
+        for (const attachment of unit.attachments.slice()) {
+          this.graves[seat].push(attachment);
+          this.event(`${this.cards[attachment].name}随升星进入墓地`);
+        }
+        this.boards[seat][slot] = null;
+        this.graves[seat].push(currentId);
+        this.promoteBan[seat].push(currentId);
+        this.event(`${current.name}升星退役，进入墓地`);
+        this.placeNew(seat, nextId, slot, true);
+      } else {
+        unit.attachments.splice(unit.attachments.indexOf(currentId), 1);
+        this.graves[seat].push(currentId);
+        this.promoteBan[seat].push(currentId);
+        unit.attachments.push(nextId);
+        this.event(`${current.name}升成${next.name}，仍装在原宿主上`);
+      }
+      this.check_deaths();
+      this.check_bases();
     }
 
     knob(seat, hostId, target) {
       this.requireMain(seat);
-      const binding = this.capabilities.bindings.knob;
       hostId = this.resolveIid(seat, hostId);
       target = this.resolveIid(seat, target);
       const hostFound = this.find(hostId);
-      const knobCard = this.cards[binding.source];
-      if (hostFound[0] !== seat || hostFound[2].card_id !== binding.source) {
-        throw new ClashError(`只有己方${knobCard.name}能调这一下`, 'bad_target');
+      const knobCard = this.cards[hostFound[2].card_id];
+      if (hostFound[0] !== seat || knobCard.effect !== 'knob') {
+        throw new ClashError('只有己方旋钮台能调这一下', 'bad_target');
       }
-      if (this.ability_used[seat][binding.source]) throw new ClashError('本回合旋钮已经用过', 'already_used_ability');
+      if (this.ability_used[seat].knob) throw new ClashError('本回合旋钮已经用过', 'already_used_ability');
       const allyFound = this.find(target);
-      if (allyFound[0] !== seat) throw new ClashError(`${knobCard.name}只能强化己方单位`, 'bad_target');
+      if (allyFound[0] !== seat) throw new ClashError('旋钮只能强化己方单位', 'bad_target');
       const cost = knobCard.amount;
       if (this.supply[seat] < cost) throw new ClashError('供电不足', 'not_enough_supply');
       this.pay(seat, cost);
-      this.ability_used[seat][binding.source] = 1;
-      allyFound[2].temp_attack += binding.temp_attack;
-      this.event(`${knobCard.name}让${this.cards[allyFound[2].card_id].name}本回合攻击变为${attackOf(this.cards, allyFound[2])}`);
+      this.ability_used[seat].knob = 1;
+      allyFound[2].temp_attack += this.capabilities.bindings.knob.temp_attack;
+      this.event(`旋钮台让${this.cards[allyFound[2].card_id].name}本回合攻击变为${attackOf(this.cards, allyFound[2])}`);
     }
 
     attack(seat, attackerId, target) {

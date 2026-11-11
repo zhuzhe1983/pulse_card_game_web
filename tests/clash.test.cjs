@@ -485,7 +485,7 @@ check('a newly entered unit may use the knob but may not attack', () => {
 check('pack size is data, unknown effects and star ranks stay closed', () => {
   const caps = capabilities();
   assert.deepEqual(caps.effects, C.IMPLEMENTED_EFFECTS);
-  assert.deepEqual(caps.not_implemented, ['star_upgrade']);
+  assert.deepEqual(caps.not_implemented, []);
   const base = payload();
   const extra = JSON.parse(JSON.stringify(base));
   extra.cards.push(Object.assign({}, extra.cards.find(card => card.template_id === 'gan_rao'), {
@@ -504,7 +504,7 @@ check('pack size is data, unknown effects and star ranks stay closed', () => {
   game.play(0, 'extra_zap', 'xi_tiao');
   assert.equal(game.units(1).length, 0);
   assert.deepEqual(game.graves[1], ['xi_tiao']);
-  assert.equal(typeof game.promote, 'undefined');
+  assert.equal(typeof game.promote, 'function');
   assert.equal(typeof game.starUpgrade, 'undefined');
 
   const marked = JSON.parse(JSON.stringify(base));
@@ -532,7 +532,9 @@ check('pack size is data, unknown effects and star ranks stay closed', () => {
     template_id: 'another_stamp',
     name: '另一台小印'
   }));
-  assert.throws(() => C.loadPack(secondSupport, caps), error => error instanceof C.ClashError && error.code === 'binding_mismatch');
+  const loadedSecond = C.loadPack(secondSupport, caps);
+  assert.equal(loadedSecond.cards.another_stamp.effect, 'support');
+  assert.equal(C.starOf(loadedSecond.cards.another_stamp), null);
   assert.equal(C.starOf({ version: 'v1.3' }), null);
   assert.equal(C.starOf({ star: 2, version: 'v1.1' }), 2);
   assert.equal(C.familyOf({ family: 'stamp-host', series: 'other' }), 'stamp-host');

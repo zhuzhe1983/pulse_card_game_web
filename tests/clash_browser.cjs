@@ -113,7 +113,7 @@ async function main() {
     }
 
     eq(await attr('main.table', 'data-ruleset'), 'pcg.clash.v0', '规则编号');
-    eq(await attr('main.table', 'data-source-commit'), '5b85cc15305d3fcb1585d1096aa03b7c1766e3fe', '来源提交');
+    eq(await attr('main.table', 'data-source-commit'), '704411fcb6138a05f9fdf8c168a366b7a2bb8237', '来源提交');
     eq(await text('[data-seat="0"][data-stat="base"]'), '20', '先手基地');
     eq(await text('[data-seat="1"][data-stat="base"]'), '20', '后手基地');
     eq(await text('[data-seat="0"][data-stat="supply"]'), '1', '先手供电');
@@ -261,8 +261,28 @@ async function main() {
     eq(await attr('[data-board-seat="0"][data-slot="1"]', 'data-card'), 'xiao_yin', '小印仍在位置 1');
     eq(await text('[data-seat="0"][data-stat="supply"]'), '2', '再次支援扣 2');
     await shot('07-support-again');
+    await click('[data-action="scenario"][data-scenario="promote-stamp"]');
+    await click('[data-action="promote"][data-current="xiao_yin"]');
+    eq(await text('[data-seat="0"][data-stat="supply"]'), '4', '升星只付差价');
+    eq(await attr('[data-board-seat="0"][data-slot="2"]', 'data-card'), 'art_h038a', '小印升成小印改');
+    eq(await attr('[data-board-seat="0"][data-slot="2"]', 'data-durability'), '3', '升星满耐久');
+    eq(await attr('[data-board-seat="0"][data-slot="2"]', 'data-sick'), 'true', '升星当回合不能攻击');
+    eq(await cardsIn('[data-grave="0"]'), 'hou_ke,lian_jie,xiao_yin', '旧配件先于旧主控，原来的墓地牌仍在前面');
+    await shot('08-promote');
+    await click('[data-action="scenario"][data-scenario="builder"]');
+    if (!(await text('[data-deck="0"]')).includes('小印改')) throw new Error('扩展牌组没有带上二星');
+    if (!(await text('[data-deck="0"]')).includes('链节')) throw new Error('没有图的基线牌被丢掉了');
+    await shot('09-deck-builder');
+    await click('[data-action="start-free"]');
+    await click('[data-action="select-hand"][data-card="art_h039a"]');
+    await click('[data-action="play"]');
+    eq(await attr('[data-board-seat="0"][data-card="art_h039a"]', 'data-sick'), 'false', '冲锋打出后可以攻击');
+    await click('[data-board-seat="0"][data-card="art_h039a"]');
+    await click('[data-action="attack-base"]');
+    eq(await text('[data-seat="1"][data-stat="base"]'), '18', '扩展对局里的牌能造成伤害');
+    await shot('10-roster-play');
     await errors();
-    console.log('PASS browser lesson and both support paths');
+    console.log('PASS browser lesson, support, promote and roster play');
   } finally {
     server.kill('SIGTERM');
     chrome.kill('SIGTERM');
