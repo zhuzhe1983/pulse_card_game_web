@@ -50,7 +50,11 @@ check('roster is the 96-card handoff and keeps the baseline cards', () => {
     }
   }
   assert.deepEqual(linked.slice().sort(), ['dian_zhen', 'hou_ke', 'qiao_jian', 'xiao_yin', 'xuan_niu']);
-  for (const id of ['xi_tiao', 'lian_jie', 'qian_li', 'hu_zhao', 'bu_ji', 'gan_rao', 'hui_chong']) {
+  assert.equal(byTemplate.art_h024.game_name_zh, '新细条');
+  assert.deepEqual([byTemplate.art_h024.cost, byTemplate.art_h024.attack, byTemplate.art_h024.durability], [3, 2, 3]);
+  assert.equal(playtest.retired[0].template_id, 'xi_tiao');
+  assert.equal(playtest.retired[0].replaced_by, 'art_h024');
+  for (const id of ['lian_jie', 'qian_li', 'hu_zhao', 'bu_ji', 'gan_rao', 'hui_chong']) {
     assert.equal(byTemplate[id], undefined);
     assert.ok(base.cards[id]);
   }
@@ -82,9 +86,9 @@ check('all nine chains promote in place and reject skips', () => {
     game.max_supply = [cost, 0];
     game.hands = [[next.template_id], []];
     if (current.kind === 'main') {
-      game.spawn(0, 'xi_tiao', 0, null, false);
-      game.spawn(0, 'xi_tiao', 1, null, false);
-      game.spawn(0, 'xi_tiao', 2, null, false);
+      game.spawn(0, 'art_h024', 0, null, false);
+      game.spawn(0, 'art_h024', 1, null, false);
+      game.spawn(0, 'art_h024', 2, null, false);
       const unit = game.spawn(0, current.template_id, 3, 1, false);
       unit.attachments = ['lian_jie'];
       unit.attacked = true;
@@ -120,10 +124,10 @@ check('promote is atomic and does not refresh support or revive a retired shell'
   stamp.attachments = ['lian_jie'];
   game.graves = [['hou_ke'], []];
   game.support(0);
-  assert.equal(game.supply[0], 3);
+  assert.equal(game.supply[0], 4);
   const held = game.hands[0].pop();
   assert.throws(() => game.promote(0, 'xiao_yin'), error => error.code === 'not_in_hand');
-  assert.equal(game.supply[0], 3);
+  assert.equal(game.supply[0], 4);
   game.hands[0].push(held);
   game.supply[0] = 0;
   assert.throws(() => game.promote(0, 'xiao_yin'), error => error.code === 'not_enough_supply');
@@ -147,7 +151,7 @@ check('promote is atomic and does not refresh support or revive a retired shell'
   assert.deepEqual(banned.graves[0], ['hou_ke']);
   banned.promoteBan[0] = [];
   banned.support(0);
-  assert.equal(banned.supply[0], 4);
+  assert.equal(banned.supply[0], 5);
   assert.equal(banned.boards[0][0].card_id, 'hou_ke');
   assert.equal(banned.boards[0][1].card_id, 'xiao_yin');
 });
@@ -165,7 +169,7 @@ check('guarded host blocks a guarding upgrade, and rush or entry effects resolve
   assert.deepEqual(blocked.hands[0], ['art_c004d']);
 
   const rush = fresh();
-  rush.supply = [3, 20];
+  rush.supply = [4, 20];
   rush.hands = [['art_h003'], []];
   rush.play(0, 'art_h003');
   assert.equal(rush.units(0)[0].sick, false);
@@ -173,11 +177,11 @@ check('guarded host blocks a guarding upgrade, and rush or entry effects resolve
   assert.equal(rush.bases[1], 16);
 
   const draw = fresh();
-  draw.supply = [5, 0];
-  draw.decks[0] = ['xi_tiao'];
+  draw.supply = [6, 0];
+  draw.decks[0] = ['art_h024'];
   draw.hands = [['art_h012'], []];
   draw.play(0, 'art_h012');
-  assert.deepEqual(draw.hands[0], ['xi_tiao']);
+  assert.deepEqual(draw.hands[0], ['art_h024']);
   assert.equal(draw.decks[0].length, 0);
 
   const peck = fresh();
@@ -185,7 +189,7 @@ check('guarded host blocks a guarding upgrade, and rush or entry effects resolve
   peck.hands = [['art_h025'], []];
   const sentry = peck.spawn(1, 'dian_zhen', 0, null, false);
   peck.play(0, 'art_h025', sentry.iid);
-  assert.equal(sentry.durability, 3);
+  assert.equal(sentry.durability, 2);
   assert.equal(peck.supply[0], 0);
   const miss = fresh();
   miss.supply = [3, 0];
@@ -201,9 +205,41 @@ check('guarded host blocks a guarding upgrade, and rush or entry effects resolve
   assert.deepEqual(bad.hands[0], ['art_h025']);
 });
 
+check('mid costs follow the 902812b machine data', () => {
+  const counts = {};
+  for (const card of roster.cards) counts[card.cost] = (counts[card.cost] || 0) + 1;
+  assert.equal(counts[1], 24);
+  assert.equal(counts[2], 21);
+  assert.equal(counts[3] + counts[4] + counts[5], 34);
+  const byRid = Object.create(null);
+  for (const card of roster.cards) byRid[card.rid] = card;
+  for (const rid of ['H038', 'H038b', 'H038c', 'H039a', 'H039b', 'H039c', 'H039e', 'H039f']) {
+    assert.equal(byRid[rid].cost, 1);
+    assert.ok(byRid[rid].attack <= 1);
+  }
+  assert.equal(byRid.H016.cost, 3);
+  assert.equal(byRid.H016.guard, true);
+  assert.deepEqual([byRid.H017.cost, byRid.H017.attack, byRid.H017.durability, byRid.H017.guard], [5, 2, 7, true]);
+  assert.deepEqual([byRid.H036.cost, byRid.H036.attack, byRid.H036.durability], [2, 2, 2]);
+  assert.deepEqual([byRid.H036a.cost, byRid.H036a.attack, byRid.H036a.durability], [3, 1, 4]);
+  assert.deepEqual([byRid.H037.cost, byRid.H037.attack, byRid.H037.durability], [2, 1, 3]);
+  assert.deepEqual([byRid.H037a.cost, byRid.H037a.attack, byRid.H037a.durability], [3, 2, 3]);
+  assert.equal(byRid.H036.series_confidence, 'official');
+  assert.equal(byRid.H037.series_confidence, 'official');
+  const byId = Object.create(null);
+  for (const card of roster.cards) byId[card.template_id] = card;
+  assert.equal(byId.art_c004d.cost - byId.art_c004c.cost, 2);
+  const parts = roster.cards.filter(card => card.kind === 'attachment');
+  assert.ok(parts.filter(card => card.cost === 1).length >= 8);
+  assert.ok(parts.filter(card => card.cost >= 3).length >= 12);
+  const eye = playtest.cards.find(card => card.template_id === 'qian_li');
+  assert.equal(eye.cost, 4);
+  assert.equal(eye.bypass_guard, true);
+});
+
 check('a free deck can contain roster cards and the kept baseline cards', () => {
   const cards = table();
-  const deck = ['xiao_yin', 'art_h038a', 'hou_ke', 'art_h003', 'art_h012', 'art_h025', 'xi_tiao', 'lian_jie'];
+  const deck = ['xiao_yin', 'art_h038a', 'hou_ke', 'art_h003', 'art_h012', 'art_h025', 'art_h024', 'lian_jie'];
   assert.equal(deck.length >= 8 && deck.length <= 12, true);
   assert.ok(deck.filter(id => cards[id].kind === 'main').length >= 4);
   const game = new C.Game(cards, deck, deck, base.rules, base.tokenId, base.capabilities);
@@ -211,7 +247,7 @@ check('a free deck can contain roster cards and the kept baseline cards', () => 
   assert.equal(game.hands[0][0], 'xiao_yin');
   assert.equal(cards.art_h038a.name, '小印改');
   assert.equal(C.starOf(cards.art_h038a), 2);
-  assert.equal(C.starOf(cards.xi_tiao), null);
+  assert.equal(C.starOf(cards.art_h024), null);
 });
 
 console.log('PASS roster', passed, 'groups');

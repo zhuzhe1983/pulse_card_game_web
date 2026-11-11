@@ -5,7 +5,7 @@
   "design_status": "playtest_draft",
   "balance": "playtest_unverified",
   "label": "首版设计 · 待试玩",
-  "source_commit": "704411fcb6138a05f9fdf8c168a366b7a2bb8237",
+  "source_commit": "5e1caabddd13559ad8d05f1b9ff8b681ec164052",
   "source_repo": "zhuzhe1983/pulse_card_game_prompt",
   "note": "中文名、阵营、费用、技能和星级是 playtest_draft。不是官方规格，也不是网页里已经打完的 96 张实战。玩法正在接入，以实现的引擎版本为准。",
   "growth_rules": {
@@ -296,7 +296,11 @@
         "effect_amount": null,
         "attack_bonus": 1,
         "grants_guard": false,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
       },
       "growth": {
         "family": "hats",
@@ -335,7 +339,11 @@
         "effect_amount": null,
         "attack_bonus": 1,
         "grants_guard": false,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
       },
       "growth": {
         "family": "hats",
@@ -365,7 +373,7 @@
       },
       "gameplay": {
         "role": "attachment",
-        "cost": 1,
+        "cost": 3,
         "attack": null,
         "durability": null,
         "guard": null,
@@ -374,7 +382,11 @@
         "effect_amount": null,
         "attack_bonus": 0,
         "grants_guard": true,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "只给护卫会改攻击目标，比 1 费的单纯加攻强，上调到 3 费。"
       },
       "growth": {
         "family": "hats",
@@ -413,7 +425,11 @@
         "effect_amount": null,
         "attack_bonus": 1,
         "grants_guard": false,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
       },
       "growth": {
         "family": "hats",
@@ -452,7 +468,11 @@
         "effect_amount": null,
         "attack_bonus": 1,
         "grants_guard": false,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
       },
       "growth": {
         "family": "hats",
@@ -482,7 +502,7 @@
       },
       "gameplay": {
         "role": "attachment",
-        "cost": 2,
+        "cost": 4,
         "attack": null,
         "durability": null,
         "guard": null,
@@ -491,7 +511,11 @@
         "effect_amount": null,
         "attack_bonus": 0,
         "grants_guard": false,
-        "bypass_guard": true
+        "bypass_guard": true,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "热成像帽忽略护卫，上调到 4 费。"
       },
       "growth": {
         "family": "hats",
@@ -530,7 +554,11 @@
         "effect_amount": null,
         "attack_bonus": 1,
         "grants_guard": false,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
       },
       "growth": {
         "family": "hats",
@@ -560,7 +588,7 @@
       },
       "gameplay": {
         "role": "attachment",
-        "cost": 2,
+        "cost": 4,
         "attack": null,
         "durability": null,
         "guard": null,
@@ -569,7 +597,11 @@
         "effect_amount": null,
         "attack_bonus": 2,
         "grants_guard": false,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "八舵帽攻击 +2，比加攻 1 厚一档，上调到 4 费。"
       },
       "growth": {
         "family": "hats",
@@ -608,7 +640,11 @@
         "effect_amount": null,
         "attack_bonus": 1,
         "grants_guard": false,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
       },
       "growth": {
         "family": "hats",
@@ -638,7 +674,7 @@
       },
       "gameplay": {
         "role": "attachment",
-        "cost": 1,
+        "cost": 3,
         "attack": null,
         "durability": null,
         "guard": null,
@@ -647,7 +683,11 @@
         "effect_amount": null,
         "attack_bonus": 0,
         "grants_guard": true,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "只给护卫，和摇杆帽同一档，上调到 3 费。"
       },
       "growth": {
         "family": "hats",
@@ -686,7 +726,11 @@
         "effect_amount": null,
         "attack_bonus": 1,
         "grants_guard": false,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
       },
       "growth": {
         "family": "hats",
@@ -716,7 +760,7 @@
       },
       "gameplay": {
         "role": "attachment",
-        "cost": 1,
+        "cost": 4,
         "attack": null,
         "durability": null,
         "guard": null,
@@ -725,7 +769,11 @@
         "effect_amount": null,
         "attack_bonus": 0,
         "grants_guard": true,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "护卫再加链节标记，两件强技能叠在一起，上调到 4 费。"
       },
       "growth": {
         "family": "chain_nodes",
@@ -764,7 +812,11 @@
         "effect_amount": null,
         "attack_bonus": 1,
         "grants_guard": false,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
       },
       "growth": {
         "family": "chain_nodes",
@@ -794,7 +846,7 @@
       },
       "gameplay": {
         "role": "attachment",
-        "cost": 2,
+        "cost": 5,
         "attack": null,
         "durability": null,
         "guard": null,
@@ -803,7 +855,11 @@
         "effect_amount": null,
         "attack_bonus": 0,
         "grants_guard": false,
-        "bypass_guard": true
+        "bypass_guard": true,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "忽略护卫并且是链节标记，两件强技能，上调到 5 费。"
       },
       "growth": {
         "family": "chain_nodes",
@@ -833,7 +889,7 @@
       },
       "gameplay": {
         "role": "attachment",
-        "cost": 2,
+        "cost": 5,
         "attack": null,
         "durability": null,
         "guard": null,
@@ -842,7 +898,11 @@
         "effect_amount": null,
         "attack_bonus": 0,
         "grants_guard": false,
-        "bypass_guard": true
+        "bypass_guard": true,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "忽略护卫并且是链节标记，上调到 5 费。"
       },
       "growth": {
         "family": "chain_nodes",
@@ -872,7 +932,7 @@
       },
       "gameplay": {
         "role": "attachment",
-        "cost": 1,
+        "cost": 4,
         "attack": null,
         "durability": null,
         "guard": null,
@@ -881,7 +941,11 @@
         "effect_amount": null,
         "attack_bonus": 0,
         "grants_guard": true,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "护卫再加链节标记，上调到 4 费。"
       },
       "growth": {
         "family": "chain_nodes",
@@ -911,7 +975,7 @@
       },
       "gameplay": {
         "role": "attachment",
-        "cost": 1,
+        "cost": 3,
         "attack": null,
         "durability": null,
         "guard": null,
@@ -920,7 +984,11 @@
         "effect_amount": null,
         "attack_bonus": 1,
         "grants_guard": false,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "链节标记会给全队加百分比，不是普通帽子，上调到 3 费。"
       },
       "growth": {
         "family": "chain_nodes",
@@ -950,7 +1018,7 @@
       },
       "gameplay": {
         "role": "attachment",
-        "cost": 1,
+        "cost": 3,
         "attack": null,
         "durability": null,
         "guard": null,
@@ -959,7 +1027,11 @@
         "effect_amount": null,
         "attack_bonus": 1,
         "grants_guard": false,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "链节标记会给全队加百分比，上调到 3 费。"
       },
       "growth": {
         "family": "chain_nodes",
@@ -998,7 +1070,11 @@
         "effect_amount": null,
         "attack_bonus": 1,
         "grants_guard": false,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
       },
       "growth": {
         "family": "chain_nodes",
@@ -1037,7 +1113,11 @@
         "effect_amount": null,
         "attack_bonus": 1,
         "grants_guard": false,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
       },
       "growth": {
         "family": "chain_nodes",
@@ -1067,7 +1147,7 @@
       },
       "gameplay": {
         "role": "attachment",
-        "cost": 1,
+        "cost": 3,
         "attack": null,
         "durability": null,
         "guard": null,
@@ -1076,7 +1156,11 @@
         "effect_amount": null,
         "attack_bonus": 1,
         "grants_guard": false,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "链节标记会给全队加百分比，上调到 3 费。"
       },
       "growth": {
         "family": "chain_nodes",
@@ -1106,7 +1190,7 @@
       },
       "gameplay": {
         "role": "attachment",
-        "cost": 1,
+        "cost": 3,
         "attack": null,
         "durability": null,
         "guard": null,
@@ -1115,7 +1199,11 @@
         "effect_amount": null,
         "attack_bonus": 1,
         "grants_guard": false,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "链节标记会给全队加百分比，上调到 3 费。"
       },
       "growth": {
         "family": "chain_nodes",
@@ -1145,7 +1233,7 @@
       },
       "gameplay": {
         "role": "attachment",
-        "cost": 1,
+        "cost": 3,
         "attack": null,
         "durability": null,
         "guard": null,
@@ -1154,7 +1242,11 @@
         "effect_amount": null,
         "attack_bonus": 1,
         "grants_guard": false,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "回传节既是链节标记又加攻击，上调到 3 费。"
       },
       "growth": {
         "family": "chain_parts",
@@ -1184,7 +1276,7 @@
       },
       "gameplay": {
         "role": "attachment",
-        "cost": 1,
+        "cost": 4,
         "attack": null,
         "durability": null,
         "guard": null,
@@ -1193,7 +1285,11 @@
         "effect_amount": null,
         "attack_bonus": 0,
         "grants_guard": true,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "护卫再加链节标记，上调到 4 费。"
       },
       "growth": {
         "family": "chain_parts",
@@ -1232,7 +1328,11 @@
         "effect_amount": null,
         "attack_bonus": 1,
         "grants_guard": false,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
       },
       "growth": {
         "family": "chain_parts",
@@ -1271,7 +1371,11 @@
         "effect_amount": null,
         "attack_bonus": 1,
         "grants_guard": false,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
       },
       "growth": {
         "family": "chain_parts",
@@ -1310,7 +1414,11 @@
         "effect_amount": null,
         "attack_bonus": 1,
         "grants_guard": false,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
       },
       "growth": {
         "family": "chain_parts",
@@ -1349,7 +1457,11 @@
         "effect_amount": null,
         "attack_bonus": 1,
         "grants_guard": false,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
       },
       "growth": {
         "family": "atom_bases",
@@ -1388,7 +1500,11 @@
         "effect_amount": null,
         "attack_bonus": 1,
         "grants_guard": false,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
       },
       "growth": {
         "family": "atom_bases",
@@ -1427,7 +1543,11 @@
         "effect_amount": null,
         "attack_bonus": 1,
         "grants_guard": false,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
       },
       "growth": {
         "family": "motion",
@@ -1457,7 +1577,7 @@
       },
       "gameplay": {
         "role": "attachment",
-        "cost": 2,
+        "cost": 3,
         "attack": null,
         "durability": null,
         "guard": null,
@@ -1466,7 +1586,11 @@
         "effect_amount": null,
         "attack_bonus": 2,
         "grants_guard": false,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "二星把攻击加成从 +1 提到 +2，费用升到 3。升星付 2。"
       },
       "growth": {
         "family": "motion",
@@ -1496,7 +1620,7 @@
       },
       "gameplay": {
         "role": "attachment",
-        "cost": 2,
+        "cost": 4,
         "attack": null,
         "durability": null,
         "guard": null,
@@ -1505,7 +1629,11 @@
         "effect_amount": null,
         "attack_bonus": 0,
         "grants_guard": false,
-        "bypass_guard": true
+        "bypass_guard": true,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "定位座忽略护卫，上调到 4 费。"
       },
       "growth": {
         "family": "atom_bases",
@@ -1544,7 +1672,11 @@
         "effect_amount": null,
         "attack_bonus": 0,
         "grants_guard": true,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
       },
       "growth": {
         "family": "atom_bases",
@@ -1583,7 +1715,11 @@
         "effect_amount": null,
         "attack_bonus": 1,
         "grants_guard": false,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
       },
       "growth": {
         "family": "atom_bases",
@@ -1613,7 +1749,7 @@
       },
       "gameplay": {
         "role": "attachment",
-        "cost": 1,
+        "cost": 3,
         "attack": null,
         "durability": null,
         "guard": null,
@@ -1622,7 +1758,11 @@
         "effect_amount": null,
         "attack_bonus": 0,
         "grants_guard": true,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "电池座给护卫，技能强于加攻 1，上调到 3 费。"
       },
       "growth": {
         "family": "atom_bases",
@@ -1661,7 +1801,11 @@
         "effect_amount": null,
         "attack_bonus": 1,
         "grants_guard": false,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
       },
       "growth": {
         "family": "atom_bases",
@@ -1700,7 +1844,11 @@
         "effect_amount": null,
         "attack_bonus": 1,
         "grants_guard": false,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
       },
       "growth": {
         "family": "atom_bases",
@@ -1730,7 +1878,7 @@
       },
       "gameplay": {
         "role": "attachment",
-        "cost": 1,
+        "cost": 4,
         "attack": null,
         "durability": null,
         "guard": null,
@@ -1739,7 +1887,11 @@
         "effect_amount": null,
         "attack_bonus": 0,
         "grants_guard": false,
-        "bypass_guard": true
+        "bypass_guard": true,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "忽略护卫能绕过护卫打基地，1 费过强，上调到 4 费。"
       },
       "growth": {
         "family": "atom_bases",
@@ -1778,7 +1930,11 @@
         "effect_amount": null,
         "attack_bonus": 1,
         "grants_guard": false,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
       },
       "growth": {
         "family": "atom_bases",
@@ -1817,7 +1973,11 @@
         "effect_amount": null,
         "attack_bonus": 1,
         "grants_guard": false,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
       },
       "growth": {
         "family": "atom_bases",
@@ -1856,7 +2016,11 @@
         "effect_amount": null,
         "attack_bonus": 1,
         "grants_guard": false,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
       },
       "growth": {
         "family": "atom_bases",
@@ -1895,7 +2059,11 @@
         "effect_amount": null,
         "attack_bonus": 1,
         "grants_guard": false,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
       },
       "growth": {
         "family": "atom_bases",
@@ -1934,7 +2102,11 @@
         "effect_amount": null,
         "attack_bonus": 1,
         "grants_guard": false,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
       },
       "growth": {
         "family": "atom_bases",
@@ -1973,7 +2145,11 @@
         "effect_amount": null,
         "attack_bonus": 1,
         "grants_guard": false,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
       },
       "growth": {
         "family": "atom_bases",
@@ -2012,7 +2188,11 @@
         "effect_amount": null,
         "attack_bonus": 1,
         "grants_guard": false,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
       },
       "growth": {
         "family": "atom_bases",
@@ -2042,7 +2222,7 @@
       },
       "gameplay": {
         "role": "attachment",
-        "cost": 2,
+        "cost": 5,
         "attack": null,
         "durability": null,
         "guard": null,
@@ -2051,7 +2231,11 @@
         "effect_amount": null,
         "attack_bonus": 2,
         "grants_guard": false,
-        "bypass_guard": false
+        "bypass_guard": false,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "攻击 +2 并且是链节标记，上调到 5 费。"
       },
       "growth": {
         "family": "chain_parts",
@@ -2081,7 +2265,7 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 3,
+        "cost": 4,
         "attack": 3,
         "durability": 3,
         "guard": false,
@@ -2090,7 +2274,11 @@
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_core",
+        "cost_line": "core_body",
+        "series_confidence": "official",
+        "cost_note": "Fire 属于 Core 初代。保留冲锋，费用从 3 升到 4。"
       },
       "growth": {
         "family": null,
@@ -2120,16 +2308,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 4,
+        "cost": 5,
         "attack": 2,
-        "durability": 5,
+        "durability": 6,
         "guard": true,
         "rush": false,
         "effect": null,
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_machine",
+        "cost_line": "core_kit",
+        "series_confidence": "official",
+        "cost_note": "M5GO 是 Core 初代的套件，不是 Fire 本体。比 Core 基础档高 1 费。"
       },
       "growth": {
         "family": null,
@@ -2159,16 +2351,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 4,
+        "cost": 5,
         "attack": 3,
-        "durability": 5,
+        "durability": 6,
         "guard": true,
         "rush": false,
         "effect": null,
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_core",
+        "cost_line": "core2_body",
+        "series_confidence": "official",
+        "cost_note": "Core2 本体。费用升到 5，耐久升到 6。"
       },
       "growth": {
         "family": "core2",
@@ -2198,16 +2394,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 5,
+        "cost": 6,
         "attack": 3,
-        "durability": 6,
+        "durability": 7,
         "guard": true,
         "rush": false,
         "effect": null,
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_core",
+        "cost_line": "core2_body",
+        "series_confidence": "official",
+        "cost_note": "Core2 二星，基础档 +1。"
       },
       "growth": {
         "family": "core2",
@@ -2237,16 +2437,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 4,
+        "cost": 5,
         "attack": 4,
-        "durability": 3,
+        "durability": 4,
         "guard": false,
         "rush": false,
         "effect": null,
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_core",
+        "cost_line": "core2_body",
+        "series_confidence": "official",
+        "cost_note": "Core2 For AWS 仍是 Core2 产品线，不并进初代。"
       },
       "growth": {
         "family": "core2_aws",
@@ -2276,16 +2480,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 5,
+        "cost": 6,
         "attack": 3,
-        "durability": 4,
+        "durability": 5,
         "guard": false,
         "rush": false,
         "effect": null,
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_core",
+        "cost_line": "core2_body",
+        "series_confidence": "official",
+        "cost_note": "AWS 二星，基础档 +1。"
       },
       "growth": {
         "family": "core2_aws",
@@ -2315,16 +2523,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 4,
+        "cost": 6,
         "attack": 3,
-        "durability": 4,
+        "durability": 5,
         "guard": false,
         "rush": false,
         "effect": null,
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_core",
+        "cost_line": "cores3_body",
+        "series_confidence": "official",
+        "cost_note": "CoreS3-SE 是 CoreS3 本体。"
       },
       "growth": {
         "family": "cores3",
@@ -2354,16 +2566,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 3,
+        "cost": 6,
         "attack": 3,
-        "durability": 3,
+        "durability": 4,
         "guard": false,
         "rush": false,
         "effect": null,
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_core",
+        "cost_line": "cores3_body",
+        "series_confidence": "official",
+        "cost_note": "CoreS3-Lite 仍是 CoreS3 产品线，不降回 Atom 或 Stick。"
       },
       "growth": {
         "family": "cores3",
@@ -2393,16 +2609,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 5,
+        "cost": 6,
         "attack": 3,
-        "durability": 4,
+        "durability": 5,
         "guard": false,
         "rush": false,
         "effect": "play_draw",
         "effect_amount": 1,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_core",
+        "cost_line": "cores3_body",
+        "series_confidence": "official",
+        "cost_note": "Thread 款仍是 CoreS3。保留入场抽 1。"
       },
       "growth": {
         "family": "cores3",
@@ -2432,16 +2652,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 4,
-        "attack": 2,
-        "durability": 6,
+        "cost": 7,
+        "attack": 3,
+        "durability": 7,
         "guard": true,
         "rush": false,
         "effect": null,
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_core",
+        "cost_line": "tough_body",
+        "series_confidence": "official",
+        "cost_note": "Tough 本体。"
       },
       "growth": {
         "family": null,
@@ -2471,16 +2695,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 5,
+        "cost": 7,
         "attack": 3,
-        "durability": 5,
+        "durability": 6,
         "guard": false,
         "rush": false,
         "effect": null,
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_core",
+        "cost_line": "tough_body",
+        "series_confidence": "official",
+        "cost_note": "ToughC5 仍是 Tough 产品线，不因为 C5 芯片另开一档。"
       },
       "growth": {
         "family": null,
@@ -2510,16 +2738,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 6,
-        "attack": 3,
-        "durability": 6,
+        "cost": 10,
+        "attack": 4,
+        "durability": 7,
         "guard": false,
         "rush": false,
         "effect": "play_draw",
         "effect_amount": 1,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_core",
+        "cost_line": "tab_body",
+        "series_confidence": "official",
+        "cost_note": "Tab5 是平板整机。芯片是 ESP32-P4 + C6，不是邮票模块。"
       },
       "growth": {
         "family": null,
@@ -2549,16 +2781,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 5,
-        "attack": 2,
-        "durability": 6,
+        "cost": 3,
+        "attack": 1,
+        "durability": 4,
         "guard": true,
         "rush": false,
         "effect": null,
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_machine",
+        "cost_line": "core_form",
+        "series_confidence": "uncertain",
+        "cost_note": "按普通 Core 的 4 费减 1，定 3 费。护卫保留，耐久收到 3 费的厚度。"
       },
       "growth": {
         "family": null,
@@ -2588,16 +2824,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 4,
+        "cost": 5,
         "attack": 2,
-        "durability": 5,
-        "guard": false,
+        "durability": 7,
+        "guard": true,
         "rush": false,
         "effect": null,
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_machine",
+        "cost_line": "core_form",
+        "series_confidence": "uncertain",
+        "cost_note": "供电整机放在中段 5 费，做成护卫胖墙，不占用 Core 初代本体的 4 费。"
       },
       "growth": {
         "family": null,
@@ -2627,16 +2867,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 6,
+        "cost": 10,
         "attack": 4,
-        "durability": 5,
+        "durability": 6,
         "guard": false,
         "rush": false,
         "effect": null,
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_machine",
+        "cost_line": "upper_arm",
+        "series_confidence": "uncertain",
+        "cost_note": "CoreMP135 是 Linux 整机，不是 ESP32，也不是已登记的上位机。费用放在最高档，仍不能发动来自上位的爱。"
       },
       "growth": {
         "family": null,
@@ -2675,7 +2919,11 @@
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_core",
+        "cost_line": "stick_core",
+        "series_confidence": "official",
+        "cost_note": "StickC-Plus2 是 Stick 本体。"
       },
       "growth": {
         "family": "sticks",
@@ -2705,16 +2953,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 2,
+        "cost": 3,
         "attack": 2,
-        "durability": 2,
+        "durability": 3,
         "guard": false,
         "rush": false,
         "effect": null,
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_core",
+        "cost_line": "stick_core",
+        "series_confidence": "official",
+        "cost_note": "StickC-Plus SE 是 Stick 本体。费用从 2 升到 3，耐久升到 3。"
       },
       "growth": {
         "family": "sticks",
@@ -2735,12 +2987,12 @@
       "design_status": "playtest_draft",
       "identity": {
         "game_name_zh": "新细条",
-        "game_description": "新一代细条。教学里的细条是另一张没有这批图的牌。",
-        "balance_intent": "不占用基线细条的 id。",
+        "game_description": "StickS3。教学局用的就是这一张。",
+        "balance_intent": "占位牌细条已退役，教学改用这个 id。",
         "faction": "细棍",
         "v8_game_name_zh": "新细条",
         "v8_template_id": "stick_s3",
-        "v8_change": "保留中文名。基线细条仍单独存在。"
+        "v8_change": "保留中文名。占位牌细条已退役，不再单独存在。"
       },
       "gameplay": {
         "role": "main",
@@ -2753,7 +3005,11 @@
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_core",
+        "cost_line": "stick_core",
+        "series_confidence": "official",
+        "cost_note": "StickS3 是 Stick 本体。占位牌细条已退役，教学局用 art_h024。"
       },
       "growth": {
         "family": "sticks",
@@ -2792,7 +3048,11 @@
         "effect_amount": 1,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_core",
+        "cost_line": "stick_core",
+        "series_confidence": "official",
+        "cost_note": "StickT2 是 Stick 本体，保留入场伤害。"
       },
       "growth": {
         "family": "sticks",
@@ -2822,16 +3082,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 3,
-        "attack": 2,
-        "durability": 4,
+        "cost": 2,
+        "attack": 1,
+        "durability": 3,
         "guard": true,
         "rush": false,
         "effect": null,
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_core",
+        "cost_line": "atom_core",
+        "series_confidence": "official",
+        "cost_note": "Atom-Matrix 是 Atom 核心本体。费用 3 降到 2，攻击 2 降到 1，耐久 4 降到 3。"
       },
       "growth": {
         "family": "atom_matrix",
@@ -2861,16 +3125,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 4,
+        "cost": 3,
         "attack": 2,
-        "durability": 5,
+        "durability": 4,
         "guard": true,
         "rush": false,
         "effect": null,
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_core",
+        "cost_line": "atom_core",
+        "series_confidence": "official",
+        "cost_note": "Atom-Matrix 二星，基础档 +1。"
       },
       "growth": {
         "family": "atom_matrix",
@@ -2900,16 +3168,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 3,
-        "attack": 3,
-        "durability": 3,
+        "cost": 2,
+        "attack": 2,
+        "durability": 2,
         "guard": false,
         "rush": false,
         "effect": null,
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_core",
+        "cost_line": "atom_core",
+        "series_confidence": "official",
+        "cost_note": "AtomS3 本体。"
       },
       "growth": {
         "family": "atoms3",
@@ -2939,16 +3211,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 4,
-        "attack": 3,
-        "durability": 3,
+        "cost": 2,
+        "attack": 2,
+        "durability": 2,
         "guard": false,
         "rush": false,
         "effect": null,
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_core",
+        "cost_line": "atom_core",
+        "series_confidence": "official",
+        "cost_note": "AtomS3R 仍是 Atom 本体，不是套件。"
       },
       "growth": {
         "family": "atoms3",
@@ -2978,16 +3254,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 4,
-        "attack": 2,
-        "durability": 3,
+        "cost": 2,
+        "attack": 1,
+        "durability": 2,
         "guard": false,
         "rush": false,
         "effect": "play_damage",
         "effect_amount": 1,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_core",
+        "cost_line": "atom_core",
+        "series_confidence": "official",
+        "cost_note": "摄像头仍装在 Atom 本体上，不上调成整机。保留入场伤害 1。"
       },
       "growth": {
         "family": "atoms3",
@@ -3017,8 +3297,8 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 4,
-        "attack": 3,
+        "cost": 2,
+        "attack": 2,
         "durability": 2,
         "guard": false,
         "rush": false,
@@ -3026,7 +3306,11 @@
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_core",
+        "cost_line": "atom_core",
+        "series_confidence": "official",
+        "cost_note": "长焦仍是 Atom 本体尺寸。"
       },
       "growth": {
         "family": "atoms3",
@@ -3056,16 +3340,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 4,
-        "attack": 2,
-        "durability": 4,
+        "cost": 2,
+        "attack": 1,
+        "durability": 3,
         "guard": false,
         "rush": false,
         "effect": null,
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_core",
+        "cost_line": "atom_core",
+        "series_confidence": "official",
+        "cost_note": "扩展座仍是 Atom 本体尺寸。册内没有单独的 Atom 套件主机。"
       },
       "growth": {
         "family": "atoms3",
@@ -3095,16 +3383,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 3,
+        "cost": 2,
         "attack": 2,
-        "durability": 3,
+        "durability": 2,
         "guard": false,
         "rush": false,
         "effect": null,
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_core",
+        "cost_line": "atom_core",
+        "series_confidence": "official",
+        "cost_note": "Atom Voice 仍是 Atom 尺寸的核心，不是音箱整机。"
       },
       "growth": {
         "family": "atoms3",
@@ -3134,16 +3426,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 4,
-        "attack": 4,
-        "durability": 3,
+        "cost": 9,
+        "attack": 5,
+        "durability": 5,
         "guard": false,
         "rush": false,
         "effect": null,
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_core",
+        "cost_line": "cardputer_body",
+        "series_confidence": "official",
+        "cost_note": "Cardputer 本体。壳里有邮票，但是掌机整机，不收 1 费。"
       },
       "growth": {
         "family": "cardputer",
@@ -3173,16 +3469,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 5,
-        "attack": 3,
-        "durability": 5,
+        "cost": 10,
+        "attack": 4,
+        "durability": 7,
         "guard": false,
         "rush": false,
         "effect": null,
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_core",
+        "cost_line": "cardputer_body",
+        "series_confidence": "official",
+        "cost_note": "Cardputer 二星，基础档 +1，封顶 10。"
       },
       "growth": {
         "family": "cardputer",
@@ -3212,16 +3512,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 5,
+        "cost": 9,
         "attack": 5,
-        "durability": 3,
+        "durability": 4,
         "guard": false,
         "rush": false,
         "effect": null,
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_core",
+        "cost_line": "cardputer_body",
+        "series_confidence": "official",
+        "cost_note": "Cardputer-Adv 是同一掌机产品线的另一台整机，不是套件。"
       },
       "growth": {
         "family": "cardputer_side",
@@ -3251,16 +3555,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 6,
+        "cost": 10,
         "attack": 4,
-        "durability": 4,
+        "durability": 6,
         "guard": false,
         "rush": false,
         "effect": "play_draw",
         "effect_amount": 1,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_machine",
+        "cost_line": "cardputer_kit",
+        "series_confidence": "official",
+        "cost_note": "Cardputer Mesh Kit 是套件，比 Cardputer 本体高 1 费，封顶 10。保留入场抽 1。"
       },
       "growth": {
         "family": "cardputer_side",
@@ -3290,16 +3598,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 3,
-        "attack": 1,
-        "durability": 3,
+        "cost": 8,
+        "attack": 3,
+        "durability": 6,
         "guard": false,
         "rush": false,
         "effect": "knob",
         "effect_amount": 1,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_core",
+        "cost_line": "dial_body",
+        "series_confidence": "official",
+        "cost_note": "Dial 是点名的整机档，不是邮票模块。官方总览把它放在 Stamp 躯壳谱系，费用不按邮票模块收。"
       },
       "growth": {
         "family": "dial",
@@ -3329,16 +3641,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 4,
-        "attack": 2,
-        "durability": 2,
+        "cost": 9,
+        "attack": 4,
+        "durability": 5,
         "guard": false,
         "rush": false,
         "effect": "knob",
         "effect_amount": 1,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_core",
+        "cost_line": "dial_body",
+        "series_confidence": "official",
+        "cost_note": "Dial 二星，基础档 +1。"
       },
       "growth": {
         "family": "dial",
@@ -3368,16 +3684,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 3,
+        "cost": 2,
         "attack": 2,
-        "durability": 3,
+        "durability": 2,
         "guard": false,
         "rush": false,
         "effect": null,
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_machine",
+        "cost_line": "stamp_machine",
+        "series_confidence": "official",
+        "cost_note": "官方文档写明主控是 Stamp-S3，是邮票套装不是邮票模块。按 2 费曲线重配为攻击 2、耐久 2。"
       },
       "growth": {
         "family": "dinmeter",
@@ -3409,14 +3729,18 @@
         "role": "main",
         "cost": 3,
         "attack": 1,
-        "durability": 5,
+        "durability": 4,
         "guard": false,
         "rush": false,
         "effect": null,
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_machine",
+        "cost_line": "stamp_machine",
+        "series_confidence": "official",
+        "cost_note": "官方 v1.1 把主控换成 Stamp-S3A，仍是同一套装的二星。费用 +1，改成更肉的攻击 1、耐久 4。"
       },
       "growth": {
         "family": "dinmeter",
@@ -3446,16 +3770,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 3,
+        "cost": 2,
         "attack": 1,
-        "durability": 4,
+        "durability": 3,
         "guard": false,
         "rush": false,
         "effect": null,
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_machine",
+        "cost_line": "stamp_machine",
+        "series_confidence": "official",
+        "cost_note": "商店名是 Air Quality Kit with M5StampS3，文档写由 StampS3 供电。与 DinMeter 同属邮票套装，按 2 费曲线重配为攻击 1、耐久 3。"
       },
       "growth": {
         "family": "air",
@@ -3485,7 +3813,7 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 4,
+        "cost": 3,
         "attack": 2,
         "durability": 3,
         "guard": false,
@@ -3494,7 +3822,11 @@
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_machine",
+        "cost_line": "stamp_machine",
+        "series_confidence": "official",
+        "cost_note": "商店名是 Air Quality Kit v1.1 with M5StampS3A，文档写主控换成 Stamp-S3A。二星费用 +1，攻击 2、耐久 3。"
       },
       "growth": {
         "family": "air",
@@ -3524,16 +3856,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 2,
-        "attack": 2,
+        "cost": 1,
+        "attack": 1,
         "durability": 2,
         "guard": false,
         "rush": false,
         "effect": "support",
-        "effect_amount": 2,
+        "effect_amount": 1,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_core",
+        "cost_line": "stamp_core",
+        "series_confidence": "official",
+        "cost_note": "Stamp-S3 是邮票模块本体。费用从 2 降到 1，攻击从 2 降到 1，支援从 2 降到 1。"
       },
       "growth": {
         "family": "stamp_s3",
@@ -3563,16 +3899,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 3,
-        "attack": 2,
-        "durability": 3,
+        "cost": 2,
+        "attack": 1,
+        "durability": 2,
         "guard": false,
         "rush": false,
         "effect": "support",
-        "effect_amount": 2,
+        "effect_amount": 1,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_core",
+        "cost_line": "stamp_core",
+        "series_confidence": "official",
+        "cost_note": "同一邮票的二星，基础档 +1。支援仍是 1 费。"
       },
       "growth": {
         "family": "stamp_s3",
@@ -3602,16 +3942,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 2,
+        "cost": 1,
         "attack": 1,
-        "durability": 3,
+        "durability": 2,
         "guard": false,
         "rush": false,
         "effect": null,
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_core",
+        "cost_line": "stamp_core",
+        "series_confidence": "official",
+        "cost_note": "针距仍是邮票模块，不是整机。"
       },
       "growth": {
         "family": "stamp_pin",
@@ -3641,8 +3985,8 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 2,
-        "attack": 3,
+        "cost": 1,
+        "attack": 1,
         "durability": 1,
         "guard": false,
         "rush": false,
@@ -3650,7 +3994,11 @@
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_core",
+        "cost_line": "stamp_core",
+        "series_confidence": "official",
+        "cost_note": "针距仍是邮票模块。攻击从 3 降到 1，避免 1 费高攻。"
       },
       "growth": {
         "family": "stamp_pin",
@@ -3681,7 +4029,7 @@
       "gameplay": {
         "role": "main",
         "cost": 1,
-        "attack": 2,
+        "attack": 1,
         "durability": 1,
         "guard": false,
         "rush": true,
@@ -3689,7 +4037,11 @@
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_core",
+        "cost_line": "stamp_core",
+        "series_confidence": "official",
+        "cost_note": "Stamp-C3 本体。保留冲锋，攻击从 2 降到 1。"
       },
       "growth": {
         "family": "stamp_cpu",
@@ -3719,16 +4071,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 2,
+        "cost": 1,
         "attack": 1,
-        "durability": 3,
+        "durability": 2,
         "guard": false,
         "rush": false,
         "effect": null,
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_core",
+        "cost_line": "stamp_core",
+        "series_confidence": "official",
+        "cost_note": "Stamp-C3U 仍是直插邮票模块。"
       },
       "growth": {
         "family": "stamp_cpu",
@@ -3758,8 +4114,8 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 3,
-        "attack": 3,
+        "cost": 1,
+        "attack": 1,
         "durability": 2,
         "guard": false,
         "rush": false,
@@ -3767,7 +4123,11 @@
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_core",
+        "cost_line": "stamp_core",
+        "series_confidence": "official",
+        "cost_note": "Stamp-C5 仍是邮票模块，不按芯片代数另开高费。"
       },
       "growth": {
         "family": "stamp_cpu",
@@ -3797,16 +4157,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 3,
-        "attack": 2,
-        "durability": 3,
+        "cost": 1,
+        "attack": 1,
+        "durability": 2,
         "guard": false,
         "rush": false,
-        "effect": "play_damage",
-        "effect_amount": 1,
+        "effect": null,
+        "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_core",
+        "cost_line": "stamp_core",
+        "series_confidence": "official",
+        "cost_note": "C6LoRa 仍是邮票模块。去掉入场伤害，避免 1 费再免费打 1 点。"
       },
       "growth": {
         "family": "stamp_cpu",
@@ -3836,16 +4200,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 5,
-        "attack": 4,
-        "durability": 4,
+        "cost": 1,
+        "attack": 1,
+        "durability": 2,
         "guard": false,
         "rush": false,
         "effect": null,
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_core",
+        "cost_line": "stamp_core",
+        "series_confidence": "official",
+        "cost_note": "Stamp-P4 仍是邮票模块。费用从 5 降到 1，攻击和耐久一并降到 1/2。"
       },
       "growth": {
         "family": "stamp_cpu",
@@ -3875,16 +4243,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 5,
+        "cost": 6,
         "attack": 3,
-        "durability": 6,
+        "durability": 7,
         "guard": true,
         "rush": false,
         "effect": null,
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_machine",
+        "cost_line": "stamp_machine",
+        "series_confidence": "official",
+        "cost_note": "StamPLC 是工控整机，不是单独的邮票。费用不降到 1，从 5 调到 6，耐久升到 7。"
       },
       "growth": {
         "family": null,
@@ -3914,16 +4286,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 5,
+        "cost": 10,
         "attack": 4,
-        "durability": 4,
+        "durability": 7,
         "guard": false,
         "rush": false,
         "effect": null,
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
-        "bypass_guard": null
+        "bypass_guard": null,
+        "cost_band": "series_core",
+        "cost_line": "upper_arm",
+        "series_confidence": "official",
+        "cost_note": "CardputerZero 官方 CPU 是 Cortex-A53。上位机资格不变，费用升到 10。"
       },
       "growth": {
         "family": "cardputer_side",
@@ -3953,7 +4329,7 @@
       },
       "gameplay": {
         "role": "attachment",
-        "cost": 2,
+        "cost": 4,
         "attack": null,
         "durability": null,
         "guard": null,
@@ -3962,7 +4338,11 @@
         "effect_amount": null,
         "attack_bonus": 0,
         "grants_guard": false,
-        "bypass_guard": true
+        "bypass_guard": true,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "GPS 模块忽略护卫，上调到 4 费。"
       },
       "growth": {
         "family": null,
@@ -3992,7 +4372,7 @@
       },
       "gameplay": {
         "role": "attachment",
-        "cost": 2,
+        "cost": 4,
         "attack": null,
         "durability": null,
         "guard": null,
@@ -4001,7 +4381,11 @@
         "effect_amount": null,
         "attack_bonus": 0,
         "grants_guard": false,
-        "bypass_guard": true
+        "bypass_guard": true,
+        "cost_band": "accessory",
+        "cost_line": "accessory",
+        "series_confidence": "official",
+        "cost_note": "测距眼忽略护卫，上调到 4 费。"
       },
       "growth": {
         "family": null,

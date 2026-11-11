@@ -19,9 +19,10 @@ function table() {
   for (const card of roster.cards) byId[card.template_id] = card;
   cards.art_h050 = byId.art_h050;
   cards.art_h018 = byId.art_h018;
+  cards.art_h024 = byId.art_h024;
   const chain = roster.cards.find(card => card.chain_piece && card.kind === 'attachment' && !card.grants_guard);
   cards[chain.template_id] = chain;
-  cards.zero_atk = Object.assign({}, cards.xi_tiao, { template_id: 'zero_atk', name: '零攻', attack: 0 });
+  cards.zero_atk = Object.assign({}, cards.art_h024, { template_id: 'zero_atk', name: '零攻', attack: 0 });
   return { cards, chainId: chain.template_id };
 }
 
@@ -52,9 +53,9 @@ function check(name, fn) {
 
 check('leader percent and low attack ceil', () => {
   const { game } = arena();
-  game.spawn(0, 'xi_tiao', null, null, false);
+  game.spawn(0, 'xiao_yin', null, null, false);
   assert.equal(game.formationState(0).percent, 10);
-  game.attack(0, 'xi_tiao', 'base');
+  game.attack(0, 'xiao_yin', 'base');
   assert.equal(game.bases[1], 18);
 });
 
@@ -100,8 +101,8 @@ check('three links and counter uses defender formation', () => {
   game.play(0, chainId, 'dian_zhen', null, 2);
   game.play(0, chainId, 'hou_ke', null, 3);
   assert.equal(game.formationState(0).percent, 25);
-  game.spawn(1, 'xi_tiao', null, null, false);
-  game.attack(0, 'xiao_yin', 'xi_tiao');
+  game.spawn(1, 'art_h024', null, null, false);
+  game.attack(0, 'xiao_yin', 'art_h024');
   assert.deepEqual(game.units(1), []);
   assert.equal(game.units(0).some(unit => unit.card_id === 'xiao_yin'), false);
 });
@@ -112,7 +113,7 @@ check('fixed spell ignores percent', () => {
   game.spawn(1, 'hou_ke', null, null, false);
   game.hands[0] = ['gan_rao'];
   game.play(0, 'gan_rao', 'hou_ke');
-  assert.equal(game.units(1)[0].durability, 4);
+  assert.equal(game.units(1)[0].durability, 5);
 });
 
 check('connect aura does not stack or reprint', () => {
@@ -128,7 +129,7 @@ check('connect aura does not stack or reprint', () => {
   game.upperLink(0, 'cm4_stack', 'xiao_yin');
   assert.equal(game.supply[0], 9);
   game.attack(0, 'qiao_jian', 'base');
-  assert.equal(game.bases[1], 14);
+  assert.equal(game.bases[1], 13);
   const before = fingerprint(game);
   rejects('already_used_ability', () => game.upperLink(0, 'art_h050', 'xiao_yin'));
   assert.equal(fingerprint(game), before);
@@ -172,7 +173,7 @@ check('reconnect same turn does not grant supply again', () => {
   game.max_supply = [4, 4];
   game.supply = [4, 4];
   const upper = game.spawn(0, 'cm4_stack', null, null, false);
-  const target = game.spawn(0, 'xi_tiao', null, null, false);
+  const target = game.spawn(0, 'art_h024', null, null, false);
   game.upperLink(0, upper.iid, target.iid);
   assert.equal(game.supply[0], 4);
   target.durability = 0;
@@ -202,20 +203,20 @@ check('three services and combo order', () => {
   assert.deepEqual(game.graves[0], ['ezdata_note']);
   game.hands[0] = ['aiflow_say', 'aiflow_say'];
   game.supply[0] = 8;
-  game.spawn(0, 'xi_tiao', null, null, false);
+  game.spawn(0, 'art_h024', null, null, false);
   game.play(0, 'aiflow_say');
   const before = fingerprint(game);
   rejects('already_used_ability', () => game.play(0, 'aiflow_say'));
   assert.equal(fingerprint(game), before);
-  game.attack(0, 'xi_tiao', 'base');
-  assert.equal(game.bases[1], 16);
+  game.attack(0, 'art_h024', 'base');
+  assert.equal(game.bases[1], 15);
   assert.equal(game.aiflow_armed[0], false);
   game.hands[0] = ['aiflow_say', 'gan_rao'];
   game.supply[0] = 8;
   game.spawn(1, 'hou_ke', null, null, false);
   game.play(0, 'aiflow_say');
   game.play(0, 'gan_rao', 'hou_ke');
-  assert.equal(game.units(1)[0].durability, 4);
+  assert.equal(game.units(1)[0].durability, 5);
   assert.equal(game.aiflow_armed[0], true);
   game.end_turn(0);
   assert.equal(game.aiflow_armed[0], false);
@@ -292,7 +293,7 @@ check('seized shell returns to the current controller', () => {
   game.ability_used[0] = {};
   game.support(0);
   assert.equal(game.units(0)[0].card_id, 'hou_ke');
-  assert.equal(game.units(0)[0].durability, 6);
+  assert.equal(game.units(0)[0].durability, 7);
   game.seat = 1;
   rejects('no_shell_in_grave', () => game.support(1));
 });
@@ -308,14 +309,14 @@ check('services are not hardware cards', () => {
     assert.equal(card.artwork, null);
   }
   const zero = roster.cards.find(card => card.template_id === 'art_h050');
-  assert.deepEqual([zero.cost, zero.attack, zero.durability], [5, 4, 4]);
+  assert.deepEqual([zero.cost, zero.attack, zero.durability], [10, 4, 7]);
   assert.equal(zero.upper_host, true);
   const core = roster.cards.find(card => card.template_id === 'art_h018');
   assert.equal(Object.prototype.hasOwnProperty.call(core, 'upper_host'), false);
   const byId = Object.create(null);
   for (const card of playtest.cards) byId[card.template_id] = card;
   assert.equal(byId.lian_jie.attack_bonus, 1);
-  assert.equal(byId.xiao_yin.cost, 2);
+  assert.equal(byId.xiao_yin.cost, 1);
   assert.equal(byId.lian_jie.chain_piece, true);
 });
 

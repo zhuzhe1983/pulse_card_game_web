@@ -97,9 +97,9 @@
       "template_id": "cm4_stack",
       "name": "树莓台",
       "kind": "main",
-      "cost": 6,
-      "attack": 3,
-      "durability": 5,
+      "cost": 10,
+      "attack": 4,
+      "durability": 7,
       "guard": false,
       "attack_bonus": 0,
       "grants_guard": false,
@@ -115,7 +115,12 @@
       "hardware_controller": "independent_host",
       "official_product_name_en": "CM4Stack",
       "role_note": "可以发动来自上位的爱。不在 96 张图册里。",
-      "hardware_note": "研究目录写明 CM4Stack 使用树莓派 CM4、BCM2711，不是 ESP32。目录里的 SKU 是未知，这里不编造编号，也不造图。"
+      "hardware_note": "研究目录写明 CM4Stack 使用树莓派 CM4、BCM2711，不是 ESP32。目录里的 SKU 是未知，这里不编造编号，也不造图。",
+      "cost_band": "series_machine",
+      "cost_line": "upper_arm",
+      "series_confidence": "official",
+      "cost_note": "CM4Stack 是树莓派整机，不是邮票。不在 96 张里。上位机资格不变。"
     }
-  ]
+  ],
+  "recheck": "2026-11-11 费用曲线之后核对：三张服务牌和夺舍的费用不变。夺舍 7 费用来换高费整机，换 1 费邮票是亏的。"
 }

@@ -22,27 +22,6 @@
       "template_id": "xiao_yin",
       "name": "小印",
       "kind": "main",
-      "cost": 2,
-      "attack": 2,
-      "durability": 2,
-      "guard": false,
-      "attack_bonus": 0,
-      "grants_guard": false,
-      "bypass_guard": false,
-      "effect": "support",
-      "amount": 2,
-      "series": "stamp",
-      "game_role": "main",
-      "hardware_controller": "independent_host",
-      "art_type": null,
-      "role_note": "主控单位。支援：支付 2 点供电，把墓地里的厚壳工控以满耐久召到空位。每回合限 1 次。小印留在场上。复活的厚壳本回合不能攻击。",
-      "hardware_note": "灵感是能独立运行的邮票形主机。卡名不写型号。它和厚壳工控没有芯片一对一绑定。",
-      "esp32_main": true
-    },
-    {
-      "template_id": "xi_tiao",
-      "name": "细条",
-      "kind": "main",
       "cost": 1,
       "attack": 1,
       "durability": 2,
@@ -50,20 +29,27 @@
       "attack_bonus": 0,
       "grants_guard": false,
       "bypass_guard": false,
-      "effect": null,
-      "amount": 0,
-      "series": "stick",
-      "role_note": "主控单位。便宜的第一回合身体。",
-      "hardware_note": "灵感是细长的独立主机，不是外接条。",
-      "esp32_main": true
+      "effect": "support",
+      "amount": 1,
+      "series": "stamp",
+      "game_role": "main",
+      "hardware_controller": "independent_host",
+      "art_type": null,
+      "role_note": "主控单位。支援：支付 1 点供电，把墓地里的厚壳工控以满耐久召回。每回合限 1 次。小印留在场上。复活的厚壳本回合不能攻击。",
+      "hardware_note": "灵感是能独立运行的邮票形主机。卡名不写型号。它和厚壳工控没有芯片一对一绑定。",
+      "esp32_main": true,
+      "cost_band": "series_core",
+      "cost_line": "stamp_core",
+      "series_confidence": "official",
+      "cost_note": "基线就是 Stamp-S3 本体。支援费用降到 1。"
     },
     {
       "template_id": "dian_zhen",
       "name": "点阵哨",
       "kind": "main",
-      "cost": 3,
-      "attack": 2,
-      "durability": 4,
+      "cost": 2,
+      "attack": 1,
+      "durability": 3,
       "guard": true,
       "attack_bonus": 0,
       "grants_guard": false,
@@ -73,15 +59,19 @@
       "series": "atom",
       "role_note": "主控单位，自带护卫。",
       "hardware_note": "灵感是带灯阵的独立小主机。",
-      "esp32_main": true
+      "esp32_main": true,
+      "cost_band": "series_core",
+      "cost_line": "atom_core",
+      "series_confidence": "official",
+      "cost_note": "基线就是 Atom-Matrix 本体。"
     },
     {
       "template_id": "xuan_niu",
       "name": "旋钮台",
       "kind": "main",
-      "cost": 3,
-      "attack": 1,
-      "durability": 3,
+      "cost": 8,
+      "attack": 3,
+      "durability": 6,
       "guard": false,
       "attack_bonus": 0,
       "grants_guard": false,
@@ -91,15 +81,19 @@
       "series": "dial",
       "role_note": "主控单位。你的回合支付 1 点供电，让一个己方单位本回合攻击 +1。每回合限 1 次。",
       "hardware_note": "灵感是带旋钮的独立桌面主机。",
-      "esp32_main": true
+      "esp32_main": true,
+      "cost_band": "series_core",
+      "cost_line": "dial_body",
+      "series_confidence": "official",
+      "cost_note": "基线就是 Dial 本体，按 Dial 档，不按邮票模块。"
     },
     {
       "template_id": "qiao_jian",
       "name": "敲键",
       "kind": "main",
-      "cost": 4,
-      "attack": 4,
-      "durability": 3,
+      "cost": 9,
+      "attack": 5,
+      "durability": 5,
       "guard": false,
       "attack_bonus": 0,
       "grants_guard": false,
@@ -109,15 +103,19 @@
       "series": "cardputer",
       "role_note": "主控单位。攻击高、耐久低。",
       "hardware_note": "灵感是带键盘的掌上主机。不写成某一版型号，也不和厚壳工控混成同一张卡。",
-      "esp32_main": true
+      "esp32_main": true,
+      "cost_band": "series_core",
+      "cost_line": "cardputer_body",
+      "series_confidence": "official",
+      "cost_note": "基线就是 Cardputer 本体。"
     },
     {
       "template_id": "hou_ke",
       "name": "厚壳工控",
       "kind": "main",
-      "cost": 5,
+      "cost": 6,
       "attack": 3,
-      "durability": 6,
+      "durability": 7,
       "guard": true,
       "attack_bonus": 0,
       "grants_guard": false,
@@ -130,7 +128,11 @@
       "art_type": null,
       "role_note": "主控单位，自带护卫。自己不能把小印从墓地叫回来。它死在墓地里时，要由场上的小印支援才能回来。",
       "hardware_note": "灵感是机壳里已经焊有一块邮票主机的工控机。场上的小印是另一张卡，不是壳里那一块原装芯片。",
-      "esp32_main": true
+      "esp32_main": true,
+      "cost_band": "series_machine",
+      "cost_line": "stamp_machine",
+      "series_confidence": "official",
+      "cost_note": "基线就是 StamPLC 工控整机，不降到 1 费。"
     },
     {
       "template_id": "lian_jie",
@@ -151,13 +153,17 @@
       "art_type": null,
       "role_note": "游戏角色是配件。装到一台己方主控上，使它攻击 +1。同时在队伍里放一个链节标记，用来算连续 Chain。标记不能攻击，也不能被攻击。宿主离开或升星丢掉配件时，标记一起拿走，配件只进墓地一次。这个角色不改写硬件结论。",
       "hardware_note": "对应目录里的 Chain 节点。那些节点写的是 STM32G031 一类辅助可编程单片机，不是无主控。Chain DualKey 是另一条记录，主控是 ESP32-S3，能独立运行，链节不代表它。美术 type A/B 以后按该硬件的卡面家族填，不从游戏角色推导。",
-      "chain_piece": true
+      "chain_piece": true,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "战术或配件，不按主机系列改费用。"
     },
     {
       "template_id": "qian_li",
       "name": "千里眼",
       "kind": "attachment",
-      "cost": 2,
+      "cost": 4,
       "attack": 0,
       "durability": 0,
       "guard": false,
@@ -168,7 +174,11 @@
       "amount": 0,
       "series": "unit",
       "role_note": "配件。宿主攻击时可以不理会对方护卫。反击仍然发生。",
-      "hardware_note": "Unit 系列里有的只是传感器。这张按外接眼睛来做，不因为系列名就猜成主控。"
+      "hardware_note": "Unit 系列里有的只是传感器。这张按外接眼睛来做，不因为系列名就猜成主控。",
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "忽略护卫能绕过护卫打基地，和 96 张里的同类配件一起上调到 4 费。"
     },
     {
       "template_id": "hu_zhao",
@@ -185,7 +195,11 @@
       "amount": 0,
       "series": "module",
       "role_note": "配件。让宿主获得护卫。宿主本来就有护卫时不能安装。一台主控同时只装一个配件。",
-      "hardware_note": "灵感是套在主机外面的保护件，自己不站到场上。"
+      "hardware_note": "灵感是套在主机外面的保护件，自己不站到场上。",
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "战术或配件，不按主机系列改费用。"
     },
     {
       "template_id": "bu_ji",
@@ -202,7 +216,11 @@
       "amount": 2,
       "series": "tactic",
       "role_note": "战术。选择一个己方单位：恢复 2 点耐久，或者本回合攻击 +1。不能超过卡面耐久。不能治疗基地。",
-      "hardware_note": "没有对应某一颗具体芯片。"
+      "hardware_note": "没有对应某一颗具体芯片。",
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "战术或配件，不按主机系列改费用。"
     },
     {
       "template_id": "gan_rao",
@@ -219,7 +237,11 @@
       "amount": 2,
       "series": "tactic",
       "role_note": "战术。对一个敌方单位造成 2 点耐久伤害。护卫拦不住战术。没有反击。",
-      "hardware_note": "没有对应某一颗具体芯片。"
+      "hardware_note": "没有对应某一颗具体芯片。",
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "战术或配件，不按主机系列改费用。"
     },
     {
       "template_id": "hui_chong",
@@ -236,7 +258,11 @@
       "amount": 4,
       "series": "tactic",
       "role_note": "战术。己方基地恢复 4 点生命，不超过 20。",
-      "hardware_note": "没有对应某一颗具体芯片。"
+      "hardware_note": "没有对应某一颗具体芯片。",
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "战术或配件，不按主机系列改费用。"
     }
   ],
   "second_player_token": {
@@ -258,7 +284,7 @@
   },
   "decks": {
     "first": [
-      "xi_tiao",
+      "art_h024",
       "xiao_yin",
       "bu_ji",
       "dian_zhen",
@@ -268,7 +294,7 @@
       "qiao_jian"
     ],
     "second": [
-      "xi_tiao",
+      "art_h024",
       "hu_zhao",
       "xiao_yin",
       "gan_rao",
@@ -277,5 +303,13 @@
       "hou_ke",
       "qiao_jian"
     ]
-  }
+  },
+  "retired": [
+    {
+      "template_id": "xi_tiao",
+      "name": "细条",
+      "replaced_by": "art_h024",
+      "reason": "不是官方产品，曾标为存疑。已退役。教学和牌库改用 H024 新细条，模板 id 是 art_h024。"
+    }
+  ]
 }

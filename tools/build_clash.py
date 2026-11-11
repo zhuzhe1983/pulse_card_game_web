@@ -49,4 +49,10 @@ scene_out = out / 'scene'
 if scene_out.exists():
     shutil.rmtree(scene_out)
 shutil.copytree(scene_src, scene_out)
+font_src = root / 'src/clash/fonts'
+font_out = out / 'fonts'
+if font_src.exists():
+    if font_out.exists():
+        shutil.rmtree(font_out)
+    shutil.copytree(font_src, font_out)
 print('Built dist/clash/index.html:', len(html.encode()), 'bytes')

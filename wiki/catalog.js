@@ -87,6 +87,9 @@
     if (state.star === 'none') {
       if (growth && growth.star != null) return false;
     } else if (state.star && (!growth || String(growth.star) !== String(state.star))) return false;
+    const play = card.design && card.design.gameplay;
+    if (state.cost && (!play || String(play.cost) !== String(state.cost))) return false;
+    if (state.band && (!play || play.cost_band !== state.band)) return false;
     return true;
   }
 

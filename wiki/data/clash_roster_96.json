@@ -68,7 +68,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "数模帽",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
     },
     {
       "rid": "A002",
@@ -112,7 +116,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "小喇叭",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
     },
     {
       "rid": "A006",
@@ -136,7 +144,7 @@
       "faction": "细棍",
       "game_role": "attachment",
       "kind": "attachment",
-      "cost": 1,
+      "cost": 3,
       "attack": 0,
       "durability": 0,
       "guard": false,
@@ -158,7 +166,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "小摇杆",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "只给护卫会改攻击目标，比 1 费的单纯加攻强，上调到 3 费。"
     },
     {
       "rid": "A007",
@@ -204,7 +216,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "小旋帽",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
     },
     {
       "rid": "A009",
@@ -250,7 +266,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "大摇杆",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
     },
     {
       "rid": "A011a",
@@ -272,7 +292,7 @@
       "faction": "细棍",
       "game_role": "attachment",
       "kind": "attachment",
-      "cost": 2,
+      "cost": 4,
       "attack": 0,
       "durability": 0,
       "guard": false,
@@ -294,7 +314,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "热帽",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "热成像帽忽略护卫，上调到 4 费。"
     },
     {
       "rid": "A012",
@@ -338,7 +362,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "舵机帽",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
     },
     {
       "rid": "A012a",
@@ -362,7 +390,7 @@
       "faction": "细棍",
       "game_role": "attachment",
       "kind": "attachment",
-      "cost": 2,
+      "cost": 4,
       "attack": 0,
       "durability": 0,
       "guard": false,
@@ -384,7 +412,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "八舵帽",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "八舵帽攻击 +2，比加攻 1 厚一档，上调到 4 费。"
     },
     {
       "rid": "A012b",
@@ -430,7 +462,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "驱动帽",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
     },
     {
       "rid": "A013b",
@@ -452,7 +488,7 @@
       "faction": "细棍",
       "game_role": "attachment",
       "kind": "attachment",
-      "cost": 1,
+      "cost": 3,
       "attack": 0,
       "durability": 0,
       "guard": false,
@@ -474,7 +510,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "震帽",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "只给护卫，和摇杆帽同一档，上调到 3 费。"
     },
     {
       "rid": "A014",
@@ -518,7 +558,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "细条小屏",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
     },
     {
       "rid": "C001a",
@@ -542,7 +586,7 @@
       "faction": "串线",
       "game_role": "attachment",
       "kind": "attachment",
-      "cost": 1,
+      "cost": 4,
       "attack": 0,
       "durability": 0,
       "guard": false,
@@ -564,7 +608,12 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "摇杆节",
-      "amount": 0
+      "amount": 0,
+      "chain_piece": true,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "护卫再加链节标记，两件强技能叠在一起，上调到 4 费。"
     },
     {
       "rid": "C001b",
@@ -610,7 +659,12 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "编码节",
-      "amount": 0
+      "amount": 0,
+      "chain_piece": true,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
     },
     {
       "rid": "C001c",
@@ -634,7 +688,7 @@
       "faction": "串线",
       "game_role": "attachment",
       "kind": "attachment",
-      "cost": 2,
+      "cost": 5,
       "attack": 0,
       "durability": 0,
       "guard": false,
@@ -656,7 +710,12 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "角度节",
-      "amount": 0
+      "amount": 0,
+      "chain_piece": true,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "忽略护卫并且是链节标记，两件强技能，上调到 5 费。"
     },
     {
       "rid": "C001d",
@@ -680,7 +739,7 @@
       "faction": "串线",
       "game_role": "attachment",
       "kind": "attachment",
-      "cost": 2,
+      "cost": 5,
       "attack": 0,
       "durability": 0,
       "guard": false,
@@ -702,7 +761,12 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "测距节",
-      "amount": 0
+      "amount": 0,
+      "chain_piece": true,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "忽略护卫并且是链节标记，上调到 5 费。"
     },
     {
       "rid": "C001e",
@@ -726,7 +790,7 @@
       "faction": "串线",
       "game_role": "attachment",
       "kind": "attachment",
-      "cost": 1,
+      "cost": 4,
       "attack": 0,
       "durability": 0,
       "guard": false,
@@ -748,7 +812,12 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "红外节",
-      "amount": 0
+      "amount": 0,
+      "chain_piece": true,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "护卫再加链节标记，上调到 4 费。"
     },
     {
       "rid": "C001f",
@@ -772,7 +841,7 @@
       "faction": "串线",
       "game_role": "attachment",
       "kind": "attachment",
-      "cost": 1,
+      "cost": 3,
       "attack": 0,
       "durability": 0,
       "guard": false,
@@ -794,7 +863,12 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "开关节",
-      "amount": 0
+      "amount": 0,
+      "chain_piece": true,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "链节标记会给全队加百分比，不是普通帽子，上调到 3 费。"
     },
     {
       "rid": "C001g",
@@ -818,7 +892,7 @@
       "faction": "串线",
       "game_role": "attachment",
       "kind": "attachment",
-      "cost": 1,
+      "cost": 3,
       "attack": 0,
       "durability": 0,
       "guard": false,
@@ -840,7 +914,12 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "麦节",
-      "amount": 0
+      "amount": 0,
+      "chain_piece": true,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "链节标记会给全队加百分比，上调到 3 费。"
     },
     {
       "rid": "C001h",
@@ -886,7 +965,12 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "蜂鸣节",
-      "amount": 0
+      "amount": 0,
+      "chain_piece": true,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
     },
     {
       "rid": "C001i",
@@ -932,7 +1016,12 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "彩灯节",
-      "amount": 0
+      "amount": 0,
+      "chain_piece": true,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
     },
     {
       "rid": "C001j",
@@ -956,7 +1045,7 @@
       "faction": "串线",
       "game_role": "attachment",
       "kind": "attachment",
-      "cost": 1,
+      "cost": 3,
       "attack": 0,
       "durability": 0,
       "guard": false,
@@ -978,7 +1067,12 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "单声节",
-      "amount": 0
+      "amount": 0,
+      "chain_piece": true,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "链节标记会给全队加百分比，上调到 3 费。"
     },
     {
       "rid": "C001z",
@@ -1002,7 +1096,7 @@
       "faction": "串线",
       "game_role": "attachment",
       "kind": "attachment",
-      "cost": 1,
+      "cost": 3,
       "attack": 0,
       "durability": 0,
       "guard": false,
@@ -1024,7 +1118,12 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "一节键",
-      "amount": 0
+      "amount": 0,
+      "chain_piece": true,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "链节标记会给全队加百分比，上调到 3 费。"
     },
     {
       "rid": "C002a",
@@ -1046,7 +1145,7 @@
       "faction": "串线",
       "game_role": "attachment",
       "kind": "attachment",
-      "cost": 1,
+      "cost": 3,
       "attack": 0,
       "durability": 0,
       "guard": false,
@@ -1068,7 +1167,12 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "回传节",
-      "amount": 0
+      "amount": 0,
+      "chain_piece": true,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "回传节既是链节标记又加攻击，上调到 3 费。"
     },
     {
       "rid": "C002b",
@@ -1090,7 +1194,7 @@
       "faction": "串线",
       "game_role": "attachment",
       "kind": "attachment",
-      "cost": 1,
+      "cost": 4,
       "attack": 0,
       "durability": 0,
       "guard": false,
@@ -1112,7 +1216,12 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "固定节",
-      "amount": 0
+      "amount": 0,
+      "chain_piece": true,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "护卫再加链节标记，上调到 4 费。"
     },
     {
       "rid": "C002c",
@@ -1156,7 +1265,12 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "空节",
-      "amount": 0
+      "amount": 0,
+      "chain_piece": true,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
     },
     {
       "rid": "C002z",
@@ -1200,7 +1314,12 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "桥节",
-      "amount": 0
+      "amount": 0,
+      "chain_piece": true,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
     },
     {
       "rid": "C003",
@@ -1244,7 +1363,12 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "接上串",
-      "amount": 0
+      "amount": 0,
+      "chain_piece": true,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
     },
     {
       "rid": "C004a",
@@ -1288,7 +1412,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "转接口座",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
     },
     {
       "rid": "C004b",
@@ -1332,7 +1460,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "三口座",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
     },
     {
       "rid": "C004c",
@@ -1378,7 +1510,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "动座",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
     },
     {
       "rid": "C004d",
@@ -1402,7 +1538,7 @@
       "faction": "小块",
       "game_role": "attachment",
       "kind": "attachment",
-      "cost": 2,
+      "cost": 3,
       "attack": 0,
       "durability": 0,
       "guard": false,
@@ -1424,7 +1560,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "动座改",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "二星把攻击加成从 +1 提到 +2，费用升到 3。升星付 2。"
     },
     {
       "rid": "C004e",
@@ -1446,7 +1586,7 @@
       "faction": "小块",
       "game_role": "attachment",
       "kind": "attachment",
-      "cost": 2,
+      "cost": 4,
       "attack": 0,
       "durability": 0,
       "guard": false,
@@ -1468,7 +1608,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "定位座",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "定位座忽略护卫，上调到 4 费。"
     },
     {
       "rid": "C004g",
@@ -1512,7 +1656,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "网电座",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
     },
     {
       "rid": "C004h",
@@ -1556,7 +1704,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "显示座",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
     },
     {
       "rid": "C004i",
@@ -1578,7 +1730,7 @@
       "faction": "小块",
       "game_role": "attachment",
       "kind": "attachment",
-      "cost": 1,
+      "cost": 3,
       "attack": 0,
       "durability": 0,
       "guard": false,
@@ -1600,7 +1752,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "电池座",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "电池座给护卫，技能强于加攻 1，上调到 3 费。"
     },
     {
       "rid": "C004j",
@@ -1644,7 +1800,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "总线座",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
     },
     {
       "rid": "C004k",
@@ -1688,7 +1848,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "脉宽座",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
     },
     {
       "rid": "C004l",
@@ -1710,7 +1874,7 @@
       "faction": "小块",
       "game_role": "attachment",
       "kind": "attachment",
-      "cost": 1,
+      "cost": 4,
       "attack": 0,
       "durability": 0,
       "guard": false,
@@ -1732,7 +1896,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "扫码座",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "忽略护卫能绕过护卫打基地，1 费过强，上调到 4 费。"
     },
     {
       "rid": "C004m",
@@ -1776,7 +1944,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "串口座",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
     },
     {
       "rid": "C004n",
@@ -1820,7 +1992,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "座喇叭",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
     },
     {
       "rid": "C004o",
@@ -1864,7 +2040,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "步进座",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
     },
     {
       "rid": "C004p",
@@ -1908,7 +2088,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "存储座",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
     },
     {
       "rid": "C004q",
@@ -1952,7 +2136,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "驱动座",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
     },
     {
       "rid": "C004r",
@@ -1996,7 +2184,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "耳麦座",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
     },
     {
       "rid": "C004z",
@@ -2040,7 +2232,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "响座",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
     },
     {
       "rid": "C005",
@@ -2064,7 +2260,7 @@
       "faction": "串线",
       "game_role": "attachment",
       "kind": "attachment",
-      "cost": 2,
+      "cost": 5,
       "attack": 0,
       "durability": 0,
       "guard": false,
@@ -2086,7 +2282,12 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "串线舵机",
-      "amount": 0
+      "amount": 0,
+      "chain_piece": true,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "攻击 +2 并且是链节标记，上调到 5 费。"
     },
     {
       "rid": "H003",
@@ -2110,7 +2311,7 @@
       "faction": "叠层",
       "game_role": "main",
       "kind": "main",
-      "cost": 3,
+      "cost": 4,
       "attack": 3,
       "durability": 3,
       "guard": false,
@@ -2132,7 +2333,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "火头",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "series_core",
+      "cost_line": "core_body",
+      "series_confidence": "official",
+      "cost_note": "Fire 属于 Core 初代。保留冲锋，费用从 3 升到 4。"
     },
     {
       "rid": "H004",
@@ -2156,9 +2361,9 @@
       "faction": "叠层",
       "game_role": "main",
       "kind": "main",
-      "cost": 4,
+      "cost": 5,
       "attack": 2,
-      "durability": 5,
+      "durability": 6,
       "guard": true,
       "rush": false,
       "effect": null,
@@ -2178,7 +2383,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "套装",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "series_machine",
+      "cost_line": "core_kit",
+      "series_confidence": "official",
+      "cost_note": "M5GO 是 Core 初代的套件，不是 Fire 本体。比 Core 基础档高 1 费。"
     },
     {
       "rid": "H005",
@@ -2202,9 +2411,9 @@
       "faction": "叠层",
       "game_role": "main",
       "kind": "main",
-      "cost": 4,
+      "cost": 5,
       "attack": 3,
-      "durability": 5,
+      "durability": 6,
       "guard": true,
       "rush": false,
       "effect": null,
@@ -2224,7 +2433,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "二代壳",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "series_core",
+      "cost_line": "core2_body",
+      "series_confidence": "official",
+      "cost_note": "Core2 本体。费用升到 5，耐久升到 6。"
     },
     {
       "rid": "H007",
@@ -2248,9 +2461,9 @@
       "faction": "叠层",
       "game_role": "main",
       "kind": "main",
-      "cost": 5,
+      "cost": 6,
       "attack": 3,
-      "durability": 6,
+      "durability": 7,
       "guard": true,
       "rush": false,
       "effect": null,
@@ -2270,7 +2483,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "二代壳改",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "series_core",
+      "cost_line": "core2_body",
+      "series_confidence": "official",
+      "cost_note": "Core2 二星，基础档 +1。"
     },
     {
       "rid": "H008",
@@ -2294,9 +2511,9 @@
       "faction": "叠层",
       "game_role": "main",
       "kind": "main",
-      "cost": 4,
+      "cost": 5,
       "attack": 4,
-      "durability": 3,
+      "durability": 4,
       "guard": false,
       "rush": false,
       "effect": null,
@@ -2316,7 +2533,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "云壳",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "series_core",
+      "cost_line": "core2_body",
+      "series_confidence": "official",
+      "cost_note": "Core2 For AWS 仍是 Core2 产品线，不并进初代。"
     },
     {
       "rid": "H008a",
@@ -2340,9 +2561,9 @@
       "faction": "叠层",
       "game_role": "main",
       "kind": "main",
-      "cost": 5,
+      "cost": 6,
       "attack": 3,
-      "durability": 4,
+      "durability": 5,
       "guard": false,
       "rush": false,
       "effect": null,
@@ -2362,7 +2583,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "云壳改",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "series_core",
+      "cost_line": "core2_body",
+      "series_confidence": "official",
+      "cost_note": "AWS 二星，基础档 +1。"
     },
     {
       "rid": "H010",
@@ -2386,9 +2611,9 @@
       "faction": "叠层",
       "game_role": "main",
       "kind": "main",
-      "cost": 4,
+      "cost": 6,
       "attack": 3,
-      "durability": 4,
+      "durability": 5,
       "guard": false,
       "rush": false,
       "effect": null,
@@ -2408,7 +2633,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "简配三",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "series_core",
+      "cost_line": "cores3_body",
+      "series_confidence": "official",
+      "cost_note": "CoreS3-SE 是 CoreS3 本体。"
     },
     {
       "rid": "H011",
@@ -2432,9 +2661,9 @@
       "faction": "叠层",
       "game_role": "main",
       "kind": "main",
-      "cost": 3,
+      "cost": 6,
       "attack": 3,
-      "durability": 3,
+      "durability": 4,
       "guard": false,
       "rush": false,
       "effect": null,
@@ -2454,7 +2683,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "轻三",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "series_core",
+      "cost_line": "cores3_body",
+      "series_confidence": "official",
+      "cost_note": "CoreS3-Lite 仍是 CoreS3 产品线，不降回 Atom 或 Stick。"
     },
     {
       "rid": "H012",
@@ -2478,9 +2711,9 @@
       "faction": "叠层",
       "game_role": "main",
       "kind": "main",
-      "cost": 5,
+      "cost": 6,
       "attack": 3,
-      "durability": 4,
+      "durability": 5,
       "guard": false,
       "rush": false,
       "effect": "play_draw",
@@ -2500,7 +2733,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "线三",
-      "amount": 1
+      "amount": 1,
+      "cost_band": "series_core",
+      "cost_line": "cores3_body",
+      "series_confidence": "official",
+      "cost_note": "Thread 款仍是 CoreS3。保留入场抽 1。"
     },
     {
       "rid": "H013",
@@ -2524,9 +2761,9 @@
       "faction": "叠层",
       "game_role": "main",
       "kind": "main",
-      "cost": 4,
-      "attack": 2,
-      "durability": 6,
+      "cost": 7,
+      "attack": 3,
+      "durability": 7,
       "guard": true,
       "rush": false,
       "effect": null,
@@ -2546,7 +2783,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "硬壳",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "series_core",
+      "cost_line": "tough_body",
+      "series_confidence": "official",
+      "cost_note": "Tough 本体。"
     },
     {
       "rid": "H014",
@@ -2571,9 +2812,9 @@
       "faction": "叠层",
       "game_role": "main",
       "kind": "main",
-      "cost": 5,
+      "cost": 7,
       "attack": 3,
-      "durability": 5,
+      "durability": 6,
       "guard": false,
       "rush": false,
       "effect": null,
@@ -2593,7 +2834,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "硬壳远",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "series_core",
+      "cost_line": "tough_body",
+      "series_confidence": "official",
+      "cost_note": "ToughC5 仍是 Tough 产品线，不因为 C5 芯片另开一档。"
     },
     {
       "rid": "H015",
@@ -2617,9 +2862,9 @@
       "faction": "大屏",
       "game_role": "main",
       "kind": "main",
-      "cost": 6,
-      "attack": 3,
-      "durability": 6,
+      "cost": 10,
+      "attack": 4,
+      "durability": 7,
       "guard": false,
       "rush": false,
       "effect": "play_draw",
@@ -2639,7 +2884,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "大平板",
-      "amount": 1
+      "amount": 1,
+      "cost_band": "series_core",
+      "cost_line": "tab_body",
+      "series_confidence": "official",
+      "cost_note": "Tab5 是平板整机。芯片是 ESP32-P4 + C6，不是邮票模块。"
     },
     {
       "rid": "H016",
@@ -2663,9 +2912,9 @@
       "faction": "大屏",
       "game_role": "main",
       "kind": "main",
-      "cost": 5,
-      "attack": 2,
-      "durability": 6,
+      "cost": 3,
+      "attack": 1,
+      "durability": 4,
       "guard": true,
       "rush": false,
       "effect": null,
@@ -2685,7 +2934,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "灯墙",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "series_machine",
+      "cost_line": "core_form",
+      "series_confidence": "uncertain",
+      "cost_note": "按普通 Core 的 4 费减 1，定 3 费。护卫保留，耐久收到 3 费的厚度。"
     },
     {
       "rid": "H017",
@@ -2710,10 +2963,10 @@
       "faction": "工位",
       "game_role": "main",
       "kind": "main",
-      "cost": 4,
+      "cost": 5,
       "attack": 2,
-      "durability": 5,
-      "guard": false,
+      "durability": 7,
+      "guard": true,
       "rush": false,
       "effect": null,
       "effect_amount": 0,
@@ -2732,7 +2985,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "电枢纽",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "series_machine",
+      "cost_line": "core_form",
+      "series_confidence": "uncertain",
+      "cost_note": "供电整机放在中段 5 费，做成护卫胖墙，不占用 Core 初代本体的 4 费。"
     },
     {
       "rid": "H018",
@@ -2756,9 +3013,9 @@
       "faction": "工位",
       "game_role": "main",
       "kind": "main",
-      "cost": 6,
+      "cost": 10,
       "attack": 4,
-      "durability": 5,
+      "durability": 6,
       "guard": false,
       "rush": false,
       "effect": null,
@@ -2778,7 +3035,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": "资料芯片栏写成 MCU:STM32MP135。这是该板自己的主处理器 Cortex-A7，能独立运行，不把它当成辅助小芯片。",
       "name": "另一块板",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "series_machine",
+      "cost_line": "upper_arm",
+      "series_confidence": "uncertain",
+      "cost_note": "CoreMP135 是 Linux 整机，不是 ESP32，也不是已登记的上位机。费用放在最高档，仍不能发动来自上位的爱。"
     },
     {
       "rid": "H022",
@@ -2824,7 +3085,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "自带电",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "series_core",
+      "cost_line": "stick_core",
+      "series_confidence": "official",
+      "cost_note": "StickC-Plus2 是 Stick 本体。"
     },
     {
       "rid": "H023",
@@ -2848,9 +3113,9 @@
       "faction": "细棍",
       "game_role": "main",
       "kind": "main",
-      "cost": 2,
+      "cost": 3,
       "attack": 2,
-      "durability": 2,
+      "durability": 3,
       "guard": false,
       "rush": false,
       "effect": null,
@@ -2870,7 +3135,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "省电条",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "series_core",
+      "cost_line": "stick_core",
+      "series_confidence": "official",
+      "cost_note": "StickC-Plus SE 是 Stick 本体。费用从 2 升到 3，耐久升到 3。"
     },
     {
       "rid": "H024",
@@ -2889,8 +3158,8 @@
       ],
       "hardware_controller": "independent_host",
       "game_name_zh": "新细条",
-      "game_description": "新一代细条。教学里的细条是另一张没有这批图的牌。",
-      "balance_intent": "不占用基线细条的 id。",
+      "game_description": "StickS3。教学局用的就是这一张。",
+      "balance_intent": "占位牌细条已退役，教学改用这个 id。",
       "faction": "细棍",
       "game_role": "main",
       "kind": "main",
@@ -2912,11 +3181,15 @@
       "growth_basis": "自带电、省电条、新细条和热眼睛是四种细条产品，不是同一条 v1 到 v4。",
       "v8_game_name_zh": "新细条",
       "v8_template_id": "stick_s3",
-      "v8_change": "保留中文名。基线细条仍单独存在。",
+      "v8_change": "保留中文名。占位牌细条已退役，不再单独存在。",
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "新细条",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "series_core",
+      "cost_line": "stick_core",
+      "series_confidence": "official",
+      "cost_note": "StickS3 是 Stick 本体。占位牌细条已退役，教学局用 art_h024。"
     },
     {
       "rid": "H025",
@@ -2962,7 +3235,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "热眼睛",
-      "amount": 1
+      "amount": 1,
+      "cost_band": "series_core",
+      "cost_line": "stick_core",
+      "series_confidence": "official",
+      "cost_note": "StickT2 是 Stick 本体，保留入场伤害。"
     },
     {
       "rid": "H027",
@@ -2986,9 +3263,9 @@
       "faction": "小块",
       "game_role": "main",
       "kind": "main",
-      "cost": 3,
-      "attack": 2,
-      "durability": 4,
+      "cost": 2,
+      "attack": 1,
+      "durability": 3,
       "guard": true,
       "rush": false,
       "effect": null,
@@ -3008,7 +3285,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "点阵哨",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "series_core",
+      "cost_line": "atom_core",
+      "series_confidence": "official",
+      "cost_note": "Atom-Matrix 是 Atom 核心本体。费用 3 降到 2，攻击 2 降到 1，耐久 4 降到 3。"
     },
     {
       "rid": "H027a",
@@ -3032,9 +3313,9 @@
       "faction": "小块",
       "game_role": "main",
       "kind": "main",
-      "cost": 4,
+      "cost": 3,
       "attack": 2,
-      "durability": 5,
+      "durability": 4,
       "guard": true,
       "rush": false,
       "effect": null,
@@ -3054,7 +3335,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "点阵改",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "series_core",
+      "cost_line": "atom_core",
+      "series_confidence": "official",
+      "cost_note": "Atom-Matrix 二星，基础档 +1。"
     },
     {
       "rid": "H028",
@@ -3078,9 +3363,9 @@
       "faction": "小块",
       "game_role": "main",
       "kind": "main",
-      "cost": 3,
-      "attack": 3,
-      "durability": 3,
+      "cost": 2,
+      "attack": 2,
+      "durability": 2,
       "guard": false,
       "rush": false,
       "effect": null,
@@ -3100,7 +3385,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "小三",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "series_core",
+      "cost_line": "atom_core",
+      "series_confidence": "official",
+      "cost_note": "AtomS3 本体。"
     },
     {
       "rid": "H029",
@@ -3125,9 +3414,9 @@
       "faction": "小块",
       "game_role": "main",
       "kind": "main",
-      "cost": 4,
-      "attack": 3,
-      "durability": 3,
+      "cost": 2,
+      "attack": 2,
+      "durability": 2,
       "guard": false,
       "rush": false,
       "effect": null,
@@ -3147,7 +3436,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "小三精",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "series_core",
+      "cost_line": "atom_core",
+      "series_confidence": "official",
+      "cost_note": "AtomS3R 仍是 Atom 本体，不是套件。"
     },
     {
       "rid": "H029a",
@@ -3172,9 +3465,9 @@
       "faction": "小块",
       "game_role": "main",
       "kind": "main",
-      "cost": 4,
-      "attack": 2,
-      "durability": 3,
+      "cost": 2,
+      "attack": 1,
+      "durability": 2,
       "guard": false,
       "rush": false,
       "effect": "play_damage",
@@ -3194,7 +3487,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "小三眼",
-      "amount": 1
+      "amount": 1,
+      "cost_band": "series_core",
+      "cost_line": "atom_core",
+      "series_confidence": "official",
+      "cost_note": "摄像头仍装在 Atom 本体上，不上调成整机。保留入场伤害 1。"
     },
     {
       "rid": "H029b",
@@ -3219,8 +3516,8 @@
       "faction": "小块",
       "game_role": "main",
       "kind": "main",
-      "cost": 4,
-      "attack": 3,
+      "cost": 2,
+      "attack": 2,
       "durability": 2,
       "guard": false,
       "rush": false,
@@ -3241,7 +3538,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "小三长焦",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "series_core",
+      "cost_line": "atom_core",
+      "series_confidence": "official",
+      "cost_note": "长焦仍是 Atom 本体尺寸。"
     },
     {
       "rid": "H029c",
@@ -3265,9 +3566,9 @@
       "faction": "小块",
       "game_role": "main",
       "kind": "main",
-      "cost": 4,
-      "attack": 2,
-      "durability": 4,
+      "cost": 2,
+      "attack": 1,
+      "durability": 3,
       "guard": false,
       "rush": false,
       "effect": null,
@@ -3287,7 +3588,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "小三扩",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "series_core",
+      "cost_line": "atom_core",
+      "series_confidence": "official",
+      "cost_note": "扩展座仍是 Atom 本体尺寸。册内没有单独的 Atom 套件主机。"
     },
     {
       "rid": "H030a",
@@ -3312,9 +3617,9 @@
       "faction": "小块",
       "game_role": "main",
       "kind": "main",
-      "cost": 3,
+      "cost": 2,
       "attack": 2,
-      "durability": 3,
+      "durability": 2,
       "guard": false,
       "rush": false,
       "effect": null,
@@ -3334,7 +3639,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "小三话",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "series_core",
+      "cost_line": "atom_core",
+      "series_confidence": "official",
+      "cost_note": "Atom Voice 仍是 Atom 尺寸的核心，不是音箱整机。"
     },
     {
       "rid": "H031",
@@ -3358,9 +3667,9 @@
       "faction": "键盘",
       "game_role": "main",
       "kind": "main",
-      "cost": 4,
-      "attack": 4,
-      "durability": 3,
+      "cost": 9,
+      "attack": 5,
+      "durability": 5,
       "guard": false,
       "rush": false,
       "effect": null,
@@ -3380,7 +3689,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "敲键",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "series_core",
+      "cost_line": "cardputer_body",
+      "series_confidence": "official",
+      "cost_note": "Cardputer 本体。壳里有邮票，但是掌机整机，不收 1 费。"
     },
     {
       "rid": "H032",
@@ -3404,9 +3717,9 @@
       "faction": "键盘",
       "game_role": "main",
       "kind": "main",
-      "cost": 5,
-      "attack": 3,
-      "durability": 5,
+      "cost": 10,
+      "attack": 4,
+      "durability": 7,
       "guard": false,
       "rush": false,
       "effect": null,
@@ -3426,7 +3739,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "敲键改",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "series_core",
+      "cost_line": "cardputer_body",
+      "series_confidence": "official",
+      "cost_note": "Cardputer 二星，基础档 +1，封顶 10。"
     },
     {
       "rid": "H033",
@@ -3450,9 +3767,9 @@
       "faction": "键盘",
       "game_role": "main",
       "kind": "main",
-      "cost": 5,
+      "cost": 9,
       "attack": 5,
-      "durability": 3,
+      "durability": 4,
       "guard": false,
       "rush": false,
       "effect": null,
@@ -3472,7 +3789,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "敲键进",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "series_core",
+      "cost_line": "cardputer_body",
+      "series_confidence": "official",
+      "cost_note": "Cardputer-Adv 是同一掌机产品线的另一台整机，不是套件。"
     },
     {
       "rid": "H033a",
@@ -3496,9 +3817,9 @@
       "faction": "键盘",
       "game_role": "main",
       "kind": "main",
-      "cost": 6,
+      "cost": 10,
       "attack": 4,
-      "durability": 4,
+      "durability": 6,
       "guard": false,
       "rush": false,
       "effect": "play_draw",
@@ -3518,7 +3839,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "敲键组",
-      "amount": 1
+      "amount": 1,
+      "cost_band": "series_machine",
+      "cost_line": "cardputer_kit",
+      "series_confidence": "official",
+      "cost_note": "Cardputer Mesh Kit 是套件，比 Cardputer 本体高 1 费，封顶 10。保留入场抽 1。"
     },
     {
       "rid": "H034",
@@ -3542,9 +3867,9 @@
       "faction": "表壳",
       "game_role": "main",
       "kind": "main",
-      "cost": 3,
-      "attack": 1,
-      "durability": 3,
+      "cost": 8,
+      "attack": 3,
+      "durability": 6,
       "guard": false,
       "rush": false,
       "effect": "knob",
@@ -3564,7 +3889,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "旋钮台",
-      "amount": 1
+      "amount": 1,
+      "cost_band": "series_core",
+      "cost_line": "dial_body",
+      "series_confidence": "official",
+      "cost_note": "Dial 是点名的整机档，不是邮票模块。官方总览把它放在 Stamp 躯壳谱系，费用不按邮票模块收。"
     },
     {
       "rid": "H034a",
@@ -3588,9 +3917,9 @@
       "faction": "表壳",
       "game_role": "main",
       "kind": "main",
-      "cost": 4,
-      "attack": 2,
-      "durability": 2,
+      "cost": 9,
+      "attack": 4,
+      "durability": 5,
       "guard": false,
       "rush": false,
       "effect": "knob",
@@ -3610,7 +3939,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "旋钮改",
-      "amount": 1
+      "amount": 1,
+      "cost_band": "series_core",
+      "cost_line": "dial_body",
+      "series_confidence": "official",
+      "cost_note": "Dial 二星，基础档 +1。"
     },
     {
       "rid": "H036",
@@ -3634,9 +3967,9 @@
       "faction": "表壳",
       "game_role": "main",
       "kind": "main",
-      "cost": 3,
+      "cost": 2,
       "attack": 2,
-      "durability": 3,
+      "durability": 2,
       "guard": false,
       "rush": false,
       "effect": null,
@@ -3656,7 +3989,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "轨上表",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "series_machine",
+      "cost_line": "stamp_machine",
+      "series_confidence": "official",
+      "cost_note": "官方文档写明主控是 Stamp-S3，是邮票套装不是邮票模块。按 2 费曲线重配为攻击 2、耐久 2。"
     },
     {
       "rid": "H036a",
@@ -3683,7 +4020,7 @@
       "kind": "main",
       "cost": 3,
       "attack": 1,
-      "durability": 5,
+      "durability": 4,
       "guard": false,
       "rush": false,
       "effect": null,
@@ -3703,7 +4040,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "轨上表改",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "series_machine",
+      "cost_line": "stamp_machine",
+      "series_confidence": "official",
+      "cost_note": "官方 v1.1 把主控换成 Stamp-S3A，仍是同一套装的二星。费用 +1，改成更肉的攻击 1、耐久 4。"
     },
     {
       "rid": "H037",
@@ -3727,9 +4068,9 @@
       "faction": "表壳",
       "game_role": "main",
       "kind": "main",
-      "cost": 3,
+      "cost": 2,
       "attack": 1,
-      "durability": 4,
+      "durability": 3,
       "guard": false,
       "rush": false,
       "effect": null,
@@ -3749,7 +4090,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "气表",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "series_machine",
+      "cost_line": "stamp_machine",
+      "series_confidence": "official",
+      "cost_note": "商店名是 Air Quality Kit with M5StampS3，文档写由 StampS3 供电。与 DinMeter 同属邮票套装，按 2 费曲线重配为攻击 1、耐久 3。"
     },
     {
       "rid": "H037a",
@@ -3773,7 +4118,7 @@
       "faction": "表壳",
       "game_role": "main",
       "kind": "main",
-      "cost": 4,
+      "cost": 3,
       "attack": 2,
       "durability": 3,
       "guard": false,
@@ -3795,7 +4140,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "气表改",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "series_machine",
+      "cost_line": "stamp_machine",
+      "series_confidence": "official",
+      "cost_note": "商店名是 Air Quality Kit v1.1 with M5StampS3A，文档写主控换成 Stamp-S3A。二星费用 +1，攻击 2、耐久 3。"
     },
     {
       "rid": "H038",
@@ -3819,13 +4168,13 @@
       "faction": "邮票",
       "game_role": "main",
       "kind": "main",
-      "cost": 2,
-      "attack": 2,
+      "cost": 1,
+      "attack": 1,
       "durability": 2,
       "guard": false,
       "rush": false,
       "effect": "support",
-      "effect_amount": 2,
+      "effect_amount": 1,
       "attack_bonus": 0,
       "grants_guard": false,
       "bypass_guard": false,
@@ -3841,7 +4190,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "小印",
-      "amount": 2
+      "amount": 1,
+      "cost_band": "series_core",
+      "cost_line": "stamp_core",
+      "series_confidence": "official",
+      "cost_note": "Stamp-S3 是邮票模块本体。费用从 2 降到 1，攻击从 2 降到 1，支援从 2 降到 1。"
     },
     {
       "rid": "H038a",
@@ -3865,13 +4218,13 @@
       "faction": "邮票",
       "game_role": "main",
       "kind": "main",
-      "cost": 3,
-      "attack": 2,
-      "durability": 3,
+      "cost": 2,
+      "attack": 1,
+      "durability": 2,
       "guard": false,
       "rush": false,
       "effect": "support",
-      "effect_amount": 2,
+      "effect_amount": 1,
       "attack_bonus": 0,
       "grants_guard": false,
       "bypass_guard": false,
@@ -3887,7 +4240,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "小印改",
-      "amount": 2
+      "amount": 1,
+      "cost_band": "series_core",
+      "cost_line": "stamp_core",
+      "series_confidence": "official",
+      "cost_note": "同一邮票的二星，基础档 +1。支援仍是 1 费。"
     },
     {
       "rid": "H038b",
@@ -3911,9 +4268,9 @@
       "faction": "邮票",
       "game_role": "main",
       "kind": "main",
-      "cost": 2,
+      "cost": 1,
       "attack": 1,
-      "durability": 3,
+      "durability": 2,
       "guard": false,
       "rush": false,
       "effect": null,
@@ -3933,7 +4290,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "宽脚印",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "series_core",
+      "cost_line": "stamp_core",
+      "series_confidence": "official",
+      "cost_note": "针距仍是邮票模块，不是整机。"
     },
     {
       "rid": "H038c",
@@ -3957,8 +4318,8 @@
       "faction": "邮票",
       "game_role": "main",
       "kind": "main",
-      "cost": 2,
-      "attack": 3,
+      "cost": 1,
+      "attack": 1,
       "durability": 1,
       "guard": false,
       "rush": false,
@@ -3979,7 +4340,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "密脚印",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "series_core",
+      "cost_line": "stamp_core",
+      "series_confidence": "official",
+      "cost_note": "针距仍是邮票模块。攻击从 3 降到 1，避免 1 费高攻。"
     },
     {
       "rid": "H039a",
@@ -4004,7 +4369,7 @@
       "game_role": "main",
       "kind": "main",
       "cost": 1,
-      "attack": 2,
+      "attack": 1,
       "durability": 1,
       "guard": false,
       "rush": true,
@@ -4025,7 +4390,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "短印",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "series_core",
+      "cost_line": "stamp_core",
+      "series_confidence": "official",
+      "cost_note": "Stamp-C3 本体。保留冲锋，攻击从 2 降到 1。"
     },
     {
       "rid": "H039b",
@@ -4049,9 +4418,9 @@
       "faction": "邮票",
       "game_role": "main",
       "kind": "main",
-      "cost": 2,
+      "cost": 1,
       "attack": 1,
-      "durability": 3,
+      "durability": 2,
       "guard": false,
       "rush": false,
       "effect": null,
@@ -4071,7 +4440,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "直插印",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "series_core",
+      "cost_line": "stamp_core",
+      "series_confidence": "official",
+      "cost_note": "Stamp-C3U 仍是直插邮票模块。"
     },
     {
       "rid": "H039c",
@@ -4095,8 +4468,8 @@
       "faction": "邮票",
       "game_role": "main",
       "kind": "main",
-      "cost": 3,
-      "attack": 3,
+      "cost": 1,
+      "attack": 1,
       "durability": 2,
       "guard": false,
       "rush": false,
@@ -4117,7 +4490,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "快印",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "series_core",
+      "cost_line": "stamp_core",
+      "series_confidence": "official",
+      "cost_note": "Stamp-C5 仍是邮票模块，不按芯片代数另开高费。"
     },
     {
       "rid": "H039e",
@@ -4141,13 +4518,13 @@
       "faction": "邮票",
       "game_role": "main",
       "kind": "main",
-      "cost": 3,
-      "attack": 2,
-      "durability": 3,
+      "cost": 1,
+      "attack": 1,
+      "durability": 2,
       "guard": false,
       "rush": false,
-      "effect": "play_damage",
-      "effect_amount": 1,
+      "effect": null,
+      "effect_amount": 0,
       "attack_bonus": 0,
       "grants_guard": false,
       "bypass_guard": false,
@@ -4163,7 +4540,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "远印",
-      "amount": 1
+      "amount": 1,
+      "cost_band": "series_core",
+      "cost_line": "stamp_core",
+      "series_confidence": "official",
+      "cost_note": "C6LoRa 仍是邮票模块。去掉入场伤害，避免 1 费再免费打 1 点。"
     },
     {
       "rid": "H039f",
@@ -4187,9 +4568,9 @@
       "faction": "邮票",
       "game_role": "main",
       "kind": "main",
-      "cost": 5,
-      "attack": 4,
-      "durability": 4,
+      "cost": 1,
+      "attack": 1,
+      "durability": 2,
       "guard": false,
       "rush": false,
       "effect": null,
@@ -4209,7 +4590,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "大印",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "series_core",
+      "cost_line": "stamp_core",
+      "series_confidence": "official",
+      "cost_note": "Stamp-P4 仍是邮票模块。费用从 5 降到 1，攻击和耐久一并降到 1/2。"
     },
     {
       "rid": "H041",
@@ -4233,9 +4618,9 @@
       "faction": "工位",
       "game_role": "main",
       "kind": "main",
-      "cost": 5,
+      "cost": 6,
       "attack": 3,
-      "durability": 6,
+      "durability": 7,
       "guard": true,
       "rush": false,
       "effect": null,
@@ -4255,7 +4640,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "厚壳工控",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "series_machine",
+      "cost_line": "stamp_machine",
+      "series_confidence": "official",
+      "cost_note": "StamPLC 是工控整机，不是单独的邮票。费用不降到 1，从 5 调到 6，耐久升到 7。"
     },
     {
       "rid": "H050",
@@ -4280,9 +4669,9 @@
       "faction": "键盘",
       "game_role": "main",
       "kind": "main",
-      "cost": 5,
+      "cost": 10,
       "attack": 4,
-      "durability": 4,
+      "durability": 7,
       "guard": false,
       "rush": false,
       "effect": null,
@@ -4302,7 +4691,13 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "零键",
-      "amount": 0
+      "amount": 0,
+      "upper_host": true,
+      "official_arch_note": "官方文档 https://docs.m5stack.com/en/CardputerZero 写明 CPU 为 RP3A0（BCM2837）四核 Cortex-A53，ARMv8-A。这只标记上位机资格，费用攻击耐久仍是 5/4/4。",
+      "cost_band": "series_core",
+      "cost_line": "upper_arm",
+      "series_confidence": "official",
+      "cost_note": "CardputerZero 官方 CPU 是 Cortex-A53。上位机资格不变，费用升到 10。"
     },
     {
       "rid": "S001a",
@@ -4324,7 +4719,7 @@
       "faction": "外设",
       "game_role": "attachment",
       "kind": "attachment",
-      "cost": 2,
+      "cost": 4,
       "attack": 0,
       "durability": 0,
       "guard": false,
@@ -4346,7 +4741,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "星座",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "GPS 模块忽略护卫，上调到 4 费。"
     },
     {
       "rid": "U002a",
@@ -4368,7 +4767,7 @@
       "faction": "外设",
       "game_role": "attachment",
       "kind": "attachment",
-      "cost": 2,
+      "cost": 4,
       "attack": 0,
       "durability": 0,
       "guard": false,
@@ -4390,7 +4789,11 @@
       "design_status": "playtest_draft",
       "hardware_controller_note": null,
       "name": "测距眼",
-      "amount": 0
+      "amount": 0,
+      "cost_band": "accessory",
+      "cost_line": "accessory",
+      "series_confidence": "official",
+      "cost_note": "测距眼忽略护卫，上调到 4 费。"
     }
   ]
 }

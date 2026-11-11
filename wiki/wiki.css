@@ -42,7 +42,17 @@ img { max-width: 100%; }
 .banner { margin: 0; padding: 12px 14px; border-radius: 14px; line-height: 1.55; }
 .banner.art { background: #fff3db; border: 1px solid #e6d4aa; color: #80643b; }
 .banner.wait { background: #e8eee7; border: 1px solid #cddbcf; color: #49624e; }
-.tile { border-radius: 11px; }
+.tile { position: relative; border-radius: 11px; }
+.cost-lamp, .cost-lamp.lg {
+  width: 42px; height: 42px; display: grid; place-items: center;
+  background: url("../dist/clash/scene/ui/lamp-cost-cyan.webp") center / contain no-repeat;
+  color: #f7fbff; font-weight: 900; font-size: 18px; text-shadow: 0 1px 1px #083038;
+}
+.tile .cost-lamp { position: absolute; left: 14px; top: 14px; z-index: 1; }
+.cost-lamp.lg { width: 64px; height: 64px; font-size: 26px; }
+.cost-stat { display: flex; align-items: center; gap: 8px; }
+.cost-reason { grid-column: 1 / -1; margin: 0; padding: 8px; border-radius: 12px; background: #fff; border: 1px solid #f0d2b4; line-height: 1.45; }
+.cost-reason span { display: block; color: var(--muted); font-size: 12px; }
 .chip.on, .seg button[aria-pressed="true"] { background: var(--ink); color: white; border-color: var(--ink); }
 .layout {
   display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 22px; align-items: start;
@@ -147,6 +157,16 @@ summary { cursor: pointer; font-weight: 700; }
 #zoom img { max-width: min(1100px, 100%); max-height: calc(100vh - 80px); object-fit: contain; }
 #zoom .close { position: absolute; top: 12px; right: 12px; background: white; }
 .empty { padding: 28px 8px; color: var(--muted); }
+.curve { max-width: 980px; margin: 0 auto; padding: 16px 16px 48px; display: grid; gap: 18px; }
+.curve h2 { margin: 0 0 8px; }
+.curve table { width: 100%; border-collapse: collapse; background: var(--paper); }
+.curve th, .curve td { border-bottom: 1px solid var(--line); padding: 8px; text-align: left; vertical-align: top; }
+.curve td:first-child, .curve th:first-child { width: 4em; font-variant-numeric: tabular-nums; }
+.bars { display: flex; align-items: flex-end; gap: 8px; min-height: 200px; padding: 12px; background: var(--paper); border: 1px solid var(--line); border-radius: 16px; }
+.bar { display: grid; justify-items: center; gap: 4px; color: inherit; text-decoration: none; flex: 1; }
+.bar span { display: block; width: 100%; max-width: 36px; background: #1d4d73; border-radius: 8px 8px 0 0; }
+.bar b, .bar i { font-style: normal; font-size: 12px; }
+.rules { margin: 0; padding-left: 18px; line-height: 1.6; }
 @media (max-width: 800px) {
   .layout { grid-template-columns: 1fr; }
   #filters { position: static; }

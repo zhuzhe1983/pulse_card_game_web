@@ -12,7 +12,7 @@
       4
     ]
   },
-  "note": "教学局不洗牌。牌库列表第 0 张在顶。战场是有序队列，没有固定张数。最左主控的打击按 10% 向上取整。结束回合后必须立刻开始对方回合。非法行动不改变局面。",
+  "note": "教学局不洗牌。牌库列表第 0 张在顶。第 1 回合打 1 费小印。第 3 回合先手打 3 费的 H024 新细条 art_h024。占位牌细条已退役。千里眼是 4 费，这一局不用它。最左主控的打击按 10% 向上取整。结束回合后必须立刻开始对方回合。非法行动不改变局面。",
   "lesson_steps": [
     {
       "name": "t1_start",
@@ -22,7 +22,7 @@
       "name": "t1_play",
       "do": "play",
       "seat": 0,
-      "card": "xi_tiao"
+      "card": "xiao_yin"
     },
     {
       "name": "t1_end",
@@ -43,11 +43,11 @@
         ],
         "hands": [
           [
-            "xiao_yin",
+            "art_h024",
             "bu_ji"
           ],
           [
-            "xi_tiao",
+            "art_h024",
             "hu_zhao",
             "xiao_yin",
             "gan_rao",
@@ -67,7 +67,7 @@
           [
             {
               "iid": "u1",
-              "card_id": "xi_tiao",
+              "card_id": "xiao_yin",
               "durability": 2,
               "attack": 1,
               "sick": true,
@@ -87,7 +87,18 @@
       "name": "coin",
       "do": "play",
       "seat": 1,
-      "card": "jie_yi_ge_dian",
+      "card": "jie_yi_ge_dian"
+    },
+    {
+      "name": "t1b_play",
+      "do": "play",
+      "seat": 1,
+      "card": "dian_zhen"
+    },
+    {
+      "name": "t1b_end",
+      "do": "end",
+      "seat": 1,
       "expect": {
         "bases": [
           20,
@@ -95,7 +106,7 @@
         ],
         "supply": [
           0,
-          2
+          0
         ],
         "max_supply": [
           1,
@@ -103,15 +114,14 @@
         ],
         "hands": [
           [
-            "xiao_yin",
+            "art_h024",
             "bu_ji"
           ],
           [
-            "xi_tiao",
+            "art_h024",
             "hu_zhao",
             "xiao_yin",
-            "gan_rao",
-            "dian_zhen"
+            "gan_rao"
           ]
         ],
         "decks": [
@@ -129,97 +139,9 @@
           [
             {
               "iid": "u1",
-              "card_id": "xi_tiao",
-              "durability": 2,
-              "attack": 1,
-              "sick": true,
-              "guard": false,
-              "attachments": []
-            }
-          ],
-          []
-        ]
-      }
-    },
-    {
-      "name": "t1b_play",
-      "do": "play",
-      "seat": 1,
-      "card": "xiao_yin"
-    },
-    {
-      "name": "t1b_end",
-      "do": "end",
-      "seat": 1
-    },
-    {
-      "name": "t2_start",
-      "do": "start"
-    },
-    {
-      "name": "t2_play",
-      "do": "play",
-      "seat": 0,
-      "card": "xiao_yin"
-    },
-    {
-      "name": "t2_atk",
-      "do": "attack",
-      "seat": 0,
-      "attacker": "xi_tiao",
-      "target": "base",
-      "expect": {
-        "bases": [
-          20,
-          18
-        ],
-        "supply": [
-          0,
-          0
-        ],
-        "max_supply": [
-          2,
-          1
-        ],
-        "hands": [
-          [
-            "bu_ji",
-            "dian_zhen"
-          ],
-          [
-            "xi_tiao",
-            "hu_zhao",
-            "gan_rao",
-            "dian_zhen"
-          ]
-        ],
-        "decks": [
-          4,
-          3
-        ],
-        "graves": [
-          [],
-          [
-            "jie_yi_ge_dian"
-          ]
-        ],
-        "winner": null,
-        "boards": [
-          [
-            {
-              "iid": "u1",
-              "card_id": "xi_tiao",
-              "durability": 2,
-              "attack": 1,
-              "sick": false,
-              "guard": false,
-              "attachments": []
-            },
-            {
-              "iid": "u3",
               "card_id": "xiao_yin",
               "durability": 2,
-              "attack": 2,
+              "attack": 1,
               "sick": true,
               "guard": false,
               "attachments": []
@@ -228,11 +150,76 @@
           [
             {
               "iid": "u2",
-              "card_id": "xiao_yin",
-              "durability": 2,
-              "attack": 2,
+              "card_id": "dian_zhen",
+              "durability": 3,
+              "attack": 1,
               "sick": true,
-              "guard": false,
+              "guard": true,
+              "attachments": []
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "name": "t2_start",
+      "do": "start"
+    },
+    {
+      "name": "t2_atk",
+      "do": "attack",
+      "seat": 0,
+      "attacker": "xiao_yin",
+      "target": "dian_zhen",
+      "expect": {
+        "bases": [
+          20,
+          20
+        ],
+        "supply": [
+          2,
+          0
+        ],
+        "max_supply": [
+          2,
+          1
+        ],
+        "hands": [
+          [
+            "art_h024",
+            "bu_ji",
+            "dian_zhen"
+          ],
+          [
+            "art_h024",
+            "hu_zhao",
+            "xiao_yin",
+            "gan_rao"
+          ]
+        ],
+        "decks": [
+          4,
+          3
+        ],
+        "graves": [
+          [
+            "xiao_yin"
+          ],
+          [
+            "jie_yi_ge_dian"
+          ]
+        ],
+        "winner": null,
+        "boards": [
+          [],
+          [
+            {
+              "iid": "u2",
+              "card_id": "dian_zhen",
+              "durability": 1,
+              "attack": 1,
+              "sick": true,
+              "guard": true,
               "attachments": []
             }
           ]
@@ -249,25 +236,30 @@
       "do": "start"
     },
     {
-      "name": "t2b_play",
-      "do": "play",
-      "seat": 1,
-      "card": "xi_tiao"
-    },
-    {
       "name": "t2b_atk",
       "do": "attack",
       "seat": 1,
-      "attacker": "xiao_yin",
-      "target": "xi_tiao",
+      "attacker": "dian_zhen",
+      "target": "base"
+    },
+    {
+      "name": "t2b_play",
+      "do": "play",
+      "seat": 1,
+      "card": "xiao_yin"
+    },
+    {
+      "name": "t2b_end",
+      "do": "end",
+      "seat": 1,
       "expect": {
         "bases": [
-          20,
-          18
+          18,
+          20
         ],
         "supply": [
           0,
-          1
+          0
         ],
         "max_supply": [
           2,
@@ -275,13 +267,14 @@
         ],
         "hands": [
           [
+            "art_h024",
             "bu_ji",
             "dian_zhen"
           ],
           [
+            "art_h024",
             "hu_zhao",
             "gan_rao",
-            "dian_zhen",
             "hui_chong"
           ]
         ],
@@ -291,30 +284,28 @@
         ],
         "graves": [
           [
-            "xi_tiao"
+            "xiao_yin"
           ],
           [
-            "jie_yi_ge_dian",
-            "xiao_yin"
+            "jie_yi_ge_dian"
           ]
         ],
         "winner": null,
         "boards": [
+          [],
           [
+            {
+              "iid": "u2",
+              "card_id": "dian_zhen",
+              "durability": 1,
+              "attack": 1,
+              "sick": false,
+              "guard": true,
+              "attachments": []
+            },
             {
               "iid": "u3",
               "card_id": "xiao_yin",
-              "durability": 2,
-              "attack": 2,
-              "sick": true,
-              "guard": false,
-              "attachments": []
-            }
-          ],
-          [
-            {
-              "iid": "u4",
-              "card_id": "xi_tiao",
               "durability": 2,
               "attack": 1,
               "sick": true,
@@ -326,11 +317,6 @@
       }
     },
     {
-      "name": "t2b_end",
-      "do": "end",
-      "seat": 1
-    },
-    {
       "name": "t3_start",
       "do": "start"
     },
@@ -338,14 +324,7 @@
       "name": "t3_play",
       "do": "play",
       "seat": 0,
-      "card": "dian_zhen"
-    },
-    {
-      "name": "t3_atk",
-      "do": "attack",
-      "seat": 0,
-      "attacker": "xiao_yin",
-      "target": "xi_tiao"
+      "card": "art_h024"
     },
     {
       "name": "t3_end",
@@ -353,8 +332,8 @@
       "seat": 0,
       "expect": {
         "bases": [
-          20,
-          18
+          18,
+          20
         ],
         "supply": [
           0,
@@ -367,12 +346,13 @@
         "hands": [
           [
             "bu_ji",
+            "dian_zhen",
             "lian_jie"
           ],
           [
+            "art_h024",
             "hu_zhao",
             "gan_rao",
-            "dian_zhen",
             "hui_chong"
           ]
         ],
@@ -382,29 +362,45 @@
         ],
         "graves": [
           [
-            "xi_tiao",
             "xiao_yin"
           ],
           [
-            "jie_yi_ge_dian",
-            "xiao_yin",
-            "xi_tiao"
+            "jie_yi_ge_dian"
           ]
         ],
         "winner": null,
         "boards": [
           [
             {
-              "iid": "u5",
-              "card_id": "dian_zhen",
-              "durability": 4,
+              "iid": "u4",
+              "card_id": "art_h024",
+              "durability": 3,
               "attack": 2,
               "sick": true,
-              "guard": true,
+              "guard": false,
               "attachments": []
             }
           ],
-          []
+          [
+            {
+              "iid": "u2",
+              "card_id": "dian_zhen",
+              "durability": 1,
+              "attack": 1,
+              "sick": false,
+              "guard": true,
+              "attachments": []
+            },
+            {
+              "iid": "u3",
+              "card_id": "xiao_yin",
+              "durability": 2,
+              "attack": 1,
+              "sick": true,
+              "guard": false,
+              "attachments": []
+            }
+          ]
         ]
       }
     }

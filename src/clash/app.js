@@ -108,7 +108,7 @@
       game.supply = [5, 0];
       game.max_supply = [5, 0];
       game.hands = [['art_h038a'], []];
-      game.spawn(0, 'xi_tiao', 0, null, false);
+      game.spawn(0, 'art_h024', 0, null, false);
       game.spawn(0, 'dian_zhen', 1, null, false);
       const stamp = game.spawn(0, 'xiao_yin', 2, null, false);
       stamp.attachments = ['lian_jie'];
@@ -118,14 +118,14 @@
       game = C.Game.empty(cards, rules, pack.capabilities);
       game.supply = [10, 10];
       game.max_supply = [10, 10];
-      game.hands = [['xi_tiao', 'xi_tiao', 'art_h039a'], []];
+      game.hands = [['art_h024', 'art_h024', 'art_h039a'], []];
       game.graves = [['hou_ke'], []];
       ['xiao_yin', 'dian_zhen', 'xuan_niu', 'qiao_jian', 'qiao_jian'].forEach((id, index) => {
         const unit = game.spawn(0, id, index, null, false);
         unit.sick = false;
       });
-      game.spawn(1, 'xi_tiao', 0, 4, false);
-      game.spawn(1, 'hou_ke', 1, 6, false);
+      game.spawn(1, 'art_h024', 0, 4, false);
+      game.spawn(1, 'hou_ke', 1, 4, false);
       push('摆阵：先手已经有 5 台。再打出细条会排到最右，支援把厚壳插到最左。');
     } else if (scenario === 'synergy') {
       game = C.Game.empty(cards, rules, pack.capabilities);
@@ -247,7 +247,7 @@
     if (card && card.rush) return '这张有冲锋，打出后本回合可以攻击。升星进来的仍不能攻击。';
     if (card && card.effect === 'mend' && !ui.target) return '点一台己方单位。可以修复耐久，或让它本回合攻击 +1。不能治疗基地。';
     if (card && card.effect === 'mend') return '选择修复 2 点耐久（不超过卡面），或本回合攻击 +1。';
-    if (ui.attacker) return '点敌方单位，或按“攻击对方基地”。新入场不能攻击。对方有护卫时，没有千里眼就只能打护卫。';
+    if (ui.attacker) return '点敌方单位，或按“攻击核心”。新入场不能攻击。对方有护卫时，没有千里眼就只能打护卫。';
     return '点手牌出牌，点己方单位后再选攻击目标。场上的小印可以支援自己墓地里的厚壳，小印不会离场。';
   }
 
@@ -262,7 +262,6 @@
     return `data-scene-slot="${slot}" data-scene-ready="${url ? '1' : '0'}"${url ? ` style="--scene-url:url('${esc(url)}')"` : ''}`;
   }
   const painted = {
-    xi_tiao: 'scene/cards/art-stick-432x576.webp',
     bu_ji: 'scene/cards/art-supply-432x576.webp',
     uiflow_blocks: 'scene/cards/art-uiflow-432x576.webp',
     ezdata_note: 'scene/cards/art-ezdata-432x576.webp',
@@ -270,21 +269,22 @@
     burner_seize: 'scene/cards/art-seize-432x576.webp'
   };
   function picture(card, kind) {
+    if (card && card.template_id === tokenId) return `<img class="coin-lamp" src="scene/ui/lamp-power-on-amber-128.webp" alt="" draggable="false">`;
+    const shot = card && artbook[card.rid];
+    if (shot) return `<img src="${esc(kind === 'board' ? shot.char : shot.card)}" alt="" draggable="false">`;
     const paintedSrc = card && painted[card.template_id];
     if (paintedSrc) return `<img src="${esc(paintedSrc)}" alt="" draggable="false">`;
-    const shot = card && artbook[card.rid];
-    if (!shot) return `<img src="scene/cardback/pulse-cardback-192x256.webp" alt="" draggable="false">`;
-    return `<img src="${esc(kind === 'board' ? shot.char : shot.card)}" alt="" draggable="false">`;
+    return `<img src="scene/cardback/pulse-cardback-192x256.webp" alt="" draggable="false">`;
   }
   function mana(seat) {
     const max = Math.max(0, Math.min(10, game.max_supply[seat]));
-    const cur = Math.max(0, Math.min(10, game.supply[seat]));
+    const cur = Math.max(0, game.supply[seat]);
     const bits = [];
     for (let i = 0; i < 10; i++) {
-      const state = i < cur ? 'on' : i < max ? 'off' : 'locked';
-      bits.push(`<i class="${state}"></i>`);
+      const state = i < cur ? 'on' : i < max ? 'spent' : 'locked';
+      bits.push(`<i class="${state}" data-lamp="${state}"></i>`);
     }
-    return `<div class="mana" data-mana="${seat}">${bits.join('')}</div>`;
+    return `<div class="mana" data-mana="${seat}" data-supply="${cur}" data-max="${max}">${bits.join('')}</div>`;
   }
   function handHtml(seat, dock) {
     const show = ui.reveal || seat === game.seat;
@@ -302,12 +302,74 @@
       const nums = card.kind === 'main'
         ? `<span class="patk">${card.attack}</span><span class="php">${card.durability}</span>`
         : '';
+      const coin = id === tokenId ? ' coin' : '';
       const body = `<span class="cost">${card.cost}</span>${star ? `<span class="star">${star}星</span>` : ''}<span class="art">${picture(card, 'board')}</span><span class="cname">${esc(card.name)}</span>${nums}<span class="detail">${esc(blurb(card))}</span>`;
       const fan = ` style="--i:${index};--n:${count}"`;
-      if (seat !== game.seat) return `<div class="playcard" ${sceneAttr('hand_frame')} data-card="${esc(id)}"${fan}>${body}<span class="statsline">教学明牌</span></div>`;
-      return `<button type="button" class="playcard${selected ? ' selected' : ''}${ready ? ' ready' : ''}" ${sceneAttr('hand_frame')} data-action="select-hand" data-hand-index="${index}" data-card="${esc(id)}"${fan}>${body}</button>`;
+      if (seat !== game.seat) return `<div class="playcard${coin}" ${sceneAttr('hand_frame')} data-card="${esc(id)}"${fan}>${body}<span class="statsline">教学明牌</span></div>`;
+      return `<button type="button" class="playcard${coin}${selected ? ' selected' : ''}${ready ? ' ready' : ''}" ${sceneAttr('hand_frame')} data-action="select-hand" data-hand-index="${index}" data-card="${esc(id)}"${fan}>${body}</button>`;
     }).join('');
     return `<div class="${dock ? 'hands fan' : 'opp-hand'}" data-hand-seat="${seat}" data-hidden="0">${open || '<span class="silk">没有手牌</span>'}</div>`;
+  }
+  function actButton(action, icon, label, tip, block, extra) {
+    const off = block ? ' is-off' : '';
+    const why = block ? `<i class="act-why">${esc(block.why)}</i>` : '';
+    const code = block ? ` data-block="${esc(block.code)}"` : '';
+    return `<button type="button" class="act${off}" data-action="${action}"${code}${extra || ''}><img src="${icon}" alt=""><span class="act-copy"><strong>${esc(label)}</strong><em>${esc(tip)}</em>${why}</span></button>`;
+  }
+  function attackBlock(unit) {
+    if (!unit) return null;
+    if (unit.sick) return { code: 'summoning_sickness', why: '新入场不能攻击' };
+    if (unit.attacked) return { code: 'already_attacked', why: '本回合用过' };
+    return null;
+  }
+  function paidBlock(unit, cost, usedKey) {
+    if (unit && unit.ability_lock) return { code: 'seized_this_turn', why: '本回合不能发动' };
+    if (usedKey && game.ability_used[game.seat][usedKey]) return { code: 'already_used_ability', why: '本回合用过' };
+    if (game.supply[game.seat] < cost) return { code: 'not_enough_supply', why: '没电' };
+    return null;
+  }
+  function supportBlock(unit) {
+    const cost = cards[unit.card_id].amount;
+    if (unit.ability_lock) return { code: 'seized_this_turn', why: '本回合不能发动' };
+    if (game.ability_used[game.seat].support) return { code: 'already_used_ability', why: '本回合用过' };
+    const reviveId = pack.capabilities.bindings.support.revive;
+    const banned = game.promoteBan[game.seat] || [];
+    if (!game.graves[game.seat].includes(reviveId) || banned.includes(reviveId)) {
+      return { code: 'no_shell_in_grave', why: '墓地没有厚壳' };
+    }
+    if (game.supply[game.seat] < cost) return { code: 'not_enough_supply', why: '没电' };
+    return null;
+  }
+  function unitMenu(unit) {
+    const card = cards[unit.card_id];
+    const bits = [];
+    bits.push(actButton('attack-base', 'scene/ui/lamp-attack-amber.webp', '打基地', '打对方基地。对方有护卫，且这台没有千里眼时，只能打护卫。', attackBlock(unit)));
+    if (card.effect === 'support') {
+      const cost = card.amount;
+      bits.push(actButton('support', 'scene/ui/lamp-durability-teal.webp', `复活厚壳 · ${cost}电`, `花 ${cost} 点电，把自己墓地里的厚壳叫回最左边，满耐久。小印留在场上。`, supportBlock(unit)));
+    }
+    if (card.effect === 'knob') {
+      const cost = card.amount;
+      bits.push(actButton('arm-knob', 'scene/ui/lamp-power-on-amber-128.webp', `攻击+1 · ${cost}电`, `花 ${cost} 点电，让一台己方单位本回合攻击 +1。可以点旋钮台自己。`, paidBlock(unit, cost, 'knob')));
+    }
+    if (card.upper_host) {
+      const used = game.upper_links[game.seat].some(item => item.source === unit.iid);
+      const block = used ? { code: 'already_used_ability', why: '本回合用过' } : paidBlock(unit, 1, '');
+      bits.push(actButton('upper-link', 'scene/cards/art-hostlove-432x576.webp', '接通 · 1电', '花 1 点电，把这台上位机连到一台己方 ESP32 主控。本回合第一次接上时当前供电 +1。', block));
+    }
+    return `<div class="act-menu" role="menu">${bits.join('')}</div>`;
+  }
+  function aimMenu(seat, unit) {
+    if (seat === game.seat || unit.link || game.winner != null) return '';
+    const held = selectedCard();
+    if (held && held.effect === 'seize') {
+      const block = game.supply[game.seat] < held.cost ? { code: 'not_enough_supply', why: '没电' } : null;
+      return `<div class="act-menu aim">${actButton('select-unit', 'scene/cards/art-seize-432x576.webp', `夺舍 · ${held.cost}电`, '夺走这台敌方主控，排到我方最右。耐久和配件留下，本回合不能攻击。', block, ` data-seat="${seat}" data-iid="${esc(unit.iid)}"`)}</div>`;
+    }
+    if (!ui.attacker) return '';
+    const attacker = game.find(ui.attacker)[2];
+    const name = cards[unit.card_id].name;
+    return `<div class="act-menu aim">${actButton('select-unit', 'scene/ui/lamp-attack-amber.webp', `打${name}`, '和这台对打，双方同时结算。护卫没被忽略时只能打护卫。', attackBlock(attacker), ` data-seat="${seat}" data-iid="${esc(unit.iid)}"`)}</div>`;
   }
   function unitHtml(seat, slot, unit) {
     if (!unit) return '';
@@ -364,7 +426,13 @@
     const bits = [];
     row.forEach((unit, slot) => {
       if (inserting) bits.push(insertMark(slot));
-      bits.push(unitHtml(seat, slot, unit));
+      const html = unitHtml(seat, slot, unit);
+      if (unit.link) {
+        bits.push(html);
+        return;
+      }
+      const mine = seat === game.seat && ui.attacker === unit.iid;
+      bits.push(`<div class="unit-wrap">${html}${mine ? unitMenu(unit) : ''}${aimMenu(seat, unit)}</div>`);
     });
     if (inserting) bits.push(insertMark(row.length));
     return bits.join('');
@@ -400,7 +468,9 @@
     </div>`;
   }
   function supply(seat) {
-    return `<div class="battery">${mana(seat)}<div class="supply-read">供电 <b data-seat="${seat}" data-stat="supply">${game.supply[seat]}</b> / <b data-seat="${seat}" data-stat="max-supply">${game.max_supply[seat]}</b></div></div>`;
+    const held = selectedCard();
+    const short = held && seat === game.seat && held.cost > game.supply[seat];
+    return `<div class="battery${short ? ' short' : ''}">${mana(seat)}<div class="supply-read">供电 <b data-seat="${seat}" data-stat="supply">${game.supply[seat]}</b>/<b data-seat="${seat}" data-stat="max-supply">${game.max_supply[seat]}</b></div></div>`;
   }
   function stack(seat) {
     return `<div class="pile">
@@ -438,12 +508,7 @@
       bits.push('<button type="button" class="pad live" data-action="mend-heal">修复耐久</button>');
       bits.push('<button type="button" class="pad live" data-action="mend-temp">攻击 +1</button>');
     }
-    bits.push(`<button type="button" class="pad${ui.attacker ? ' live' : ''}" data-action="attack-base">打核心</button>`);
     bits.push(promoteButtons());
-    const uppers = game.units(game.seat).some(unit => cards[unit.card_id].upper_host && !unit.ability_lock && !unit.link);
-    if (uppers) bits.push(`<button type="button" class="pad${ui.linking ? ' live' : ''}" data-action="upper-link">上位连接</button>`);
-    bits.push('<button type="button" class="pad" data-action="support">支援</button>');
-    bits.push(`<button type="button" class="pad${ui.knob ? ' live' : ''}" data-action="arm-knob">旋钮</button>`);
     return bits.join('');
   }
 
@@ -580,13 +645,14 @@
     <main class="arena table${ui.attacker ? ' aiming' : ''}${canDeploy() ? ' holding' : ''}" data-scene-status="${esc(scenebook.status || 'awaiting_generated_assets')}" data-scenario="${esc(ui.scenario)}" data-ruleset="${esc(content.ruleset_id)}" data-source-commit="${esc(C.SOURCE_COMMIT)}">
       <div class="scene-bg" ${sceneAttr('arena_background')}></div>
       <div class="opp-dock">${handHtml(other, false)}</div>
+      ${(game.hands[1] || []).includes(tokenId) ? '<p class="compensation">后手补偿：多 1 张牌 + 借一格电</p>' : ''}
       <aside class="bays">${stack(other)}${stack(active)}</aside>
       <div class="core-slot foe">${core(other)}</div>
       <div class="slots foe">${lane(other)}</div>
       <div class="midline">
         <h3 id="turn-label" data-seat="${game.seat}">${esc(turnText)}</h3>
         <p class="formation" data-formation="${game.formationState(active).percent}">${esc(formationLine(active))}</p>
-        ${game.units(active).some(unit => cards[unit.card_id].upper_host && !unit.link) ? `<button type="button" class="upper-btn${ui.linking ? ' on' : ''}" data-action="upper-link"><img src="scene/cards/art-hostlove-432x576.webp" alt="">上位连接</button>` : ''}
+        ${game.units(active).some(unit => cards[unit.card_id].upper_host && !unit.link) ? `<button type="button" class="upper-btn${ui.linking ? ' on' : ''}" data-action="upper-link"><img src="scene/cards/art-hostlove-432x576.webp" alt="">接通 · 1电</button>` : ''}
         ${strikeHint()}
         <p id="coach">${esc(coach())}</p>
         <p id="last-error" data-code="${esc(ui.error ? ui.error.code : '')}">${ui.error ? esc(ui.error.message) : ''}</p>
@@ -735,6 +801,10 @@
   }
 
   function act(action, el, event) {
+    if (el && el.dataset && el.dataset.block) {
+      const why = el.querySelector('.act-why');
+      return note(new C.ClashError(why ? why.textContent : '现在不能这么做', el.dataset.block));
+    }
     if (action === 'toggle-menu') { ui.menu = !ui.menu; return render(); }
     if (action === 'toggle-log') { ui.logOpen = !ui.logOpen; return render(); }
     if (action === 'toggle-reveal') { ui.reveal = !ui.reveal; return render(); }

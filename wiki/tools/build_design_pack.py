@@ -11,7 +11,7 @@ import argparse
 import json
 from pathlib import Path
 
-SOURCE_COMMIT = "704411fcb6138a05f9fdf8c168a366b7a2bb8237"
+SOURCE_COMMIT = "5e1caabddd13559ad8d05f1b9ff8b681ec164052"
 FORBIDDEN = ("/workspace/", "/Users/", "/home/", "file://")
 PLAYTEST_IDS = ("xiao_yin", "hou_ke", "dian_zhen", "qiao_jian", "xuan_niu")
 PLAYTEST_KEYS = (
@@ -151,6 +151,10 @@ def build_card(raw: dict, by_tid: dict) -> dict:
             "attack_bonus": raw["attack_bonus"] if role == "attachment" else None,
             "grants_guard": raw["grants_guard"] if role == "attachment" else None,
             "bypass_guard": raw["bypass_guard"] if role == "attachment" else None,
+            "cost_band": raw.get("cost_band"),
+            "cost_line": raw.get("cost_line"),
+            "series_confidence": raw.get("series_confidence"),
+            "cost_note": raw.get("cost_note"),
         },
         "growth": {
             "family": raw["growth_family"],

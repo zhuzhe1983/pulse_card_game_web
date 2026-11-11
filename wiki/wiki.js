@@ -33,6 +33,8 @@
       family: params.get('family') || '',
       growth: params.get('growth') || '',
       star: params.get('star') || '',
+      cost: params.get('cost') || '',
+      band: params.get('band') || '',
       card: params.get('card') || '',
       view: params.get('view') === 'card' ? 'card' : 'char'
     };
@@ -40,7 +42,7 @@
 
   function pageUrl(next) {
     const params = new URLSearchParams();
-    ['q', 'type', 'series', 'group', 'family', 'growth', 'star', 'card'].forEach(key => {
+    ['q', 'type', 'series', 'group', 'family', 'growth', 'star', 'cost', 'band', 'card'].forEach(key => {
       if (next[key]) params.set(key, next[key]);
     });
     if (next.view === 'card' && next.card) params.set('view', 'card');
@@ -91,6 +93,25 @@
     $('#group-chips').innerHTML = chip('group', '', '全部', cards.length) + optionKeys(groupMap).map(key => chip('group', key === '' ? '_none' : key, key === '' ? '未按前缀' : key, groupMap.get(key))).join('');
     paintGrowth();
     paintStars();
+    paintCosts();
+  }
+
+  const BAND = {series_core: '系列核心', series_machine: '系列整机', accessory: '配件'};
+  function tierText(play) {
+    if (!play || !play.cost_band) return '';
+    const doubt = play.series_confidence === 'uncertain' ? ' · 存疑' : '';
+    return (BAND[play.cost_band] || play.cost_band) + doubt;
+  }
+
+  function paintCosts() {
+    const costs = api.tally(cards, card => {
+      const play = card.design && card.design.gameplay;
+      return play && play.cost != null ? String(play.cost) : '';
+    });
+    const nums = [...costs.keys()].filter(Boolean).sort((a, b) => Number(a) - Number(b));
+    $('#cost-chips').innerHTML = chip('cost', '', '全部', cards.length) + nums.map(cost => chip('cost', cost, cost + ' 费', costs.get(cost))).join('');
+    const bands = api.tally(cards, card => (card.design && card.design.gameplay && card.design.gameplay.cost_band) || '');
+    $('#band-chips').innerHTML = chip('band', '', '全部档', cards.length) + ['series_core', 'series_machine', 'accessory'].filter(id => bands.has(id)).map(id => chip('band', id, BAND[id], bands.get(id))).join('');
   }
 
   function paintGrowth() {
@@ -152,7 +173,8 @@
         <span class="meta"><span>${esc(card.rid)}</span><span class="type ${esc(card.type)}">${esc(card.type)}</span></span>
         <strong class="official">${esc(card.official_product_name_en)}</strong>
         <span class="zh design">${esc(name)}</span>
-        <span class="group-line">${esc(GROWTH[growth && growth.kind] || '')}${esc(familyLabel)}</span>
+        <span class="cost-lamp" data-cost="${esc(card.design ? card.design.gameplay.cost : '')}">${esc(card.design ? card.design.gameplay.cost : '')}</span>
+        <span class="group-line">${esc(GROWTH[growth && growth.kind] || '')}${esc(familyLabel)}${card.design ? ' · ' + esc(card.design.gameplay.cost) + '费 · ' + esc(tierText(card.design.gameplay)) : ''}</span>
       </button>`;
     }).join('');
   }
@@ -178,10 +200,12 @@
 
   function stats(card) {
     const play = card.design.gameplay;
+    const tier = `<div class="stat"><span>系列档</span><strong>${esc(tierText(play) || '未标')}</strong></div>`;
+    const reason = play.cost_note ? `<p class="cost-reason"><span>定费理由</span> ${esc(play.cost_note)}</p>` : '';
     if (play.role === 'attachment') {
-      return `<div class="stat"><span>费用</span><strong>${esc(play.cost)}</strong></div><div class="stat"><span>配件效果</span><strong>${esc(effectLines(card).join('、'))}</strong></div><div class="stat"><span>攻 / 耐</span><strong class="missing">配件不用</strong></div>`;
+      return `<div class="stat cost-stat"><span class="cost-lamp lg">${esc(play.cost)}</span><span>费用</span></div>${tier}<div class="stat"><span>配件效果</span><strong>${esc(effectLines(card).join('、'))}</strong></div><div class="stat"><span>攻 / 耐</span><strong class="missing">配件不用</strong></div>${reason}`;
     }
-    return `<div class="stat"><span>费用</span><strong>${esc(play.cost)}</strong></div><div class="stat"><span>攻</span><strong>${esc(play.attack)}</strong></div><div class="stat"><span>耐</span><strong>${esc(play.durability)}</strong></div>`;
+    return `<div class="stat cost-stat"><span class="cost-lamp lg">${esc(play.cost)}</span><span>费用</span></div>${tier}<div class="stat"><span>攻</span><strong>${esc(play.attack)}</strong></div><div class="stat"><span>耐</span><strong>${esc(play.durability)}</strong></div>${reason}`;
   }
 
   function compareStats(card) {

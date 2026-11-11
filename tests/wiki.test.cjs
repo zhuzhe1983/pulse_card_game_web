@@ -18,7 +18,25 @@ ok(cards.length === 96 && new Set(cards.map(card => card.rid)).size === 96, '96 
 ok(new Set(roster.cards.map(card => card.rid)).size === 96, 'roster has 96 rids');
 ok(pack.status === 'integrated' && pack.design_status === 'playtest_draft', 'design is integrated and still a draft');
 ok(pack.ruleset_id === 'pcg.clash.v0', 'ruleset');
-ok(pack.source_commit === '704411fcb6138a05f9fdf8c168a366b7a2bb8237', 'source commit');
+ok(pack.source_commit === '5e1caabddd13559ad8d05f1b9ff8b681ec164052', 'source commit');
+ok(wiki.filterCards(cards, {cost: '1'}).length === cards.filter(card => card.design.gameplay.cost === 1).length, 'cost filter matches the printed cost');
+ok(wiki.filterCards(cards, {cost: '10'}).some(card => card.rid === 'H050'), 'zero key is in the 10 cost tier');
+ok(wiki.filterCards(cards, {band: 'series_machine'}).some(card => card.rid === 'H041'), 'StamPLC stays in the machine band');
+ok(cards.find(card => card.rid === 'H038').design.gameplay.cost === 1 && cards.find(card => card.rid === 'H038').design.gameplay.attack === 1, 'stamp module is 1/1');
+ok(cards.find(card => card.rid === 'H041').design.gameplay.cost === 6 && cards.find(card => card.rid === 'H041').design.gameplay.durability === 7, 'industrial shell is 6/7');
+const costCounts = cards.reduce((map, card) => {
+  const cost = card.design.gameplay.cost;
+  map[cost] = (map[cost] || 0) + 1;
+  return map;
+}, {});
+ok(costCounts[1] === 24 && costCounts[2] === 21 && costCounts[3] + costCounts[4] + costCounts[5] === 34, 'mid costs leave 24/21 and 34 in the middle');
+const playOf = rid => cards.find(card => card.rid === rid).design.gameplay;
+ok(playOf('H016').cost === 3 && playOf('H016').attack === 1 && playOf('H016').durability === 4 && playOf('H016').guard === true, 'CoreMatrix is 3/1/4 guard');
+ok(playOf('H017').cost === 5 && playOf('H017').attack === 2 && playOf('H017').durability === 7 && playOf('H017').guard === true && playOf('H017').cost_band === 'series_machine', 'PowerHub is 5/2/7 guard');
+ok(playOf('H036').cost === 2 && playOf('H036').attack === 2 && playOf('H036').durability === 2 && playOf('H036').series_confidence === 'official', 'DinMeter is the 2-cost stamp kit');
+ok(playOf('H036a').cost === 3 && playOf('H036a').attack === 1 && playOf('H036a').durability === 4, 'DinMeter star 2 is 3/1/4');
+ok(playOf('H037').cost === 2 && playOf('H037').attack === 1 && playOf('H037').durability === 3 && playOf('H037').series_confidence === 'official', 'Air Quality is the 2-cost stamp kit');
+ok(playOf('H037a').cost === 3 && playOf('H037a').attack === 2 && playOf('H037a').durability === 3, 'Air Quality star 2 is 3/2/3');
 ok(pack.counts.chains === 9 && pack.counts.star1 === 9 && pack.counts.star2 === 9 && pack.counts.unstarred === 78, 'nine two-step chains');
 ok(cards.every(card => card.design && card.design.identity.game_name_zh && card.design.identity.faction), 'every card has a Chinese name and faction');
 ok(cards.every(card => card.preview_status === 'preview_not_accepted'), 'art remains unaccepted');
@@ -85,9 +103,10 @@ ok(wiki.filterCards(cards, {series: '_none'}).map(card => card.rid).join() === '
 const core2 = wiki.growthView(cards, cards.find(card => card.rid === 'H005'));
 ok(core2.mode === 'chain' && core2.next.rid === 'H007' && core2.prev === null && wiki.promoteCost(cards.find(card => card.rid === 'H005'), core2.next) === 1, 'Core2 promotes to v1.3 for the difference, at least 1');
 const meter = cards.find(card => card.rid === 'H036');
-ok(wiki.promoteCost(meter, wiki.growthView(cards, meter).next) === 1, 'same printed cost still pays 1');
+ok(wiki.promoteCost(meter, wiki.growthView(cards, meter).next) === 1, 'DinMeter pays the 1-point difference');
 const motion = wiki.growthView(cards, cards.find(card => card.rid === 'C004c'));
 ok(motion.mode === 'chain' && motion.next.design.gameplay.attack == null && motion.next.design.gameplay.attack_bonus === 2, 'motion chain stays an attachment');
+ok(motion.next.design.gameplay.cost - cards.find(card => card.rid === 'C004c').design.gameplay.cost === 2, 'motion upgrade costs 2');
 
 let chainCount = 0;
 cards.forEach(card => {
