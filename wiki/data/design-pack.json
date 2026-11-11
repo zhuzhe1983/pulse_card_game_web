@@ -5,7 +5,7 @@
   "design_status": "playtest_draft",
   "balance": "playtest_unverified",
   "label": "首版设计 · 待试玩",
-  "source_commit": "0309ed8334491c3f1693a42ad068be82f5bb46a7",
+  "source_commit": "9171f2594608b5e43b1aef66ed04feb21c902cf6",
   "source_repo": "zhuzhe1983/pulse_card_game_prompt",
   "note": "中文名、阵营、费用、技能和星级是 playtest_draft。不是官方规格，也不是网页里已经打完的 96 张实战。玩法正在接入，以实现的引擎版本为准。",
   "growth_rules": {

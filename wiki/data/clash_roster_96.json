@@ -72,7 +72,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。",
+      "mount_class": "hat",
+      "atom_bus": null,
+      "mount_note": "官方 Hat。只装 Stick 系列主控，一台一顶。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "A002",
@@ -120,7 +124,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。",
+      "mount_class": "hat",
+      "atom_bus": null,
+      "mount_note": "官方 Hat。只装 Stick 系列主控，一台一顶。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "A006",
@@ -170,7 +178,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "只给护卫会改攻击目标，比 1 费的单纯加攻强，上调到 3 费。"
+      "cost_note": "只给护卫会改攻击目标，比 1 费的单纯加攻强，上调到 3 费。",
+      "mount_class": "hat",
+      "atom_bus": null,
+      "mount_note": "官方 Hat。只装 Stick 系列主控，一台一顶。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "A007",
@@ -220,7 +232,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。",
+      "mount_class": "hat",
+      "atom_bus": null,
+      "mount_note": "官方 Hat。只装 Stick 系列主控，一台一顶。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "A009",
@@ -270,7 +286,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。",
+      "mount_class": "hat",
+      "atom_bus": null,
+      "mount_note": "官方 Hat。只装 Stick 系列主控，一台一顶。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "A011a",
@@ -318,7 +338,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "热成像帽忽略护卫，上调到 4 费。"
+      "cost_note": "热成像帽忽略护卫，上调到 4 费。",
+      "mount_class": "hat",
+      "atom_bus": null,
+      "mount_note": "官方 Hat。只装 Stick 系列主控，一台一顶。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "A012",
@@ -366,7 +390,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。",
+      "mount_class": "hat",
+      "atom_bus": null,
+      "mount_note": "官方 Hat。只装 Stick 系列主控，一台一顶。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "A012a",
@@ -416,7 +444,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "八舵帽攻击 +2，比加攻 1 厚一档，上调到 4 费。"
+      "cost_note": "八舵帽攻击 +2，比加攻 1 厚一档，上调到 4 费。",
+      "mount_class": "hat",
+      "atom_bus": null,
+      "mount_note": "官方 Hat。只装 Stick 系列主控，一台一顶。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "A012b",
@@ -466,7 +498,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。",
+      "mount_class": "hat",
+      "atom_bus": null,
+      "mount_note": "官方 Hat。只装 Stick 系列主控，一台一顶。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "A013b",
@@ -514,7 +550,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "只给护卫，和摇杆帽同一档，上调到 3 费。"
+      "cost_note": "只给护卫，和摇杆帽同一档，上调到 3 费。",
+      "mount_class": "hat",
+      "atom_bus": null,
+      "mount_note": "官方 Hat。只装 Stick 系列主控，一台一顶。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "A014",
@@ -562,7 +602,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。",
+      "mount_class": "hat",
+      "atom_bus": null,
+      "mount_note": "官方是 StickS3 专用屏，不是 Hat 产品名。待试玩占 Hat 口，只装 Stick 系列。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "C001a",
@@ -613,7 +657,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "护卫再加链节标记，两件强技能叠在一起，上调到 4 费。"
+      "cost_note": "护卫再加链节标记，两件强技能叠在一起，上调到 4 费。",
+      "mount_class": "chain",
+      "atom_bus": null,
+      "mount_note": "官方 Chain。除 Atom 外每台主控 1 个 Chain 口。Atom 要先装接上串。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "C001b",
@@ -664,7 +712,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。",
+      "mount_class": "chain",
+      "atom_bus": null,
+      "mount_note": "官方 Chain。除 Atom 外每台主控 1 个 Chain 口。Atom 要先装接上串。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "C001c",
@@ -715,7 +767,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "忽略护卫并且是链节标记，两件强技能，上调到 5 费。"
+      "cost_note": "忽略护卫并且是链节标记，两件强技能，上调到 5 费。",
+      "mount_class": "chain",
+      "atom_bus": null,
+      "mount_note": "官方 Chain。除 Atom 外每台主控 1 个 Chain 口。Atom 要先装接上串。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "C001d",
@@ -766,7 +822,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "忽略护卫并且是链节标记，上调到 5 费。"
+      "cost_note": "忽略护卫并且是链节标记，上调到 5 费。",
+      "mount_class": "chain",
+      "atom_bus": null,
+      "mount_note": "官方 Chain。除 Atom 外每台主控 1 个 Chain 口。Atom 要先装接上串。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "C001e",
@@ -817,7 +877,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "护卫再加链节标记，上调到 4 费。"
+      "cost_note": "护卫再加链节标记，上调到 4 费。",
+      "mount_class": "chain",
+      "atom_bus": null,
+      "mount_note": "官方 Chain。除 Atom 外每台主控 1 个 Chain 口。Atom 要先装接上串。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "C001f",
@@ -868,7 +932,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "链节标记会给全队加百分比，不是普通帽子，上调到 3 费。"
+      "cost_note": "链节标记会给全队加百分比，不是普通帽子，上调到 3 费。",
+      "mount_class": "chain",
+      "atom_bus": null,
+      "mount_note": "官方 Chain。除 Atom 外每台主控 1 个 Chain 口。Atom 要先装接上串。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "C001g",
@@ -919,7 +987,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "链节标记会给全队加百分比，上调到 3 费。"
+      "cost_note": "链节标记会给全队加百分比，上调到 3 费。",
+      "mount_class": "chain",
+      "atom_bus": null,
+      "mount_note": "官方 Chain。除 Atom 外每台主控 1 个 Chain 口。Atom 要先装接上串。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "C001h",
@@ -970,7 +1042,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。",
+      "mount_class": "chain",
+      "atom_bus": null,
+      "mount_note": "官方 Chain。除 Atom 外每台主控 1 个 Chain 口。Atom 要先装接上串。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "C001i",
@@ -1021,7 +1097,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。",
+      "mount_class": "chain",
+      "atom_bus": null,
+      "mount_note": "官方 Chain。除 Atom 外每台主控 1 个 Chain 口。Atom 要先装接上串。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "C001j",
@@ -1072,7 +1152,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "链节标记会给全队加百分比，上调到 3 费。"
+      "cost_note": "链节标记会给全队加百分比，上调到 3 费。",
+      "mount_class": "chain",
+      "atom_bus": null,
+      "mount_note": "官方 Chain。除 Atom 外每台主控 1 个 Chain 口。Atom 要先装接上串。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "C001z",
@@ -1123,7 +1207,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "链节标记会给全队加百分比，上调到 3 费。"
+      "cost_note": "链节标记会给全队加百分比，上调到 3 费。",
+      "mount_class": "chain",
+      "atom_bus": null,
+      "mount_note": "官方 Chain。除 Atom 外每台主控 1 个 Chain 口。Atom 要先装接上串。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "C002a",
@@ -1172,7 +1260,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "回传节既是链节标记又加攻击，上调到 3 费。"
+      "cost_note": "回传节既是链节标记又加攻击，上调到 3 费。",
+      "mount_class": "chain",
+      "atom_bus": null,
+      "mount_note": "官方是 Chain 转接件。待试玩按 Chain 装配。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "C002b",
@@ -1221,7 +1313,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "护卫再加链节标记，上调到 4 费。"
+      "cost_note": "护卫再加链节标记，上调到 4 费。",
+      "mount_class": "chain",
+      "atom_bus": null,
+      "mount_note": "官方 Chain。除 Atom 外每台主控 1 个 Chain 口。Atom 要先装接上串。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "C002c",
@@ -1270,7 +1366,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。",
+      "mount_class": "chain",
+      "atom_bus": null,
+      "mount_note": "官方 Chain。除 Atom 外每台主控 1 个 Chain 口。Atom 要先装接上串。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "C002z",
@@ -1319,7 +1419,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。",
+      "mount_class": "chain",
+      "atom_bus": null,
+      "mount_note": "官方是 Chain 转接件。待试玩按 Chain 装配。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "C003",
@@ -1368,7 +1472,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。",
+      "mount_class": "base",
+      "atom_bus": "to_chain",
+      "mount_note": "官方产品是 Atomic ToChain Base。底座只装 Atom。装上后才能往这台 Atom 上继续串 Chain。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "C004a",
@@ -1416,7 +1524,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。",
+      "mount_class": "base",
+      "atom_bus": "to_unit",
+      "mount_note": "官方产品是 Atomic ToUnit Base。底座只装 Atom。装上后 Unit 口从 1 个变成 2 个。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "C004b",
@@ -1464,7 +1576,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。",
+      "mount_class": "base",
+      "atom_bus": "plain",
+      "mount_note": "官方产品名是 Atomic Base。只装 Atom，占唯一的底座口。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "C004c",
@@ -1514,7 +1630,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。",
+      "mount_class": "base",
+      "atom_bus": "plain",
+      "mount_note": "官方产品名是 Atomic Base。只装 Atom，占唯一的底座口。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "C004d",
@@ -1564,7 +1684,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "二星把攻击加成从 +1 提到 +2，费用升到 3。升星付 2。"
+      "cost_note": "二星把攻击加成从 +1 提到 +2，费用升到 3。升星付 2。",
+      "mount_class": "base",
+      "atom_bus": "plain",
+      "mount_note": "官方产品名是 Atomic Base。只装 Atom，占唯一的底座口。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "C004e",
@@ -1612,7 +1736,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "定位座忽略护卫，上调到 4 费。"
+      "cost_note": "定位座忽略护卫，上调到 4 费。",
+      "mount_class": "base",
+      "atom_bus": "plain",
+      "mount_note": "官方产品名是 Atomic Base。只装 Atom，占唯一的底座口。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "C004g",
@@ -1660,7 +1788,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。",
+      "mount_class": "base",
+      "atom_bus": "plain",
+      "mount_note": "官方产品名是 Atomic Base。只装 Atom，占唯一的底座口。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "C004h",
@@ -1708,7 +1840,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。",
+      "mount_class": "base",
+      "atom_bus": "plain",
+      "mount_note": "官方产品名是 Atomic Base。只装 Atom，占唯一的底座口。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "C004i",
@@ -1756,7 +1892,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "电池座给护卫，技能强于加攻 1，上调到 3 费。"
+      "cost_note": "电池座给护卫，技能强于加攻 1，上调到 3 费。",
+      "mount_class": "base",
+      "atom_bus": "plain",
+      "mount_note": "官方产品名是 Atomic Base。只装 Atom，占唯一的底座口。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "C004j",
@@ -1804,7 +1944,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。",
+      "mount_class": "base",
+      "atom_bus": "plain",
+      "mount_note": "官方产品名是 Atomic Base。只装 Atom，占唯一的底座口。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "C004k",
@@ -1852,7 +1996,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。",
+      "mount_class": "base",
+      "atom_bus": "plain",
+      "mount_note": "官方产品名是 Atomic Base。只装 Atom，占唯一的底座口。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "C004l",
@@ -1900,7 +2048,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "忽略护卫能绕过护卫打基地，1 费过强，上调到 4 费。"
+      "cost_note": "忽略护卫能绕过护卫打基地，1 费过强，上调到 4 费。",
+      "mount_class": "base",
+      "atom_bus": "plain",
+      "mount_note": "官方产品名是 Atomic Base。只装 Atom，占唯一的底座口。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "C004m",
@@ -1948,7 +2100,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。",
+      "mount_class": "base",
+      "atom_bus": "plain",
+      "mount_note": "官方产品名是 Atomic Base。只装 Atom，占唯一的底座口。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "C004n",
@@ -1996,7 +2152,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。",
+      "mount_class": "base",
+      "atom_bus": "plain",
+      "mount_note": "官方产品名是 Atomic Base。只装 Atom，占唯一的底座口。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "C004o",
@@ -2044,7 +2204,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。",
+      "mount_class": "base",
+      "atom_bus": "plain",
+      "mount_note": "官方产品名是 Atomic Base。只装 Atom，占唯一的底座口。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "C004p",
@@ -2092,7 +2256,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。",
+      "mount_class": "base",
+      "atom_bus": "plain",
+      "mount_note": "官方产品名是 Atomic Base。只装 Atom，占唯一的底座口。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "C004q",
@@ -2140,7 +2308,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。",
+      "mount_class": "base",
+      "atom_bus": "plain",
+      "mount_note": "官方产品名是 Atomic Base。只装 Atom，占唯一的底座口。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "C004r",
@@ -2188,7 +2360,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。",
+      "mount_class": "base",
+      "atom_bus": "plain",
+      "mount_note": "官方产品名是 Atomic Base。只装 Atom，占唯一的底座口。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "C004z",
@@ -2236,7 +2412,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。"
+      "cost_note": "配件或无独立主控单元。简单加攻、给护卫留在 1 费；忽略护卫或攻击 +2 留在 2 费。不按宿主系列抬到主控档。",
+      "mount_class": "base",
+      "atom_bus": "plain",
+      "mount_note": "官方产品名是 Atomic Base。只装 Atom，占唯一的底座口。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "C005",
@@ -2287,7 +2467,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "攻击 +2 并且是链节标记，上调到 5 费。"
+      "cost_note": "攻击 +2 并且是链节标记，上调到 5 费。",
+      "mount_class": "chain",
+      "atom_bus": null,
+      "mount_note": "官方名字是 Unit 8Servos2-Chain，目录系列写成 unit，总线是 Chain。待试玩按 Chain 装配，不占 Unit 口。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "H003",
@@ -2339,7 +2523,10 @@
       "series_confidence": "official",
       "cost_note": "Fire 属于 Core 初代。保留冲锋，费用从 3 升到 4。",
       "chip_tier": "classic",
-      "chip_tier_note": "官方芯片栏是经典 ESP32（LX6 或 PICO），不是 C3/S3/P4。"
+      "chip_tier_note": "官方芯片栏是经典 ESP32（LX6 或 PICO），不是 C3/S3/P4。",
+      "host_family": "core",
+      "host_family_note": "Core 系列，可以装 1 个 Module，另有 1 个 Chain 口。",
+      "series_key": "core_body"
     },
     {
       "rid": "H004",
@@ -2391,7 +2578,10 @@
       "series_confidence": "official",
       "cost_note": "M5GO 是 Core 初代的套件，不是 Fire 本体。比 Core 基础档高 1 费。",
       "chip_tier": "classic",
-      "chip_tier_note": "官方芯片栏是经典 ESP32（LX6 或 PICO），不是 C3/S3/P4。"
+      "chip_tier_note": "官方芯片栏是经典 ESP32（LX6 或 PICO），不是 C3/S3/P4。",
+      "host_family": "core",
+      "host_family_note": "Core 系列，可以装 1 个 Module，另有 1 个 Chain 口。",
+      "series_key": "core_kit"
     },
     {
       "rid": "H005",
@@ -2443,7 +2633,10 @@
       "series_confidence": "official",
       "cost_note": "Core2 本体。费用升到 5，耐久升到 6。",
       "chip_tier": "classic",
-      "chip_tier_note": "官方芯片栏是经典 ESP32（LX6 或 PICO），不是 C3/S3/P4。"
+      "chip_tier_note": "官方芯片栏是经典 ESP32（LX6 或 PICO），不是 C3/S3/P4。",
+      "host_family": "core",
+      "host_family_note": "Core 系列，可以装 1 个 Module，另有 1 个 Chain 口。",
+      "series_key": "core2_body"
     },
     {
       "rid": "H007",
@@ -2495,7 +2688,10 @@
       "series_confidence": "official",
       "cost_note": "Core2 二星，基础档 +1。",
       "chip_tier": "classic",
-      "chip_tier_note": "官方芯片栏是经典 ESP32（LX6 或 PICO），不是 C3/S3/P4。 二星攻击至少比一星高 1。"
+      "chip_tier_note": "官方芯片栏是经典 ESP32（LX6 或 PICO），不是 C3/S3/P4。 二星攻击至少比一星高 1。",
+      "host_family": "core",
+      "host_family_note": "Core 系列，可以装 1 个 Module，另有 1 个 Chain 口。",
+      "series_key": "core2_body"
     },
     {
       "rid": "H008",
@@ -2547,7 +2743,10 @@
       "series_confidence": "official",
       "cost_note": "Core2 For AWS 仍是 Core2 产品线，不并进初代。",
       "chip_tier": "classic",
-      "chip_tier_note": "官方芯片栏是经典 ESP32（LX6 或 PICO），不是 C3/S3/P4。"
+      "chip_tier_note": "官方芯片栏是经典 ESP32（LX6 或 PICO），不是 C3/S3/P4。",
+      "host_family": "core",
+      "host_family_note": "Core 系列，可以装 1 个 Module，另有 1 个 Chain 口。",
+      "series_key": "core2_body"
     },
     {
       "rid": "H008a",
@@ -2599,7 +2798,10 @@
       "series_confidence": "official",
       "cost_note": "AWS 二星，基础档 +1。",
       "chip_tier": "classic",
-      "chip_tier_note": "官方芯片栏是经典 ESP32（LX6 或 PICO），不是 C3/S3/P4。 二星攻击至少比一星高 1。"
+      "chip_tier_note": "官方芯片栏是经典 ESP32（LX6 或 PICO），不是 C3/S3/P4。 二星攻击至少比一星高 1。",
+      "host_family": "core",
+      "host_family_note": "Core 系列，可以装 1 个 Module，另有 1 个 Chain 口。",
+      "series_key": "core2_body"
     },
     {
       "rid": "H010",
@@ -2651,7 +2853,10 @@
       "series_confidence": "official",
       "cost_note": "CoreS3-SE 是 CoreS3 本体。",
       "chip_tier": "s3",
-      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。"
+      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。",
+      "host_family": "core",
+      "host_family_note": "Core 系列，可以装 1 个 Module，另有 1 个 Chain 口。",
+      "series_key": "cores3_body"
     },
     {
       "rid": "H011",
@@ -2703,7 +2908,10 @@
       "series_confidence": "official",
       "cost_note": "CoreS3-Lite 仍是 CoreS3 产品线，不降回 Atom 或 Stick。",
       "chip_tier": "s3",
-      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。"
+      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。",
+      "host_family": "core",
+      "host_family_note": "Core 系列，可以装 1 个 Module，另有 1 个 Chain 口。",
+      "series_key": "cores3_body"
     },
     {
       "rid": "H012",
@@ -2755,7 +2963,10 @@
       "series_confidence": "official",
       "cost_note": "Thread 款仍是 CoreS3。保留入场抽 1。",
       "chip_tier": "s3",
-      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。"
+      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。",
+      "host_family": "core",
+      "host_family_note": "Core 系列，可以装 1 个 Module，另有 1 个 Chain 口。",
+      "series_key": "cores3_body"
     },
     {
       "rid": "H013",
@@ -2807,7 +3018,10 @@
       "series_confidence": "official",
       "cost_note": "Tough 本体。",
       "chip_tier": "classic",
-      "chip_tier_note": "官方芯片栏是经典 ESP32（LX6 或 PICO），不是 C3/S3/P4。"
+      "chip_tier_note": "官方芯片栏是经典 ESP32（LX6 或 PICO），不是 C3/S3/P4。",
+      "host_family": "core",
+      "host_family_note": "Core 系列，可以装 1 个 Module，另有 1 个 Chain 口。",
+      "series_key": "tough_body"
     },
     {
       "rid": "H014",
@@ -2860,7 +3074,10 @@
       "series_confidence": "official",
       "cost_note": "ToughC5 仍是 Tough 产品线，不因为 C5 芯片另开一档。",
       "chip_tier": "entry",
-      "chip_tier_note": "官方芯片栏是 C3、C5、C6 或 C61。入门档。C6/C61 不是 S3，按入门记。"
+      "chip_tier_note": "官方芯片栏是 C3、C5、C6 或 C61。入门档。C6/C61 不是 S3，按入门记。",
+      "host_family": "core",
+      "host_family_note": "Core 系列，可以装 1 个 Module，另有 1 个 Chain 口。",
+      "series_key": "tough_body"
     },
     {
       "rid": "H015",
@@ -2912,7 +3129,10 @@
       "series_confidence": "official",
       "cost_note": "Tab5 是平板整机。芯片是 ESP32-P4 + C6，不是邮票模块。",
       "chip_tier": "p4",
-      "chip_tier_note": "官方芯片栏写 ESP32-P4。高性能档。"
+      "chip_tier_note": "官方芯片栏写 ESP32-P4。高性能档。",
+      "host_family": "core",
+      "host_family_note": "Tab5 官方背面是 M-Bus。待试玩按 Core 收 Module。",
+      "series_key": "tab_body"
     },
     {
       "rid": "H016",
@@ -2964,7 +3184,10 @@
       "series_confidence": "uncertain",
       "cost_note": "按普通 Core 的 4 费减 1，定 3 费。护卫保留，耐久收到 3 费的厚度。",
       "chip_tier": "entry",
-      "chip_tier_note": "官方芯片栏是 C3、C5、C6 或 C61。入门档。C6/C61 不是 S3，按入门记。"
+      "chip_tier_note": "官方芯片栏是 C3、C5、C6 或 C61。入门档。C6/C61 不是 S3，按入门记。",
+      "host_family": "core",
+      "host_family_note": "CoreMatrix 挂在 Core 产品线下。待试玩按 Core 收 Module。",
+      "series_key": "core_form"
     },
     {
       "rid": "H017",
@@ -3017,7 +3240,10 @@
       "series_confidence": "uncertain",
       "cost_note": "供电整机放在中段 5 费，做成护卫胖墙，不占用 Core 初代本体的 4 费。",
       "chip_tier": "s3",
-      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。 攻击提到 S3 档，耐久仍按胖墙留在 7。"
+      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。 攻击提到 S3 档，耐久仍按胖墙留在 7。",
+      "host_family": "core",
+      "host_family_note": "PowerHub 官方是供电整机，product_series 仍是 core。待试玩按 Core 收 Module。",
+      "series_key": "core_form"
     },
     {
       "rid": "H018",
@@ -3069,7 +3295,10 @@
       "series_confidence": "uncertain",
       "cost_note": "CoreMP135 是 Linux 整机，不是 ESP32，也不是已登记的上位机。费用放在最高档，仍不能发动来自上位的爱。",
       "chip_tier": "non_esp",
-      "chip_tier_note": "不是 ESP32 的 C3/S3/P4 梯度。攻耐不按这三档改。"
+      "chip_tier_note": "不是 ESP32 的 C3/S3/P4 梯度。攻耐不按这三档改。",
+      "host_family": "other",
+      "host_family_note": "不是 Stick、Atom 或 Core 总线主机。待试玩只留 1 个 Chain 口。",
+      "series_key": "upper_arm"
     },
     {
       "rid": "H022",
@@ -3121,7 +3350,10 @@
       "series_confidence": "official",
       "cost_note": "StickC-Plus2 是 Stick 本体。",
       "chip_tier": "classic",
-      "chip_tier_note": "官方芯片栏是经典 ESP32（LX6 或 PICO），不是 C3/S3/P4。"
+      "chip_tier_note": "官方芯片栏是经典 ESP32（LX6 或 PICO），不是 C3/S3/P4。",
+      "host_family": "stick",
+      "host_family_note": "Stick 系列本体。1 个 Hat 口，另有 1 个 Chain 口。",
+      "series_key": "stick_core"
     },
     {
       "rid": "H023",
@@ -3173,7 +3405,10 @@
       "series_confidence": "official",
       "cost_note": "StickC-Plus SE 是 Stick 本体。费用从 2 升到 3，耐久升到 3。",
       "chip_tier": "classic",
-      "chip_tier_note": "官方芯片栏是经典 ESP32（LX6 或 PICO），不是 C3/S3/P4。"
+      "chip_tier_note": "官方芯片栏是经典 ESP32（LX6 或 PICO），不是 C3/S3/P4。",
+      "host_family": "stick",
+      "host_family_note": "Stick 系列本体。1 个 Hat 口，另有 1 个 Chain 口。",
+      "series_key": "stick_core"
     },
     {
       "rid": "H024",
@@ -3225,7 +3460,10 @@
       "series_confidence": "official",
       "cost_note": "StickS3 是 Stick 本体。占位牌细条已退役，教学局用 art_h024。",
       "chip_tier": "s3",
-      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。"
+      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。",
+      "host_family": "stick",
+      "host_family_note": "Stick 系列本体。1 个 Hat 口，另有 1 个 Chain 口。",
+      "series_key": "stick_core"
     },
     {
       "rid": "H025",
@@ -3277,7 +3515,10 @@
       "series_confidence": "official",
       "cost_note": "StickT2 是 Stick 本体，保留入场伤害。",
       "chip_tier": "classic",
-      "chip_tier_note": "官方芯片栏是经典 ESP32（LX6 或 PICO），不是 C3/S3/P4。"
+      "chip_tier_note": "官方芯片栏是经典 ESP32（LX6 或 PICO），不是 C3/S3/P4。",
+      "host_family": "stick",
+      "host_family_note": "Stick 系列本体。1 个 Hat 口，另有 1 个 Chain 口。",
+      "series_key": "stick_core"
     },
     {
       "rid": "H027",
@@ -3329,7 +3570,10 @@
       "series_confidence": "official",
       "cost_note": "Atom-Matrix 是 Atom 核心本体，费用留在 2。芯片是经典 ESP32，不按 S3。护卫后待试玩攻击 1、耐久 4。",
       "chip_tier": "classic",
-      "chip_tier_note": "官方芯片栏是经典 ESP32（LX6 或 PICO），不是 C3/S3/P4。"
+      "chip_tier_note": "官方芯片栏是经典 ESP32（LX6 或 PICO），不是 C3/S3/P4。",
+      "host_family": "atom",
+      "host_family_note": "Atom 系列本体。默认 1 个 Unit 口和 1 个底座口。",
+      "series_key": "atom_core"
     },
     {
       "rid": "H027a",
@@ -3381,7 +3625,10 @@
       "series_confidence": "official",
       "cost_note": "Atom-Matrix 二星，基础档 +1。",
       "chip_tier": "classic",
-      "chip_tier_note": "官方芯片栏是经典 ESP32（LX6 或 PICO），不是 C3/S3/P4。 二星攻击至少比一星高 1。"
+      "chip_tier_note": "官方芯片栏是经典 ESP32（LX6 或 PICO），不是 C3/S3/P4。 二星攻击至少比一星高 1。",
+      "host_family": "atom",
+      "host_family_note": "Atom 系列本体。默认 1 个 Unit 口和 1 个底座口。",
+      "series_key": "atom_core"
     },
     {
       "rid": "H028",
@@ -3433,7 +3680,10 @@
       "series_confidence": "official",
       "cost_note": "AtomS3 本体。",
       "chip_tier": "s3",
-      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。"
+      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。",
+      "host_family": "atom",
+      "host_family_note": "Atom 系列本体。默认 1 个 Unit 口和 1 个底座口。",
+      "series_key": "atom_core"
     },
     {
       "rid": "H029",
@@ -3486,7 +3736,10 @@
       "series_confidence": "official",
       "cost_note": "AtomS3R 仍是 Atom 本体，不是套件。",
       "chip_tier": "s3",
-      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。"
+      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。",
+      "host_family": "atom",
+      "host_family_note": "Atom 系列本体。默认 1 个 Unit 口和 1 个底座口。",
+      "series_key": "atom_core"
     },
     {
       "rid": "H029a",
@@ -3539,7 +3792,10 @@
       "series_confidence": "official",
       "cost_note": "摄像头仍装在 Atom 本体上，不上调成整机。保留入场伤害 1。",
       "chip_tier": "s3",
-      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。"
+      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。",
+      "host_family": "atom",
+      "host_family_note": "Atom 系列本体。默认 1 个 Unit 口和 1 个底座口。",
+      "series_key": "atom_core"
     },
     {
       "rid": "H029b",
@@ -3592,7 +3848,10 @@
       "series_confidence": "official",
       "cost_note": "长焦仍是 Atom 本体尺寸。",
       "chip_tier": "s3",
-      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。"
+      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。",
+      "host_family": "atom",
+      "host_family_note": "Atom 系列本体。默认 1 个 Unit 口和 1 个底座口。",
+      "series_key": "atom_core"
     },
     {
       "rid": "H029c",
@@ -3644,7 +3903,10 @@
       "series_confidence": "official",
       "cost_note": "扩展座仍是 Atom 本体尺寸。册内没有单独的 Atom 套件主机。",
       "chip_tier": "s3",
-      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。"
+      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。",
+      "host_family": "atom",
+      "host_family_note": "Atom 系列本体。默认 1 个 Unit 口和 1 个底座口。",
+      "series_key": "atom_core"
     },
     {
       "rid": "H030a",
@@ -3697,7 +3959,10 @@
       "series_confidence": "official",
       "cost_note": "Atom Voice 仍是 Atom 尺寸的核心，不是音箱整机。",
       "chip_tier": "s3",
-      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。"
+      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。",
+      "host_family": "atom",
+      "host_family_note": "Atom 系列本体。默认 1 个 Unit 口和 1 个底座口。",
+      "series_key": "atom_core"
     },
     {
       "rid": "H031",
@@ -3749,7 +4014,10 @@
       "series_confidence": "official",
       "cost_note": "Cardputer 本体。壳里有邮票，但是掌机整机，不收 1 费。",
       "chip_tier": "s3",
-      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。"
+      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。",
+      "host_family": "other",
+      "host_family_note": "不是 Stick、Atom 或 Core。待试玩只留 1 个 Chain 口。",
+      "series_key": "cardputer_body"
     },
     {
       "rid": "H032",
@@ -3801,7 +4069,10 @@
       "series_confidence": "official",
       "cost_note": "Cardputer 二星，基础档 +1，封顶 10。",
       "chip_tier": "s3",
-      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。 二星攻击至少比一星高 1。"
+      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。 二星攻击至少比一星高 1。",
+      "host_family": "other",
+      "host_family_note": "不是 Stick、Atom 或 Core。待试玩只留 1 个 Chain 口。",
+      "series_key": "cardputer_body"
     },
     {
       "rid": "H033",
@@ -3853,7 +4124,10 @@
       "series_confidence": "official",
       "cost_note": "Cardputer-Adv 是同一掌机产品线的另一台整机，不是套件。",
       "chip_tier": "s3",
-      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。"
+      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。",
+      "host_family": "other",
+      "host_family_note": "不是 Stick、Atom 或 Core。待试玩只留 1 个 Chain 口。",
+      "series_key": "cardputer_body"
     },
     {
       "rid": "H033a",
@@ -3905,7 +4179,10 @@
       "series_confidence": "official",
       "cost_note": "Cardputer Mesh Kit 是套件，比 Cardputer 本体高 1 费，封顶 10。保留入场抽 1。",
       "chip_tier": "s3",
-      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。"
+      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。",
+      "host_family": "other",
+      "host_family_note": "不是 Stick、Atom 或 Core。待试玩只留 1 个 Chain 口。",
+      "series_key": "cardputer_kit"
     },
     {
       "rid": "H034",
@@ -3957,7 +4234,10 @@
       "series_confidence": "official",
       "cost_note": "Dial 是点名的整机档，不是邮票模块。官方总览把它放在 Stamp 躯壳谱系，费用不按邮票模块收。",
       "chip_tier": "s3",
-      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。"
+      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。",
+      "host_family": "other",
+      "host_family_note": "不是 Stick、Atom 或 Core。待试玩只留 1 个 Chain 口。",
+      "series_key": "dial_body"
     },
     {
       "rid": "H034a",
@@ -4009,7 +4289,10 @@
       "series_confidence": "official",
       "cost_note": "Dial 二星，基础档 +1。",
       "chip_tier": "s3",
-      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。"
+      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。",
+      "host_family": "other",
+      "host_family_note": "不是 Stick、Atom 或 Core。待试玩只留 1 个 Chain 口。",
+      "series_key": "dial_body"
     },
     {
       "rid": "H036",
@@ -4061,7 +4344,10 @@
       "series_confidence": "official",
       "cost_note": "官方文档写明主控是 Stamp-S3，是邮票套装不是邮票模块。按 2 费曲线重配为攻击 2、耐久 2。",
       "chip_tier": "s3",
-      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。"
+      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。",
+      "host_family": "other",
+      "host_family_note": "不是 Stick、Atom 或 Core。待试玩只留 1 个 Chain 口。",
+      "series_key": "stamp_machine"
     },
     {
       "rid": "H036a",
@@ -4114,7 +4400,10 @@
       "series_confidence": "official",
       "cost_note": "官方 v1.1 把主控换成 Stamp-S3A，仍是同一套装的二星。费用 +1，改成更肉的攻击 1、耐久 4。",
       "chip_tier": "s3",
-      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。 二星攻击至少比一星高 1。"
+      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。 二星攻击至少比一星高 1。",
+      "host_family": "other",
+      "host_family_note": "不是 Stick、Atom 或 Core。待试玩只留 1 个 Chain 口。",
+      "series_key": "stamp_machine"
     },
     {
       "rid": "H037",
@@ -4166,7 +4455,10 @@
       "series_confidence": "official",
       "cost_note": "商店名是 Air Quality Kit with M5StampS3，文档写由 StampS3 供电。与 DinMeter 同属邮票套装，按 2 费曲线重配为攻击 1、耐久 3。",
       "chip_tier": "s3",
-      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。"
+      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。",
+      "host_family": "other",
+      "host_family_note": "不是 Stick、Atom 或 Core。待试玩只留 1 个 Chain 口。",
+      "series_key": "stamp_machine"
     },
     {
       "rid": "H037a",
@@ -4218,7 +4510,10 @@
       "series_confidence": "official",
       "cost_note": "商店名是 Air Quality Kit v1.1 with M5StampS3A，文档写主控换成 Stamp-S3A。二星费用 +1，攻击 2、耐久 3。",
       "chip_tier": "s3",
-      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。 二星攻击至少比一星高 1。"
+      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。 二星攻击至少比一星高 1。",
+      "host_family": "other",
+      "host_family_note": "不是 Stick、Atom 或 Core。待试玩只留 1 个 Chain 口。",
+      "series_key": "stamp_machine"
     },
     {
       "rid": "H038",
@@ -4270,7 +4565,10 @@
       "series_confidence": "official",
       "cost_note": "Stamp-S3 是邮票模块本体，费用留在 1。芯片是 ESP32-S3 中档，待试玩攻击 2、耐久 2。支援仍是 1。",
       "chip_tier": "s3",
-      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。"
+      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。",
+      "host_family": "other",
+      "host_family_note": "不是 Stick、Atom 或 Core。待试玩只留 1 个 Chain 口。",
+      "series_key": "stamp_core"
     },
     {
       "rid": "H038a",
@@ -4322,7 +4620,10 @@
       "series_confidence": "official",
       "cost_note": "同一邮票的二星，基础档 +1。支援仍是 1 费。",
       "chip_tier": "s3",
-      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。"
+      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。",
+      "host_family": "other",
+      "host_family_note": "不是 Stick、Atom 或 Core。待试玩只留 1 个 Chain 口。",
+      "series_key": "stamp_core"
     },
     {
       "rid": "H038b",
@@ -4374,7 +4675,10 @@
       "series_confidence": "official",
       "cost_note": "针距仍是邮票模块，不是整机。",
       "chip_tier": "s3",
-      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。"
+      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。",
+      "host_family": "other",
+      "host_family_note": "不是 Stick、Atom 或 Core。待试玩只留 1 个 Chain 口。",
+      "series_key": "stamp_core"
     },
     {
       "rid": "H038c",
@@ -4426,7 +4730,10 @@
       "series_confidence": "official",
       "cost_note": "针距仍是 1 费邮票模块。芯片是 ESP32-S3，待试玩攻击 2、耐久 2。",
       "chip_tier": "s3",
-      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。"
+      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。",
+      "host_family": "other",
+      "host_family_note": "不是 Stick、Atom 或 Core。待试玩只留 1 个 Chain 口。",
+      "series_key": "stamp_core"
     },
     {
       "rid": "H039a",
@@ -4478,7 +4785,10 @@
       "series_confidence": "official",
       "cost_note": "Stamp-C3 本体，费用 1。入门档，保留冲锋，待试玩攻击 1、耐久 1。",
       "chip_tier": "entry",
-      "chip_tier_note": "官方芯片栏是 C3、C5、C6 或 C61。入门档。C6/C61 不是 S3，按入门记。"
+      "chip_tier_note": "官方芯片栏是 C3、C5、C6 或 C61。入门档。C6/C61 不是 S3，按入门记。",
+      "host_family": "other",
+      "host_family_note": "不是 Stick、Atom 或 Core。待试玩只留 1 个 Chain 口。",
+      "series_key": "stamp_core"
     },
     {
       "rid": "H039b",
@@ -4530,7 +4840,10 @@
       "series_confidence": "official",
       "cost_note": "Stamp-C3U 仍是直插邮票模块。",
       "chip_tier": "entry",
-      "chip_tier_note": "官方芯片栏是 C3、C5、C6 或 C61。入门档。C6/C61 不是 S3，按入门记。"
+      "chip_tier_note": "官方芯片栏是 C3、C5、C6 或 C61。入门档。C6/C61 不是 S3，按入门记。",
+      "host_family": "other",
+      "host_family_note": "不是 Stick、Atom 或 Core。待试玩只留 1 个 Chain 口。",
+      "series_key": "stamp_core"
     },
     {
       "rid": "H039c",
@@ -4582,7 +4895,10 @@
       "series_confidence": "official",
       "cost_note": "Stamp-C5 仍是邮票模块，不按芯片代数另开高费。",
       "chip_tier": "entry",
-      "chip_tier_note": "官方芯片栏是 C3、C5、C6 或 C61。入门档。C6/C61 不是 S3，按入门记。"
+      "chip_tier_note": "官方芯片栏是 C3、C5、C6 或 C61。入门档。C6/C61 不是 S3，按入门记。",
+      "host_family": "other",
+      "host_family_note": "不是 Stick、Atom 或 Core。待试玩只留 1 个 Chain 口。",
+      "series_key": "stamp_core"
     },
     {
       "rid": "H039e",
@@ -4634,7 +4950,10 @@
       "series_confidence": "official",
       "cost_note": "C6LoRa 仍是邮票模块。去掉入场伤害，避免 1 费再免费打 1 点。",
       "chip_tier": "entry",
-      "chip_tier_note": "官方芯片栏是 C3、C5、C6 或 C61。入门档。C6/C61 不是 S3，按入门记。"
+      "chip_tier_note": "官方芯片栏是 C3、C5、C6 或 C61。入门档。C6/C61 不是 S3，按入门记。",
+      "host_family": "other",
+      "host_family_note": "不是 Stick、Atom 或 Core。待试玩只留 1 个 Chain 口。",
+      "series_key": "stamp_core"
     },
     {
       "rid": "H039f",
@@ -4686,7 +5005,10 @@
       "series_confidence": "official",
       "cost_note": "Stamp-P4 仍是邮票模块，费用留在 1。芯片是 ESP32-P4，待试玩攻击 3、耐久 1。",
       "chip_tier": "p4",
-      "chip_tier_note": "官方芯片栏写 ESP32-P4。高性能档。"
+      "chip_tier_note": "官方芯片栏写 ESP32-P4。高性能档。",
+      "host_family": "other",
+      "host_family_note": "不是 Stick、Atom 或 Core。待试玩只留 1 个 Chain 口。",
+      "series_key": "stamp_core"
     },
     {
       "rid": "H041",
@@ -4738,7 +5060,10 @@
       "series_confidence": "official",
       "cost_note": "StamPLC 是工控整机，不是单独的邮票，费用留在 6。芯片是 ESP32-S3，护卫后待试玩攻击 3、耐久 5。",
       "chip_tier": "s3",
-      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。"
+      "chip_tier_note": "官方芯片栏写 ESP32-S3。中档。",
+      "host_family": "other",
+      "host_family_note": "不是 Stick、Atom 或 Core。待试玩只留 1 个 Chain 口。",
+      "series_key": "stamp_machine"
     },
     {
       "rid": "H050",
@@ -4793,7 +5118,10 @@
       "series_confidence": "official",
       "cost_note": "CardputerZero 官方 CPU 是 Cortex-A53。上位机资格不变，费用升到 10。",
       "chip_tier": "non_esp",
-      "chip_tier_note": "不是 ESP32 的 C3/S3/P4 梯度。攻耐不按这三档改。"
+      "chip_tier_note": "不是 ESP32 的 C3/S3/P4 梯度。攻耐不按这三档改。",
+      "host_family": "other",
+      "host_family_note": "不是 Stick、Atom 或 Core 总线主机。待试玩只留 1 个 Chain 口。",
+      "series_key": "upper_arm"
     },
     {
       "rid": "S001a",
@@ -4841,7 +5169,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "GPS 模块忽略护卫，上调到 4 费。"
+      "cost_note": "GPS 模块忽略护卫，上调到 4 费。",
+      "mount_class": "module",
+      "atom_bus": null,
+      "mount_note": "官方 Module。只装 Core 系列主控，一台一个。",
+      "face_numerals": "bonus"
     },
     {
       "rid": "U002a",
@@ -4889,7 +5221,11 @@
       "cost_band": "accessory",
       "cost_line": "accessory",
       "series_confidence": "official",
-      "cost_note": "测距眼忽略护卫，上调到 4 费。"
+      "cost_note": "测距眼忽略护卫，上调到 4 费。",
+      "mount_class": "unit",
+      "atom_bus": null,
+      "mount_note": "官方 Unit。只装 Atom。默认 1 个；装了转接口座后一共 2 个。",
+      "face_numerals": "bonus"
     }
   ]
 }
