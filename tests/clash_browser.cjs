@@ -131,6 +131,23 @@ async function main() {
     function eq(actual, expected, label) {
       if (actual !== expected) throw new Error(label + ' 实际 ' + JSON.stringify(actual) + ' 期望 ' + JSON.stringify(expected));
     }
+    async function creditClear() {
+      const report = await value(`(() => {
+        const el = document.querySelector('.pulse-credit');
+        if (!el) return 'missing';
+        if (el.textContent !== '这就是傻子 Grok Bot 做的网站') return 'text';
+        if (getComputedStyle(el).pointerEvents !== 'none') return 'pointer';
+        const c = el.getBoundingClientRect();
+        if (c.left < -1 || c.top < -1 || c.right > innerWidth + 1 || c.bottom > innerHeight + 1) return 'offscreen';
+        const blocked = [...document.querySelectorAll('.playcard, .minion, .base-btn, .end-turn, .mana, .chip')].some(node => {
+          const b = node.getBoundingClientRect();
+          if (b.width < 4 || b.height < 4) return false;
+          return !(c.right <= b.left + 1 || c.left >= b.right - 1 || c.bottom <= b.top + 1 || c.top >= b.bottom - 1);
+        });
+        return blocked ? 'overlap' : 'ok';
+      })()`);
+      if (report !== 'ok') throw new Error('角落标签 ' + report);
+    }
     async function errors() {
       const list = await value('window.__errors.join(" | ")');
       if (list) throw new Error('页面脚本错误 ' + list);
@@ -370,6 +387,7 @@ async function main() {
       return { unitW: unit.width, unitH: unit.height, cardW: card.width, cardH: card.height };
     })()`);
     if (desk.unitW < 120 || desk.cardH < 140) throw new Error('桌面牌没有用上工作面 ' + JSON.stringify(desk));
+    await creditClear();
     await shot('10b-seven-units');
     await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
     await shot('11-narrow-table');
@@ -428,6 +446,7 @@ async function main() {
     })()`);
     if (phoneFit.black > phoneFit.view * 0.5) throw new Error('手机空白超过半屏');
     if (phoneFit.cardW < 90 || phoneFit.unitW < 72) throw new Error('手机牌太小');
+    await creditClear();
     if (phoneFit.endLines) throw new Error('结束回合被拆行');
     await value(`document.querySelector('[data-card="art_h039a"]').scrollIntoView({inline:'center', block:'nearest'})`);
     const phonePlay = await value(`(() => {
@@ -531,6 +550,7 @@ async function main() {
     await shot('12-lobby');
     await send('Page.navigate', { url: `http://127.0.0.1:${port}/wiki/` });
     await waitFor(async () => { if ((await value('document.querySelector("#result-count") && document.querySelector("#result-count").textContent')) !== '96') throw new Error('wiki count'); }, 'wiki');
+    await creditClear();
     await waitFor(async () => {
       const names = await value('document.querySelector("#service-grid") ? document.querySelector("#service-grid").innerText : ""');
       if (!names.includes('积木开工') || !names.includes('树莓台')) throw new Error('wiki services');
