@@ -96,199 +96,265 @@ button:focus-visible, a:focus-visible { outline: 3px solid #eea03d; outline-offs
   .pulse-nav a { padding: 8px 0; }
 }
 
+[hidden] { display: none !important; }
 body { background: #05070a; color: #e7f2ea; }
-button { border: 0; color: inherit; background: none; }
-.table-page { height: 100vh; background: #05070a; display: grid; place-items: center; container-type: size; }
-.table-page .pulse-top {
-  position: absolute; z-index: 6; left: 0; right: 0; top: 0; height: 46px;
-  background: linear-gradient(#05070ae6, #05070a00); color: #e7f2ea; border: 0;
-}
-.table-page .pulse-name, .table-page .pulse-sub { color: #e7f2ea; }
-.table-page .pulse-nav a { color: #d5ddd8; padding: 12px 0; }
-.table-page .pulse-nav a[aria-current="page"] { color: #fff; }
-.top-actions { display: flex; gap: 8px; }
-.top-actions button, .teach button, .pad {
-  min-height: 28px; padding: 4px 8px; border-radius: 8px; font-size: 12px;
-  color: #e7f2ea; background: #1b2428cc; border: 1px solid #8d98a0;
-}
-.orient { display: none; margin: 0; }
+button { border: 0; color: inherit; background: none; font: inherit; }
+.table-page { height: 100vh; width: 100vw; background: #05070a; overflow: hidden; }
 .arena {
-  position: relative;
-  width: min(100cqw, calc(100cqh * 16 / 9));
-  aspect-ratio: 16 / 9;
-  background: #05070a url("scene/pulse-arena-bg-16x9.webp") center / 100% 100% no-repeat;
+  position: absolute; inset: 0;
+  background: #05070a url("scene/pulse-arena-bg-16x9.webp") center / cover no-repeat;
   overflow: hidden;
 }
 .scene-bg, .traces { display: none; }
-.rail.side { position: absolute; left: 3.2%; top: 24%; width: 13.5%; height: 28%; z-index: 2; overflow: auto; }
-.rail.side .silk { display: none; }
-.rail.tools { position: absolute; left: 84.2%; top: 30%; width: 13.5%; height: 28%; z-index: 3; display: flex; align-items: center; justify-content: center; }
-.core-slot { position: absolute; z-index: 3; display: grid; place-items: center; }
-.core-slot.foe { left: 43.5%; top: 4.2%; width: 13%; height: 18%; }
-.core-slot.mine { left: 43%; top: 66%; width: 14%; height: 13%; }
-.slots { position: absolute; z-index: 2; display: flex; align-items: flex-start; justify-content: safe center; gap: 8px; overflow-x: auto; padding-bottom: 6px; }
-.slots.foe { left: 18%; top: 17%; width: 64%; height: 28%; }
-.slots.mine { left: 18%; top: 46%; width: 64%; height: 24%; }
-.midline { position: absolute; left: 18%; top: 6px; width: 28%; height: auto; z-index: 6; text-align: left; pointer-events: none; }
-.hand-dock { position: absolute; left: 16%; bottom: 2%; width: 62%; height: 150px; z-index: 4; }
+.menu-toggle, .log-toggle, .menu-pop button, .scenario-row button {
+  min-height: 32px; padding: 4px 10px; border-radius: 8px; font-size: 14px; font-weight: 750;
+  color: #f4fff8; background: #10281ce6; border: 1px solid #7dfff0;
+}
+.menu-toggle, .log-toggle { position: absolute; z-index: 20; top: 12px; }
+.menu-toggle { left: 12px; }
+.log-toggle { right: 12px; }
+.menu-pop, .log-panel {
+  position: absolute; z-index: 21; top: 52px; width: min(340px, 88vw);
+  padding: 12px; display: grid; gap: 8px;
+  background: #0e1714f5; color: #f4fff8; border: 1px solid #8d98a0; border-radius: 12px;
+}
+.menu-pop { left: 12px; }
+.log-panel { right: 12px; max-height: 46vh; overflow: auto; }
+.menu-pop .pulse-nav { display: flex; flex-wrap: wrap; gap: 10px; }
+.menu-pop .pulse-nav a { color: #d7fff6; }
+.scenario-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.banner, .turn-banner { position: absolute; left: 50%; z-index: 14; pointer-events: none; }
+.banner { top: 56px; transform: translateX(-50%); padding: 6px 10px; background: #3a2a12; color: #ffd89a; border-radius: 8px; }
+.turn-banner {
+  top: 42%; transform: translate(-50%, -50%);
+  padding: 16px 42px; background: #10281ce8; border: 2px solid #7dfff0; border-radius: 16px;
+  color: #f7fffb; font-size: clamp(28px, 4vw, 52px); font-weight: 900; letter-spacing: .08em;
+  animation: banner 1.6s ease forwards;
+}
+.opp-dock { position: absolute; z-index: 5; top: 6px; left: 50%; width: min(720px, 62vw); height: 96px; transform: translateX(-50%); }
+.opp-hand { position: relative; height: 100%; display: flex; justify-content: center; align-items: flex-end; }
+.back {
+  width: 70px; height: 92px; margin: 0 -24px; border-radius: 8px;
+  background:
+    url("scene/ui/device-card-frame-b.webp") center / 100% 100% no-repeat,
+    repeating-linear-gradient(90deg, #39f3d455 0 1px, transparent 1px 9px),
+    linear-gradient(#12382f, #0b1612);
+  transform-origin: center 140%;
+  transform: rotate(calc((var(--i) - (var(--n) - 1) / 2) * 12deg));
+  box-shadow: 0 8px 14px #0008;
+}
+.hand-count {
+  position: absolute; top: 0; right: 0; padding: 2px 8px; border-radius: 8px;
+  background: #10281ce6; color: #d7fff6; font-size: 13px; font-weight: 800;
+}
+.bays { position: absolute; z-index: 4; left: 1.4%; top: 16%; width: 168px; display: grid; gap: 12px; }
+.pile { display: grid; grid-template-columns: 74px 74px; gap: 4px 8px; }
+.pile-name { grid-column: 1 / -1; color: #d7fff6; font-size: 14px; font-weight: 850; text-shadow: 0 1px 2px #000; }
+.deck-stack, .grave-stack {
+  position: relative; width: 74px; height: 96px; display: grid; place-items: center;
+  color: #f7fffb; font-size: 22px; font-weight: 900;
+  background:
+    url("scene/ui/device-card-frame-c.webp") center / 100% 100% no-repeat,
+    repeating-linear-gradient(90deg, #39f3d433 0 1px, transparent 1px 8px),
+    #10241c;
+  box-shadow: 5px 4px 0 #0b1612, 9px 7px 0 #163028;
+}
+.deck-stack span, .grave-stack span { position: absolute; bottom: 8px; font-size: 12px; font-weight: 750; letter-spacing: .04em; }
+.silk { color: #d7e2c8; font-size: 12px; font-weight: 700; }
+.core-slot { position: absolute; z-index: 4; display: grid; place-items: center; }
+.core-slot.foe { top: 15%; left: 50%; width: 150px; height: 132px; transform: translateX(-50%); }
+.core-slot.mine { top: auto; bottom: 23%; left: 50%; width: 160px; height: 140px; transform: translateX(-50%); }
 .core-wrap { width: 100%; height: 100%; text-align: center; }
 .base-btn.core {
-  position: relative; width: 100%; height: 86%; border-radius: 0; padding: 0;
+  position: relative; width: 100%; height: 78%; padding: 0;
   background: url("scene/ui/core-portrait-frame-a.webp") center / contain no-repeat;
-  box-shadow: none;
 }
 .core-slot.mine .base-btn.core { background-image: url("scene/ui/core-portrait-frame-b.webp"); }
-.core-art { display: none; }
+.core-face { position: absolute; inset: 16% 22% 24%; display: grid; place-items: center; }
+.core-art { width: 78%; height: 78%; }
+.core-name {
+  position: absolute; left: 0; right: 0; top: 10%;
+  color: #f7fffb; font-size: 13px; font-weight: 850; text-shadow: 0 1px 2px #000;
+}
 .base-btn .hp {
-  position: absolute; left: 50%; top: 46%; transform: translate(-50%, -50%);
-  min-width: 0; height: auto; background: none; box-shadow: none; color: #f4f7f8;
-  font-size: clamp(16px, 2.1vw, 34px); font-weight: 900; text-shadow: 0 1px 2px #000;
+  position: absolute; left: 50%; bottom: 4%; transform: translateX(-50%);
+  min-width: 46px; padding: 0 8px; border-radius: 12px; background: #07110ee6;
+  color: #fff; font-size: clamp(26px, 2.6vw, 42px); font-weight: 900; line-height: 1.15;
+  box-shadow: 0 0 0 2px #7dfff066;
 }
-.core-wrap .silk, .core-wrap .battery { display: none; }
-.silk { color: #d7e2c8; font-size: 11px; }
-.battery { position: absolute; left: 50%; top: 104%; transform: translateX(-50%); z-index: 3; display: flex; flex-direction: column; align-items: center; }
-.supply-read { font-size: 13px; font-weight: 750; white-space: nowrap; color: #f4f7f8; text-shadow: 0 1px 2px #000; }
-.supply-read b { color: #ffd27a; }
-.mana { display: flex; gap: 3px; }
-.mana i { width: 12px; height: 14px; background: url("scene/ui/lamp-cost-cyan.webp") center / contain no-repeat; filter: grayscale(1) brightness(.45); }
+.floater {
+  position: absolute; left: 50%; top: 18%; z-index: 3; color: #ff5a3c;
+  font-size: 28px; font-weight: 900; text-shadow: 0 2px 0 #000;
+  animation: floatup .8s ease forwards; pointer-events: none;
+}
+.battery { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.mana { display: flex; gap: 3px; justify-content: center; min-height: 20px; }
+.mana i { width: 22px; height: 28px; background: url("scene/ui/lamp-cost-cyan.webp") center / contain no-repeat; filter: grayscale(1) brightness(.35); }
 .mana i.on { filter: none; }
-.stack { display: flex; gap: 6px; align-items: center; color: #f4f7f8; }
-.deck-stack, .grave-stack {
-  width: 36px; height: 28px; display: grid; place-items: center; font-weight: 800;
-  background: #10161acc; border: 1px solid #8d98a0; border-radius: 6px;
+.supply-read { height: 18px; line-height: 18px; font-size: 14px; font-weight: 800; white-space: nowrap; color: #f4f7f8; text-shadow: 0 1px 2px #000; }
+.supply-read b { color: #ffd27a; }
+.slots {
+  position: absolute; z-index: 3; display: flex; align-items: flex-end; justify-content: safe center;
+  gap: 10px; overflow-x: auto; overflow-y: hidden; padding: 22px 12px 8px;
+  border-radius: 14px;   background: linear-gradient(#39f3d433, #07110e88 72%);
+  box-shadow: inset 0 3px 0 #7dfff0, inset 0 0 0 1px #39f3d466;
 }
-.opp-hand { display: flex; flex-wrap: wrap; gap: 2px; }
-.back { width: 14px; height: 20px; border-radius: 2px; background: #1c2428; border: 1px solid #6c7570; }
-.insert {
-  flex: 0 0 22px; align-self: center; min-height: 36px; border-radius: 6px;
-  color: #071014; background: #7dfff0cc; font-size: 10px; font-weight: 800;
+.slots.foe { left: 18%; top: 24%; width: 64%; height: 20%; }
+.slots.mine { left: 18%; top: 50%; width: 64%; height: 22%; }
+.lane-label { position: absolute; left: 10px; top: 2px; color: #bffff3; font-size: 12px; font-weight: 850; letter-spacing: .08em; }
+.midline {
+  position: absolute; z-index: 5; left: 20%; right: 20%; top: 45.5%; transform: translateY(-50%);
+  text-align: center; pointer-events: none;
 }
-.minion, .playcard {
-  position: relative; border: 0; background: transparent; box-shadow: none; color: #f4f7f8;
-  text-align: center;
+.midline::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 2px;
+  background: linear-gradient(90deg, transparent, #39f3d4, #e8a56a, #39f3d4, transparent);
 }
-.minion { flex: 0 0 136px; width: 136px; height: 176px; padding: 24px 8px 32px; overflow: hidden; }
+.midline h3 { position: relative; display: inline-block; margin: 0; padding: 4px 16px; background: #07110ee8; border: 1px solid #7dfff0; border-radius: 999px; color: #f7fffb; font-size: 20px; }
+.formation, .strike { position: relative; margin: 2px 0 0; font-size: 13px; font-weight: 800; color: #d7fff6; text-shadow: 0 1px 2px #04110c; }
+.upper-btn { pointer-events: auto; margin-top: 4px; padding: 3px 10px; border-radius: 8px; background: #10281ce6; color: #7dfff0; border: 1px solid #39f3d4; font-size: 13px; font-weight: 800; }
+.upper-btn.on { background: #7dfff0; color: #071014; }
+#coach { display: none; }
+#last-error { position: relative; margin: 2px 0 0; min-height: 16px; font-size: 13px; font-weight: 750; color: #ffb0a4; }
+.hand-dock { position: absolute; z-index: 6; left: 10%; right: 15%; bottom: 0; height: clamp(196px, 26vh, 250px); }
+.hands.fan { height: 100%; display: flex; justify-content: center; align-items: flex-end; overflow: visible; }
+.minion, .playcard { position: relative; border: 0; background: transparent; color: #f4f7f8; text-align: center; }
+.minion { flex: 0 0 clamp(124px, 9vw, 156px); width: clamp(124px, 9vw, 156px); height: clamp(160px, 20vh, 204px); padding: 28px 10px 36px; overflow: hidden; }
 .playcard {
-  width: 118px; flex: 0 0 118px; height: 142px; margin: 0 -6px;
-  padding: 28px 10px 36px; overflow: hidden;
-  transform-origin: center 130%;
-  transform: rotate(calc((var(--i) - (var(--n) - 1) / 2) * 4deg));
+  width: clamp(142px, 11vw, 176px); flex: 0 0 auto; height: clamp(190px, 25vh, 240px);
+  margin: 0 -28px; padding: 30px 12px 40px; overflow: hidden; }
+  transform-origin: center 145%;
+  transform: rotate(calc((var(--i) - (var(--n) - 1) / 2) * 12deg));
 }
 .minion::before, .playcard::before {
   content: ""; position: absolute; inset: 0; pointer-events: none;
   background: url("scene/ui/device-card-frame-c.webp") center / 100% 100% no-repeat;
 }
 .playcard::before { background-image: url("scene/ui/device-card-frame-b.webp"); }
-.minion .portrait, .playcard .art {
-  height: 58%; display: grid; place-items: center;
-}
-.minion .portrait img, .playcard .art img { max-height: 100%; max-width: 86%; object-fit: contain; }
-.minion .atk, .minion .hp, .playcard .patk, .playcard .php,
-.playcard .cost, .playcard .star {
-  position: absolute; width: 28px; height: 28px; display: grid; place-items: center;
+.minion .portrait, .playcard .art { height: 52%; display: grid; place-items: center; }
+.minion .portrait img, .playcard .art img, .circuit-face { max-height: 100%; max-width: 86%; object-fit: contain; }
+.circuit-face { width: 78%; height: 92%; }
+.minion .atk, .minion .hp, .playcard .patk, .playcard .php, .playcard .cost, .playcard .star {
+  position: absolute; z-index: 1; width: 34px; height: 34px; display: grid; place-items: center;
   background-position: center; background-repeat: no-repeat; background-size: contain;
-  color: #f7fbff; font-weight: 900; font-size: 13px; text-shadow: 0 1px 1px #000;
+  color: #f7fbff; font-weight: 900; font-size: 16px; text-shadow: 0 1px 1px #000;
 }
-.minion .atk, .playcard .patk { left: 4%; bottom: 6%; background-image: url("scene/ui/lamp-attack-amber.webp"); color: #2a1a08; }
-.minion .hp, .playcard .php { right: 4%; bottom: 6%; background-image: url("scene/ui/lamp-durability-teal.webp"); }
-.playcard .cost { left: 6px; top: 8px; background-image: url("scene/ui/lamp-cost-cyan.webp"); }
-.playcard .star { right: 6px; top: 8px; background-image: url("scene/ui/lamp-attack-amber.webp"); color: #2a1a08; font-size: 11px; }
+.minion .atk, .playcard .patk { left: 6%; bottom: 7%; background-image: url("scene/ui/lamp-attack-amber.webp"); color: #2a1a08; }
+.minion .hp, .playcard .php { right: 6%; bottom: 7%; background-image: url("scene/ui/lamp-durability-teal.webp"); }
+.playcard .cost { left: 8px; top: 10px; background-image: url("scene/ui/lamp-cost-cyan.webp"); }
+.playcard .star { right: 8px; top: 10px; background-image: url("scene/ui/lamp-attack-amber.webp"); color: #2a1a08; font-size: 12px; }
 .minion .mname, .playcard .cname {
-  position: absolute; left: 8px; right: 8px; bottom: 32px; height: 18px; line-height: 18px;
-  font-size: 13px; font-weight: 750; background: #10161acc; border-radius: 4px;
+  position: absolute; left: 14px; right: 14px; bottom: 38px; height: 22px; line-height: 22px;
+  font-size: 15px; font-weight: 800; background: #10161ae6; border-radius: 4px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .playcard .detail {
-  display: none; position: absolute; left: 10px; right: 10px; top: 58px;
-  font-size: 13px; line-height: 1.3; color: #f4f7f8; text-align: left;
-  max-height: 5.2em; overflow: hidden;
+  display: none; position: absolute; left: 14px; right: 14px; top: 62px; z-index: 2;
+  padding: 6px; font-size: 14px; line-height: 1.35; color: #f4f7f8; text-align: left;
+  background: #07110ee6; border-radius: 8px; max-height: 7em; overflow: hidden;
 }
-.playcard:hover, .playcard.selected {
-  transform: translateY(-46px) scale(1.22) rotate(0deg); z-index: 5; overflow: visible;
-}
+.playcard:hover, .playcard.selected { transform: translateY(-78px) scale(1.34) rotate(0deg); z-index: 7; overflow: visible; }
 .playcard:hover .detail, .playcard.selected .detail { display: block; }
+.playcard.ready { filter: drop-shadow(0 0 8px #7dfff0); }
+.minion.can-attack { box-shadow: 0 0 0 3px #3dff8a, 0 0 16px #3dff8a88; border-radius: 12px; }
+.minion.selected { transform: translateY(-10px); }
+.minion.hot { filter: drop-shadow(0 0 8px #ff5a3c); }
+.minion.guard { filter: drop-shadow(0 0 6px #ffb020); }
+.minion.arrive, .link-mark.arrive, .playcard.arrive { animation: flyin .35s ease; }
+.minion.lunge { animation: lunge .35s ease; }
+.minion.hit, .base-btn.flash { animation: strike .4s ease; }
 .link-mark {
-  flex: 0 0 46px; width: 46px; height: 86px; align-self: center; position: relative;
+  flex: 0 0 52px; width: 52px; height: 96px; align-self: center; position: relative;
   border-radius: 8px; background: #10281ccc; color: #7dfff0; border: 1px dashed #39f3d4;
 }
 .link-mark .mname { position: absolute; inset: 8px 0 auto; text-align: center; font-weight: 800; }
-.link-mark .ribbon { top: auto; bottom: 8px; font-size: 10px; color: #d7fff6; }
-.insert.on { outline: 2px solid #7dfff0; color: #7dfff0; }
-.formation, .strike { margin: 0; font-size: 12px; font-weight: 800; color: #d7fff6; text-shadow: 0 1px 2px #04110c; white-space: nowrap; }
-.upper-btn { pointer-events: auto; margin-top: 2px; padding: 2px 8px; border-radius: 8px; background: #10281ccc; color: #7dfff0; border: 1px solid #39f3d4; font-size: 12px; font-weight: 800; }
-.upper-btn.on { background: #7dfff0; color: #071014; }
-.minion.selected { transform: translateY(-8px); filter: drop-shadow(0 0 6px #7dfff0); }
-.minion.hot { filter: drop-shadow(0 0 6px #ff5a3c); }
-.minion.guard { filter: drop-shadow(0 0 5px #ffb020); }
+.link-mark .ribbon { top: auto; bottom: 8px; font-size: 11px; color: #d7fff6; }
+.insert {
+  flex: 0 0 28px; align-self: center; min-height: 64px; border-radius: 8px;
+  color: #071014; background: #7dfff0cc; font-size: 12px; font-weight: 800;
+}
+.insert.on { outline: 2px solid #fff; }
 .ribbon {
-  position: absolute; top: 8px; left: 8px; right: 8px; color: #ffd27a; font-size: 11px;
+  position: absolute; top: 10px; left: 10px; right: 10px; z-index: 1; color: #ffd27a; font-size: 12px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.glyph { width: 42px; height: 42px; margin: 0 auto; display: grid; place-items: center; color: #ffd27a; font-size: 20px; font-weight: 800; }
-.midline h3 { margin: 0; font-size: 12px; letter-spacing: .08em; color: #d7e2c8; }
-#coach { display: none; }
-#last-error { margin: 0; font-size: 12px; color: #ffb0a4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-#last-error[data-code]:not([data-code=""]) { color: #ffb0a4; font-weight: 700; }
+.rail.tools { position: absolute; z-index: 6; right: 2.2%; bottom: 22%; width: 160px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .end-turn {
-  width: 148px; height: 148px; border-radius: 50%; white-space: nowrap;
+  width: 136px; height: 136px; display: grid; place-items: center; padding: 34px 22px 28px;
+  border-radius: 50%; white-space: nowrap; text-align: center;
   background: url("scene/ui/end-turn-button-primary.webp") center / contain no-repeat;
-  color: #fff8f2; font-size: 18px; font-weight: 900; line-height: 1;
-  text-shadow: 0 1px 2px #5a2408; box-shadow: none;
+  color: #fff8f2; font-size: 18px; font-weight: 900; line-height: 1.05;
+  text-shadow: 0 1px 2px #5a2408;
 }
-.hands.fan { height: 100%; display: flex; justify-content: center; align-items: flex-end; overflow: visible; }
-.playcard .statsline { font-size: 10px; color: #d5ddd8; }
+.end-turn.hot { animation: glow 1.25s ease-in-out infinite; }
+.end-turn.wait { filter: grayscale(1) brightness(.55); }
 .pads { display: none; }
-.pads:has(.live) { display: flex; position: absolute; right: 0; top: 104%; flex-direction: column; gap: 4px; width: 120px; }
+.pads:has(.live) { display: flex; position: absolute; left: 50%; bottom: 108%; transform: translateX(-50%); flex-direction: column; gap: 4px; width: 120px; }
 .pad.live { background: #7dfff0; color: #071014; border-color: #7dfff0; font-weight: 800; }
-.teach, .quiet-log { margin-top: 6px; color: #d7e2c8; font-size: 11px; }
-.teach summary, .quiet-log summary { cursor: pointer; }
-.scenario-row { display: flex; flex-direction: column; gap: 4px; }
-.log { margin: 4px 0 0; padding-left: 14px; font-size: 10px; }
+.log { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.45; }
 .log .bad { color: #ffb0a4; }
-.banner { position: absolute; top: 48px; left: 50%; transform: translateX(-50%); z-index: 7; padding: 6px 10px; background: #3a2a12; color: #ffd89a; border-radius: 8px; }
+.log-panel h3 { margin: 0; font-size: 16px; }
+.dying { pointer-events: none; z-index: 9; animation: shatter .45s ease forwards; }
 .builder { max-width: 1100px; margin: 16px auto; padding: 16px; background: var(--paper); color: var(--ink); border-radius: 16px; }
 .builder .scenario-row { flex-direction: row; flex-wrap: wrap; }
 .top { display: flex; gap: 12px; align-items: center; padding: 12px 16px; background: var(--paper); color: var(--ink); }
 .pool { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; max-height: 520px; overflow: auto; }
 .pool button { text-align: left; padding: 8px; border-radius: 12px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); }
 .pool button.picked { outline: 2px solid var(--accent); }
+@keyframes banner { 0% { opacity: 0; transform: translate(-50%, -20%) scale(.94); } 12% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 70% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -80%); } }
+@keyframes flyin { from { opacity: 0; transform: translateY(36px) scale(.8); } to { opacity: 1; transform: none; } }
+@keyframes lunge { 0% { transform: translateY(0); } 40% { transform: translateY(-22px) scale(1.05); } 100% { transform: translateY(0); } }
+@keyframes strike { 0%, 100% { filter: none; transform: translateX(0); } 35% { filter: brightness(2.4); transform: translateX(-8px); } 70% { transform: translateX(6px); } }
+@keyframes shatter { 40% { transform: scale(1.08) rotate(-3deg); filter: brightness(2); } 100% { opacity: 0; transform: scale(.55) translateY(16px); filter: blur(2px); } }
+@keyframes glow { 50% { filter: drop-shadow(0 0 12px #ffb020); } }
+@keyframes floatup { to { opacity: 0; transform: translate(-50%, -42px); } }
+@media (max-height: 820px) and (min-width: 801px) {
+  .playcard { width: 132px; height: 172px; margin: 0 -22px; }
+  .minion { width: 120px; height: 150px; flex-basis: 120px; }
+  .hand-dock { height: 156px; }
+  .core-slot.foe { top: 16%; width: 118px; height: 104px; }
+  .core-slot.mine { bottom: 24%; width: 124px; height: 108px; }
+  .slots.foe { top: 23%; height: 20%; }
+  .slots.mine { top: 47%; height: 20%; }
+  .rail.tools { bottom: 27%; }
+  .back { width: 58px; height: 76px; }
+  .deck-stack, .grave-stack { width: 64px; height: 82px; }
+}
 @media (max-width: 800px) {
-  .table-page { display: block; }
-  .table-page .pulse-top { height: 40px; min-height: 0; flex-wrap: nowrap; padding: 0 8px; overflow: hidden; }
-  .table-page .pulse-sub, .orient { display: none; }
-  .table-page .pulse-nav { gap: 8px; }
-  .top-actions, .table-page .pulse-nav a[data-nav="legacy"] { display: none; }
-  .table-page .pulse-nav a { padding: 0; font-size: 13px; white-space: nowrap; flex-shrink: 0; }
-  .arena {
-    width: 100%; height: calc(100vh - 40px); margin-top: 40px; aspect-ratio: auto;
-    background-size: cover; background-position: center 46%;
-  }
-  .core-slot.foe, .core-slot.mine { width: 76px; height: 76px; left: 50%; transform: translateX(-50%); }
-  .midline { top: 6px; right: 8px; left: auto; width: auto; text-align: right; }
-  .core-slot.foe { top: 4px; }
-  .core-slot.mine { top: auto; bottom: 168px; }
-  .base-btn .hp { font-size: 22px; }
-  .slots.foe, .slots.mine { left: 8px; width: calc(100% - 16px); height: 128px; }
-  .slots.foe { top: 84px; }
+  .arena { background-position: center 42%; }
+  .turn-banner { font-size: 28px; padding: 10px 18px; }
+  .opp-dock { top: 44px; width: min(360px, 92vw); height: 62px; }
+  .back { width: 40px; height: 54px; margin: 0 -12px; }
+  .hand-count { font-size: 12px; }
+  .bays { top: 46px; left: 8px; width: auto; grid-template-columns: auto; }
+  .pile { grid-template-columns: 42px 42px; }
+  .deck-stack, .grave-stack { width: 42px; height: 54px; font-size: 14px; box-shadow: 3px 2px 0 #0b1612; }
+  .deck-stack span, .grave-stack span { font-size: 9px; bottom: 4px; }
+  .core-slot.foe, .core-slot.mine { width: 84px; height: 78px; left: 50%; transform: translateX(-50%); }
+  .core-slot.foe { top: 108px; }
+  .core-slot.mine { top: auto; bottom: 176px; }
+  .core-name { font-size: 11px; }
+  .base-btn .hp { font-size: 22px; min-width: 36px; }
+  .slots.foe, .slots.mine { left: 8px; width: calc(100% - 16px); height: 132px; }
+  .slots.foe { top: 186px; }
   .slots.mine { top: 42%; }
+  .midline { left: 8px; right: 8px; top: 39%; }
+  .minion { width: 100px; height: 128px; flex-basis: 100px; padding: 20px 6px 28px; }
   .link-mark { width: 36px; height: 64px; flex-basis: 36px; }
-  .minion { width: 92px; height: 124px; flex-basis: 92px; padding: 22px 6px 28px; }
-  .minion .mname, .playcard .cname { left: 16px; right: 16px; bottom: 30px; font-size: 12px; }
-  .hand-dock { left: 8px; right: 8px; bottom: 6px; width: auto; height: 156px; }
-  .hands.fan { overflow-x: auto; overflow-y: hidden; justify-content: flex-start; }
-  .playcard { width: 108px; flex-basis: 108px; height: 148px; margin: 0 4px; padding: 22px 8px 30px; transform: none; }
-  .playcard:hover, .playcard.selected { transform: translateY(-6px) scale(1.06) rotate(0deg); }
+  .minion .mname, .playcard .cname { left: 12px; right: 12px; bottom: 30px; font-size: 13px; }
   .minion .atk, .minion .hp, .playcard .patk, .playcard .php, .playcard .cost, .playcard .star { width: 26px; height: 26px; font-size: 14px; }
-  .rail.tools { left: auto; right: 8px; top: auto; bottom: 168px; width: 132px; height: 52px; }
+  .hand-dock { left: 8px; right: 8px; bottom: 0; height: 164px; }
+  .hands.fan { overflow-x: auto; overflow-y: hidden; justify-content: flex-start; }
+  .playcard { width: 112px; flex-basis: 112px; height: 152px; margin: 0 4px; padding: 22px 8px 30px; transform: none; }
+  .playcard:hover, .playcard.selected { transform: translateY(-8px) scale(1.04) rotate(0deg); }
+  .rail.tools { right: 8px; bottom: 172px; width: 148px; height: auto; }
   .end-turn {
-    width: 132px; height: 48px; border-radius: 24px; font-size: 16px;
-    background-image: url("scene/ui/end-turn-button-primary.webp");
+    width: 132px; height: 48px; padding: 0 8px; border-radius: 24px; font-size: 16px;
+    background-image: url("scene/ui/end-turn-button-compact.webp");
     background-size: 100% 100%;
   }
-  .pads:has(.live) { top: auto; bottom: calc(100% + 4px); width: 108px; }
-  .battery { top: auto; bottom: 54px; }
-  .deck-stack, .grave-stack { width: 32px; height: 26px; font-size: 14px; }
-  .rail.side { top: 88px; height: 72px; width: 42px; }
+  .pads:has(.live) { bottom: calc(100% + 6px); }
+  .menu-pop, .log-panel { max-height: 70vh; overflow: auto; }
 }
 </style>
 </head>
@@ -1156,7 +1222,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
   let ui = blankUi('lesson');
 
   function blankUi(scenario) {
-    return { scenario, reveal: false, catalog: false, handIndex: null, attacker: null, target: null, knob: false, aiming: false, linking: false, linkSource: null, chainIndex: null, error: null, log: [] };
+    return { scenario, reveal: false, catalog: false, handIndex: null, attacker: null, target: null, knob: false, aiming: false, linking: false, linkSource: null, chainIndex: null, menu: false, logOpen: false, showBanner: true, fresh: true, seen: new Set(), fx: null, error: null, log: [] };
   }
 
   function push(text, code) {
@@ -1376,9 +1442,16 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
     const url = sceneUrl(slot);
     return `data-scene-slot="${slot}" data-scene-ready="${url ? '1' : '0'}"${url ? ` style="--scene-url:url('${esc(url)}')"` : ''}`;
   }
+  function circuitFace(card) {
+    const seed = [...(card && card.template_id || '?')].reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
+    const y1 = 22 + (seed % 18);
+    const y2 = 52 + (seed % 14);
+    const tone = card && card.kind === 'spell' ? '#7dfff0' : card && card.kind === 'attachment' ? '#ffb020' : '#9dcec4';
+    return `<svg class="circuit-face" viewBox="0 0 88 104" aria-hidden="true"><rect x="6" y="6" width="76" height="92" rx="8" fill="#0c1612" stroke="${tone}"/><path d="M16 18 H72 M16 ${y1} H42 V${y2} H72 M18 80 H70" fill="none" stroke="${tone}" stroke-width="1.4"/><circle cx="42" cy="${y1}" r="3" fill="${tone}"/><circle cx="72" cy="${y2}" r="3" fill="#ffb020"/><rect x="24" y="62" width="26" height="12" rx="2" fill="#10281c" stroke="${tone}"/></svg>`;
+  }
   function picture(card, kind) {
     const shot = card && artbook[card.rid];
-    if (!shot) return `<span class="glyph" aria-hidden="true">${esc((card && card.name || '?').slice(0, 1))}</span>`;
+    if (!shot) return circuitFace(card);
     return `<img src="${esc(kind === 'board' ? shot.char : shot.card)}" alt="" draggable="false">`;
   }
   function mana(seat) {
@@ -1390,13 +1463,15 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
   function handHtml(seat, dock) {
     const show = ui.reveal || seat === game.seat;
     if (!show) {
-      const backs = game.hands[seat].map(() => '<div class="back" aria-hidden="true"></div>').join('');
-      return `<div class="${dock ? 'hands' : 'opp-hand'}" data-hand-seat="${seat}" data-hidden="1">${backs}<span class="silk">手牌 ${game.hands[seat].length}</span></div>`;
+      const count = game.hands[seat].length;
+      const backs = game.hands[seat].map((_, index) => `<div class="back" style="--i:${index};--n:${count}" aria-hidden="true"></div>`).join('');
+      return `<div class="opp-hand" data-hand-seat="${seat}" data-hidden="1">${backs}<span class="hand-count">对方手牌 ${count}</span></div>`;
     }
     const count = game.hands[seat].length;
     const open = game.hands[seat].map((id, index) => {
       const card = cards[id];
       const selected = seat === game.seat && ui.handIndex === index;
+      const ready = seat === game.seat && game.winner == null && card.cost <= game.supply[seat];
       const star = C.starOf(card);
       const nums = card.kind === 'main'
         ? `<span class="patk">${card.attack}</span><span class="php">${card.durability}</span>`
@@ -1404,7 +1479,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
       const body = `<span class="cost">${card.cost}</span>${star ? `<span class="star">${star}星</span>` : ''}<span class="art">${picture(card, 'board')}</span><span class="cname">${esc(card.name)}</span>${nums}<span class="detail">${esc(blurb(card))}</span>`;
       const fan = ` style="--i:${index};--n:${count}"`;
       if (seat !== game.seat) return `<div class="playcard" ${sceneAttr('hand_frame')} data-card="${esc(id)}"${fan}>${body}<span class="statsline">教学明牌</span></div>`;
-      return `<button type="button" class="playcard${selected ? ' selected' : ''}" ${sceneAttr('hand_frame')} data-action="select-hand" data-hand-index="${index}" data-card="${esc(id)}"${fan}>${body}</button>`;
+      return `<button type="button" class="playcard${selected ? ' selected' : ''}${ready ? ' ready' : ''}" ${sceneAttr('hand_frame')} data-action="select-hand" data-hand-index="${index}" data-card="${esc(id)}"${fan}>${body}</button>`;
     }).join('');
     return `<div class="${dock ? 'hands fan' : 'opp-hand'}" data-hand-seat="${seat}" data-hidden="0">${open || '<span class="silk">没有手牌</span>'}</div>`;
   }
@@ -1422,10 +1497,14 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
       linked ? '上位' : '',
       unit.attachments.map(id => cards[id].name).join(' ')
     ].filter(Boolean).join(' · ');
+    const arrive = !(ui.seen && ui.seen.has(unit.iid));
+    const lunge = ui.fx && ui.fx.attacker === unit.iid;
+    const hit = ui.fx && ui.fx.target === unit.iid;
+    const canAttack = seat === game.seat && game.phase === 'main' && game.winner == null && !unit.sick && !unit.attacked;
     if (unit.link) {
-      return `<button type="button" class="link-mark" data-action="select-unit" data-link="1" data-board-seat="${seat}" data-slot="${slot}" data-seat="${seat}" data-iid="${esc(unit.iid)}" data-card="${esc(unit.card_id)}" data-host="${esc(unit.host_iid)}"><span class="mname">链</span><span class="ribbon">${esc(card.name)}</span></button>`;
+      return `<button type="button" class="link-mark${arrive ? ' arrive' : ''}" data-action="select-unit" data-link="1" data-board-seat="${seat}" data-slot="${slot}" data-seat="${seat}" data-iid="${esc(unit.iid)}" data-card="${esc(unit.card_id)}" data-host="${esc(unit.host_iid)}"><span class="mname">链</span><span class="ribbon">${esc(card.name)}</span></button>`;
     }
-    return `<button type="button" class="minion${selected ? ' selected' : ''}${hot ? ' hot' : ''}${C.hasGuard(cards, unit) ? ' guard' : ''}${unit.sick ? ' sick' : ''}${unit.attacked ? ' spent' : ''}" ${sceneAttr('unit_frame')} data-action="select-unit" data-board-seat="${seat}" data-slot="${slot}" data-seat="${seat}" data-iid="${esc(unit.iid)}" data-card="${esc(unit.card_id)}" data-sick="${unit.sick}" data-guard="${C.hasGuard(cards, unit)}" data-attack="${C.attackOf(cards, unit)}" data-durability="${unit.durability}">
+    return `<button type="button" class="minion${selected ? ' selected' : ''}${hot ? ' hot' : ''}${canAttack ? ' can-attack' : ''}${arrive ? ' arrive' : ''}${lunge ? ' lunge' : ''}${hit ? ' hit' : ''}${C.hasGuard(cards, unit) ? ' guard' : ''}${unit.sick ? ' sick' : ''}${unit.attacked ? ' spent' : ''}" ${sceneAttr('unit_frame')} data-action="select-unit" data-board-seat="${seat}" data-slot="${slot}" data-seat="${seat}" data-iid="${esc(unit.iid)}" data-card="${esc(unit.card_id)}" data-sick="${unit.sick}" data-guard="${C.hasGuard(cards, unit)}" data-attack="${C.attackOf(cards, unit)}" data-durability="${unit.durability}">
       <span class="portrait">${picture(card, 'board')}</span>
       <span class="atk">${C.attackOf(cards, unit)}</span>
       <span class="hp">${unit.durability}</span>
@@ -1481,12 +1560,15 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
   function core(seat) {
     const active = game.seat === seat && game.phase === 'main';
     const hot = ui.attacker && seat !== game.seat;
+    const dropped = ui.fx && ui.fx.bases && ui.fx.bases[seat] > game.bases[seat];
+    const delta = dropped ? ui.fx.bases[seat] - game.bases[seat] : 0;
     return `<div class="core-wrap${active ? ' active' : ''}${hot ? ' hot' : ''}">
-      <button type="button" class="base-btn core" ${sceneAttr('core_frame')} data-action="hit-base" data-seat="${seat}" aria-label="${seatName(seat)}基地">
-        ${coreSvg()}
+      <button type="button" class="base-btn core${dropped ? ' flash' : ''}" ${sceneAttr('core_frame')} data-action="hit-base" data-seat="${seat}" aria-label="${seatName(seat)}核心">
+        <span class="core-face">${coreSvg()}</span>
+        <span class="core-name">${seatName(seat)}核心</span>
         <span class="hp" data-seat="${seat}" data-stat="base">${game.bases[seat]}</span>
+        ${delta ? `<span class="floater">-${delta}</span>` : ''}
       </button>
-      <div class="silk">${seatName(seat)}核心</div>
       ${seat === game.seat ? '' : supply(seat)}
     </div>`;
   }
@@ -1494,13 +1576,12 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
     return `<div class="battery">${mana(seat)}<div class="supply-read">供电 <b data-seat="${seat}" data-stat="supply">${game.supply[seat]}</b> / <b data-seat="${seat}" data-stat="max-supply">${game.max_supply[seat]}</b></div></div>`;
   }
   function stack(seat) {
-    return `<div class="stack">
-      <div class="deck-stack" data-seat="${seat}" data-stat="deck" title="${seatName(seat)}牌库">${game.decks[seat].length}</div>
-      <div class="silk">库</div>
-      <div class="grave-stack" title="${seatName(seat)}墓地">${game.graves[seat].length}</div>
-      <div class="silk">墓</div>
+    return `<div class="pile">
+      <div class="pile-name">${seatName(seat)}</div>
+      <div class="deck-stack" title="${seatName(seat)}牌库"><b data-seat="${seat}" data-stat="deck">${game.decks[seat].length}</b><span>牌库</span></div>
+      <div class="grave-stack" title="${seatName(seat)}墓地"><b>${game.graves[seat].length}</b><span>墓地</span></div>
       <div class="silk">疲劳 <b data-seat="${seat}" data-stat="fatigue">${game.fatigue[seat]}</b></div>
-      <div class="silk">手 <b data-seat="${seat}" data-stat="hand">${game.hands[seat].length}</b></div>
+      <div class="silk">手牌 <b data-seat="${seat}" data-stat="hand">${game.hands[seat].length}</b></div>
       <ol class="grave" data-grave="${seat}" hidden>${game.graves[seat].map(id => `<li data-card="${esc(id)}">${esc(cards[id].name)}</li>`).join('')}</ol>
     </div>`;
   }
@@ -1612,72 +1693,97 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
     document.body.dataset.ready = '1';
   }
 
+  function captureGhosts() {
+    if (ui.fresh || !game) return [];
+    const alive = new Set(game.boards.flat().filter(Boolean).map(unit => unit.iid));
+    return [...document.querySelectorAll('.arena .minion[data-iid], .arena .link-mark[data-iid]')].filter(node => !alive.has(node.dataset.iid)).map(node => {
+      const rect = node.getBoundingClientRect();
+      return { html: node.outerHTML, left: rect.left, top: rect.top, width: rect.width, height: rect.height };
+    });
+  }
+
+  function mountGhosts(ghosts) {
+    const arena = document.querySelector('.arena');
+    if (!arena) return;
+    ghosts.forEach(ghost => {
+      const holder = document.createElement('div');
+      holder.innerHTML = ghost.html;
+      const card = holder.firstElementChild;
+      if (!card) return;
+      card.classList.add('dying');
+      card.removeAttribute('data-action');
+      card.removeAttribute('data-board-seat');
+      card.removeAttribute('data-card');
+      card.style.position = 'fixed';
+      card.style.left = ghost.left + 'px';
+      card.style.top = ghost.top + 'px';
+      card.style.width = ghost.width + 'px';
+      card.style.height = ghost.height + 'px';
+      card.style.margin = '0';
+      arena.appendChild(card);
+      setTimeout(() => card.remove(), 460);
+    });
+  }
+
   function render() {
     if (ui.scenario === 'builder') return renderBuilder();
+    const ghosts = captureGhosts();
     const over = game.winner == null ? '' : game.winner === 'draw' ? '平局' : `${seatName(game.winner)}获胜`;
     const active = game.seat;
     const other = 1 - active;
+    const turnText = over || seatName(active) + '的回合';
+    const canEnd = game.winner == null && game.phase === 'main';
+    const scenarios = [['lesson', '教学局'], ['support-present', '小印已在场'], ['support-deploy', '先打出小印'], ['support-again', '厚壳再死'], ['promote-stamp', '小印升星'], ['grow', '超过五台'], ['synergy', '协同与夺舍'], ['builder', '扩展组牌']];
     $('#app').innerHTML = `<div class="table-page">
-    <header class="pulse-top">
-      <a class="pulse-brand" data-nav="lobby" href="../../index.html"><span class="pulse-mark">P</span><span><span class="pulse-name">PULSE</span><div class="pulse-sub">脉冲对决</div></span></a>
+    <button type="button" class="menu-toggle" data-action="toggle-menu" aria-expanded="${ui.menu ? 'true' : 'false'}">菜单</button>
+    <div class="menu-pop"${ui.menu ? '' : ' hidden'}>
+      <a class="pulse-brand" data-nav="lobby" href="../../index.html"><span class="pulse-mark">P</span><span class="pulse-name">PULSE</span></a>
       <nav class="pulse-nav" data-shared-entry="clash-home" aria-label="站点入口">
         <a data-nav="lobby" href="../../index.html">大厅</a>
         <a data-nav="clash" href="./index.html" aria-current="page">回合战</a>
         <a data-nav="wiki" href="../../wiki/index.html">图鉴</a>
         <a data-nav="legacy" href="../index.html">旧版点数</a>
       </nav>
-      <div class="top-actions">
-        <button type="button" data-action="toggle-reveal" aria-pressed="${ui.reveal}">${ui.reveal ? '遮住对方手牌' : '教学明牌'}</button>
-        <button type="button" data-action="restart">重新开局</button>
-      </div>
-    </header>
-    <p class="orient">竖屏可以操作。横过来能一次看完这块开发板。</p>
+      <button type="button" data-action="toggle-reveal" aria-pressed="${ui.reveal}">${ui.reveal ? '遮住对方手牌' : '教学明牌'}</button>
+      <button type="button" data-action="restart">重新开局</button>
+      <div class="scenario-row">${scenarios.map(([id, label]) => `<button type="button" data-action="scenario" data-scenario="${id}">${label}</button>`).join('')}</div>
+    </div>
     ${ui.reveal ? '<div class="banner" id="reveal-banner">教学明牌 · 双方手牌都看得见 · 牌库仍只显示张数</div>' : '<div id="reveal-banner" hidden></div>'}
+    ${ui.showBanner ? `<div class="turn-banner">${esc(turnText)}</div>` : ''}
     <main class="arena table${ui.attacker ? ' aiming' : ''}${canDeploy() ? ' holding' : ''}" data-scene-status="${esc(scenebook.status || 'awaiting_generated_assets')}" data-scenario="${esc(ui.scenario)}" data-ruleset="${esc(content.ruleset_id)}" data-source-commit="${esc(C.SOURCE_COMMIT)}">
       <div class="scene-bg" ${sceneAttr('arena_background')}></div>
-      <svg class="traces" viewBox="0 0 1200 800" preserveAspectRatio="none" aria-hidden="true">
-        <path d="M70 36 H1130 V764 H70 Z" fill="none" stroke="#c47a45" stroke-width="3"/>
-        <path d="M90 70 H1110 M90 730 H1110 M210 90 V710 M990 90 V710" fill="none" stroke="#e8a56a" stroke-width="1.4" opacity=".45"/>
-        <path d="M230 180 H970 M230 400 H970 M230 620 H970" fill="none" stroke="#39f3d4" stroke-width="1.2" opacity=".28"/>
-        <g fill="#d7e2c8">${[120, 240, 360, 520, 760, 980].map(x => [150, 390, 640].map(y => `<circle cx="${x}" cy="${y}" r="3.2"/>`).join('')).join('')}</g>
-        <g fill="none" stroke="#8a5a32" stroke-width="2">${[[40, 24], [1168, 24], [40, 776], [1168, 776]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="7"/>`).join('')}</g>
-      </svg>
-      <aside class="rail side">
-        ${handHtml(other, false)}
-        ${stack(other)}
-        ${stack(active)}
-        <details class="teach"><summary>教学</summary><div class="scenario-row">
-          <button type="button" data-action="scenario" data-scenario="lesson">教学局</button>
-          <button type="button" data-action="scenario" data-scenario="support-present">小印已在场</button>
-          <button type="button" data-action="scenario" data-scenario="support-deploy">先打出小印</button>
-          <button type="button" data-action="scenario" data-scenario="support-again">厚壳再死</button>
-          <button type="button" data-action="scenario" data-scenario="promote-stamp">小印升星</button>
-          <button type="button" data-action="scenario" data-scenario="grow">超过五台</button>
-          <button type="button" data-action="scenario" data-scenario="synergy">协同与夺舍</button>
-          <button type="button" data-action="scenario" data-scenario="builder">扩展组牌</button>
-        </div></details>
-        <details class="quiet-log"><summary>记录</summary><ol id="action-log" class="log">${ui.log.slice(-6).reverse().map(item => `<li${item.code ? ` class="bad" data-error-code="${esc(item.code)}"` : ''}>${esc(item.text)}</li>`).join('')}</ol></details>
-      </aside>
+      <div class="opp-dock">${handHtml(other, false)}</div>
+      <aside class="bays">${stack(other)}${stack(active)}</aside>
       <div class="core-slot foe">${core(other)}</div>
-      <div class="slots foe">${lane(other)}</div>
+      <div class="slots foe"><span class="lane-label">对方战线</span>${lane(other)}</div>
       <div class="midline">
-        <h3 id="turn-label" data-seat="${game.seat}">${over || seatName(active) + '的回合'}</h3>
+        <h3 id="turn-label" data-seat="${game.seat}">${esc(turnText)}</h3>
         <p class="formation" data-formation="${game.formationState(active).percent}">${esc(formationLine(active))}</p>
         ${game.units(active).some(unit => cards[unit.card_id].upper_host && !unit.link) ? `<button type="button" class="upper-btn${ui.linking ? ' on' : ''}" data-action="upper-link">上位连接</button>` : ''}
         ${strikeHint()}
         <p id="coach">${esc(coach())}</p>
         <p id="last-error" data-code="${esc(ui.error ? ui.error.code : '')}">${ui.error ? esc(ui.error.message) : ''}</p>
       </div>
-      <div class="slots mine">${lane(active)}</div>
+      <div class="slots mine"><span class="lane-label">我方战线</span>${lane(active)}</div>
       <div class="core-slot mine">${core(active)}</div>
       <section class="hand-dock" aria-label="当前手牌">${handHtml(active, true)}</section>
       <aside class="rail tools">
-        <button type="button" class="end-turn" ${sceneAttr('end_turn')} data-action="end-turn">结束回合</button>
         ${supply(active)}
+        <button type="button" class="end-turn${canEnd ? ' hot' : ' wait'}" ${sceneAttr('end_turn')} data-action="end-turn">结束回合</button>
         <div class="pads">${actions()}</div>
+      </aside>
+      <button type="button" class="log-toggle" data-action="toggle-log" aria-expanded="${ui.logOpen ? 'true' : 'false'}">记录</button>
+      <aside class="log-panel"${ui.logOpen ? '' : ' hidden'}>
+        <h3>对战记录</h3>
+        <ol id="action-log" class="log">${ui.log.slice().reverse().map(item => `<li${item.code ? ` class="bad" data-error-code="${esc(item.code)}"` : ''}>${esc(item.text)}</li>`).join('') || '<li>还没有记录</li>'}</ol>
       </aside>
     </main>
     </div>`;
+    mountGhosts(ghosts);
+    ui.seen = new Set(game.boards.flat().filter(Boolean).map(unit => unit.iid));
+    ui.fx = null;
+    ui.showBanner = false;
+    ui.fresh = false;
     document.body.dataset.ready = '1';
     document.body.dataset.ruleset = content.ruleset_id;
   }
@@ -1686,11 +1792,13 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
     const card = selectedCard();
     if (!card) return note(new C.ClashError('请先选择手牌', 'not_in_hand'));
     const seat = game.seat;
+    const bases = game.bases.slice();
     try {
       game.play(seat, card.template_id, target == null ? null : target, mode || null, index == null ? null : index);
     } catch (error) {
       return note(error);
     }
+    ui.fx = { bases };
     let text = `${seatName(seat)}打出${card.name}，费用 ${card.cost}。`;
     if (card.effect === 'supply') text += `当前供电 ${game.supply[seat]}，上限仍是 ${game.max_supply[seat]}。`;
     push(text);
@@ -1701,11 +1809,14 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
   function attack(target) {
     if (!ui.attacker) return note(new C.ClashError('请先点一台己方单位', 'bad_target'));
     const attacker = game.find(ui.attacker)[2];
+    const attackerId = ui.attacker;
+    const bases = game.bases.slice();
     try {
       game.attack(game.seat, ui.attacker, target);
     } catch (error) {
       return note(error);
     }
+    ui.fx = { attacker: attackerId, target, bases };
     const name = cards[attacker.card_id].name;
     push(target === 'base' ? `${name}攻击了对方基地。` : `${name}与对方单位同时结算伤害。`);
     clearChoice();
@@ -1793,10 +1904,13 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/pu
       text += ' 先手第 1 回合不抽牌。';
     }
     push(text);
+    ui.showBanner = true;
     render();
   }
 
   function act(action, el, event) {
+    if (action === 'toggle-menu') { ui.menu = !ui.menu; return render(); }
+    if (action === 'toggle-log') { ui.logOpen = !ui.logOpen; return render(); }
     if (action === 'toggle-reveal') { ui.reveal = !ui.reveal; return render(); }
     if (action === 'toggle-catalog') { ui.catalog = !ui.catalog; return render(); }
     if (action === 'restart' || action === 'scenario') return begin(action === 'restart' ? ui.scenario : el.dataset.scenario);
