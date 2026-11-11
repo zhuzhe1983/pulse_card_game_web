@@ -126,7 +126,17 @@
       });
       game.spawn(1, 'art_h024', 0, 4, false);
       game.spawn(1, 'hou_ke', 1, 4, false);
-      push('摆阵：先手已经有 5 台。再打出细条会排到最右，支援把厚壳插到最左。');
+      push('摆阵：先手已经有 5 台。再打出新细条会排到最右，支援把厚壳插到最左。');
+    } else if (scenario === 'crowd') {
+      game = C.Game.empty(cards, rules, pack.capabilities);
+      game.supply = [1, 0];
+      game.max_supply = [1, 1];
+      const line = ['xiao_yin', 'dian_zhen', 'xuan_niu', 'qiao_jian', 'art_h024', 'art_h003', 'hou_ke'];
+      line.forEach((id, index) => {
+        game.spawn(0, id, index, null, false).sick = false;
+        game.spawn(1, id, index, null, false).sick = false;
+      });
+      push('摆阵：两边各 7 台，用来看战线有没有被核心或手牌挡住。');
     } else if (scenario === 'synergy') {
       game = C.Game.empty(cards, rules, pack.capabilities);
       game.supply = [10, 10];
@@ -625,7 +635,7 @@
     const other = 1 - active;
     const turnText = over || seatName(active) + '的回合';
     const canEnd = game.winner == null && game.phase === 'main';
-    const scenarios = [['lesson', '教学局'], ['support-present', '小印已在场'], ['support-deploy', '先打出小印'], ['support-again', '厚壳再死'], ['promote-stamp', '小印升星'], ['grow', '超过五台'], ['synergy', '协同与夺舍'], ['builder', '扩展组牌']];
+    const scenarios = [['lesson', '教学局'], ['support-present', '小印已在场'], ['support-deploy', '先打出小印'], ['support-again', '厚壳再死'], ['promote-stamp', '小印升星'], ['grow', '超过五台'], ['crowd', '两边七台'], ['synergy', '协同与夺舍'], ['builder', '扩展组牌']];
     $('#app').innerHTML = `<div class="table-page">
     <button type="button" class="menu-toggle" data-action="toggle-menu" aria-expanded="${ui.menu ? 'true' : 'false'}">菜单</button>
     <div class="menu-pop"${ui.menu ? '' : ' hidden'}>

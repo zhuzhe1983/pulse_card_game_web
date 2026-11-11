@@ -388,7 +388,7 @@ async function main() {
     if (!narrow.attack) throw new Error('手牌没有游戏攻防');
     if (narrow.artSrc.includes('/card/')) throw new Error('手牌用了整张印刷卡');
     if (narrow.artWidth < 8) throw new Error('手牌主体图没有画出来');
-    if (narrow.supplyTall > 28) throw new Error('供电数字被拆行');
+    if (narrow.supplyTall > 36) throw new Error('供电数字被拆行');
     const phoneFit = await value(`(() => {
       const arena = document.querySelector('.arena').getBoundingClientRect();
       const card = document.querySelector('.hands .playcard').getBoundingClientRect();

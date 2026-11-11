@@ -40,19 +40,20 @@ button { border: 0; color: inherit; background: none; font: inherit; }
   color: #f7fffb; font-size: clamp(28px, 4vw, 52px); font-weight: 900; letter-spacing: .08em;
   animation: banner 1.6s ease forwards;
 }
-.opp-dock { position: absolute; z-index: 8; top: 0; left: 50%; width: min(440px, 42vw); height: 42px; transform: translateX(-50%); pointer-events: none; }
-.opp-hand { position: relative; height: 84px; display: flex; justify-content: center; align-items: flex-start; transform: translateY(-46px); }
+.opp-dock { position: absolute; z-index: 12; top: 0; left: 50%; width: min(640px, 56vw); height: 58px; transform: translateX(-50%); overflow: visible; pointer-events: none; }
+.opp-hand { position: absolute; left: 0; right: 0; top: 0; height: 96px; display: flex; justify-content: center; align-items: flex-start; transform: translateY(-42px); }
 .back {
-  width: 54px; height: 72px; margin: 0 -16px; border-radius: 6px;
-  background: url("scene/cardback/pulse-cardback-96x128.webp") center / cover no-repeat;
+  width: 68px; height: 90px; margin: 0 -18px; border-radius: 7px;
+  background: url("scene/cardback/pulse-cardback-192x256.webp") center / cover no-repeat;
   transform-origin: center top;
-  transform: rotate(calc((var(--i) - (var(--n) - 1) / 2) * -8deg));
-  box-shadow: 0 6px 10px #000a;
+  transform: rotate(calc((var(--i) - (var(--n) - 1) / 2) * -7deg));
+  box-shadow: 0 8px 12px #000a;
 }
 .hand-count {
-  position: absolute; top: 46px; right: -6px; transform: translateX(100%);
-  padding: 2px 8px; border-radius: 8px;
-  background: #10281ce6; color: #d7fff6; font-size: 13px; font-weight: 800;
+  position: absolute; top: 50px; left: calc(50% + 168px); right: auto; transform: none;
+  padding: 4px 8px; border-radius: 8px;
+  background: #10281cf2; color: #f7fffb; font-size: 14px; font-weight: 850;
+  border: 1px solid #7dfff0;
 }
 .compensation {
   position: absolute; z-index: 8; top: 46px; left: 12px; margin: 0; max-width: 240px;
@@ -72,8 +73,8 @@ button { border: 0; color: inherit; background: none; font: inherit; }
 .deck-stack span, .grave-stack span { position: absolute; bottom: 8px; font-size: 12px; font-weight: 750; letter-spacing: .04em; }
 .silk { color: #d7e2c8; font-size: 12px; font-weight: 700; }
 .core-slot { position: absolute; z-index: 4; display: grid; place-items: center; }
-.core-slot.foe { top: 1.6%; left: 50%; width: 11.5%; height: auto; aspect-ratio: 1.15; transform: translateX(-50%); }
-.core-slot.mine { top: auto; bottom: 18%; left: 50%; width: 12%; height: auto; aspect-ratio: 1.15; transform: translateX(-50%); }
+.core-slot.foe { top: 8%; left: 50%; width: min(128px, 12vw); height: min(118px, 14vh); transform: translateX(-50%); z-index: 7; }
+.core-slot.mine { top: auto; bottom: 20%; left: 50%; width: min(128px, 12vw); height: min(118px, 14vh); transform: translateX(-50%); z-index: 10; }
 .core-wrap { width: 100%; height: 100%; text-align: center; }
 .base-btn.core {
   position: relative; width: 100%; height: 78%; padding: 0;
@@ -99,32 +100,36 @@ button { border: 0; color: inherit; background: none; font: inherit; }
   font-size: 28px; font-weight: 900; text-shadow: 0 2px 0 #000;
   animation: floatup .8s ease forwards; pointer-events: none;
 }
-.battery { position: absolute; display: flex; flex-direction: column; align-items: center; width: max-content; z-index: 5; }
-.core-slot.foe .battery { left: 108%; top: 32%; }
-.core-slot.mine .battery { right: 108%; top: 28%; }
-.mana { display: flex; gap: 2px; justify-content: center; }
+.battery {
+  position: absolute; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  width: max-content; z-index: 8; padding: 6px 8px; border-radius: 12px;
+  background: #07110ef2; border: 1px solid #7dfff0; box-shadow: 0 6px 16px #000a;
+}
+.core-slot.foe .battery { left: calc(100% + 14px); top: 4px; }
+.core-slot.mine .battery { right: calc(100% + 14px); left: auto; top: 4px; }
+.mana { display: flex; gap: 3px; justify-content: center; }
 .mana i {
-  width: clamp(18px, 1.6vw, 28px); height: clamp(18px, 1.6vw, 28px);
+  display: block; width: 26px; height: 26px;
   background: url("scene/ui/lamp-power-off-128.webp") center / contain no-repeat;
 }
-.mana i.on { background-image: url("scene/ui/lamp-power-on-amber-128.webp"); opacity: 1; }
-.mana i.spent { opacity: .55; filter: saturate(.3) brightness(.8); }
-.mana i.locked { opacity: .22; }
+.mana i.on { background-image: url("scene/ui/lamp-power-on-amber-128.webp"); opacity: 1; filter: none; }
+.mana i.spent { opacity: .72; filter: saturate(.25) brightness(1.15); }
+.mana i.locked { opacity: .42; }
 .battery.short { animation: lack .45s ease-in-out 2; }
 .supply-read {
-  height: 22px; line-height: 22px; font-size: 15px; font-weight: 800; white-space: nowrap;
+  height: 30px; line-height: 30px; font-size: 13px; font-weight: 800; white-space: nowrap;
   color: #f7fffb; text-shadow: 0 1px 2px #000;
 }
-.supply-read b { font-family: "Pulse Numeral", "Arial Narrow", sans-serif; font-size: 20px; font-weight: 800; }
+.supply-read b { font-family: "Pulse Numeral", "Arial Narrow", sans-serif; font-size: 28px; font-weight: 800; letter-spacing: .02em; }
 .slots {
   position: absolute; z-index: 3; display: flex; align-items: center; justify-content: safe center;
-  gap: 8px; overflow: visible; padding: 4px 8px;
+  gap: 8px; overflow: hidden; padding: 4px 8px;
 }
-.slots.foe { left: 15%; top: 16%; width: 70%; height: min(180px, 18%); }
-.slots.mine { left: 15%; top: 48%; width: 70%; height: min(180px, 16%); }
-.arena.aiming .slots { z-index: 8; }
+.slots.foe { left: 17%; top: 22%; width: 66%; height: 17%; }
+.slots.mine { left: 17%; top: 46%; width: 66%; height: 17%; }
+.arena.aiming .slots { z-index: 6; overflow: visible; }
 .midline {
-  position: absolute; z-index: 5; left: 20%; right: 20%; top: 45.5%; transform: translateY(-50%);
+  position: absolute; z-index: 4; left: 22%; right: 22%; top: 41%; transform: none;
   text-align: center; pointer-events: none;
 }
 .midline::before {
@@ -138,9 +143,10 @@ button { border: 0; color: inherit; background: none; font: inherit; }
 .upper-btn.on { background: #7dfff0; color: #071014; }
 #coach { display: none; }
 #last-error { position: relative; margin: 2px 0 0; min-height: 16px; font-size: 13px; font-weight: 750; color: #ffb0a4; }
-.hand-dock { position: absolute; z-index: 6; left: 16%; right: 16%; bottom: 0; height: 30%; }
+.hand-dock { position: absolute; z-index: 6; left: 8%; right: 8%; bottom: -130px; height: 300px; pointer-events: none; }
+.hand-dock .playcard, .hand-dock .hands { pointer-events: auto; }
 .hands.fan { height: 100%; display: flex; justify-content: center; align-items: flex-end; overflow: visible; }
-.unit-wrap { position: relative; flex: 1 1 120px; width: clamp(120px, 8vw, 168px); max-width: 168px; height: min(100%, calc(clamp(120px, 8vw, 168px) * 1.28)); }
+.unit-wrap { position: relative; flex: 0 1 132px; width: auto; height: calc(100% - 8px); max-width: 148px; aspect-ratio: 132 / 169; }
 .minion, .playcard { position: relative; border: 0; background: transparent; color: #f4f7f8; text-align: center; }
 .minion { width: 100%; height: 100%; flex: none; padding: 0; overflow: hidden; }
 .act-menu {
@@ -169,7 +175,7 @@ button { border: 0; color: inherit; background: none; font: inherit; }
   text-shadow: 0 1px 0 #04110c;
 }
 .playcard {
-  width: clamp(180px, 10.8vw, 220px); flex: 0 0 auto; height: calc(clamp(180px, 10.8vw, 220px) * 1.32);
+  width: clamp(180px, 11.5vw, 220px); flex: 0 0 auto; height: calc(clamp(180px, 11.5vw, 220px) * 1.32);
   margin: 0 -36px; padding: 0; overflow: hidden;
   transform-origin: center 150%;
   transform: rotate(calc((var(--i) - (var(--n) - 1) / 2) * 8deg));
@@ -200,7 +206,7 @@ button { border: 0; color: inherit; background: none; font: inherit; }
   padding: 6px; font-size: 14px; line-height: 1.35; color: #f4f7f8; text-align: left;
   background: #07110ee6; border-radius: 8px; max-height: 7em; overflow: hidden;
 }
-.playcard:hover, .playcard.selected { transform: translateY(-78px) scale(1.34) rotate(0deg); z-index: 7; overflow: visible; }
+.playcard:hover, .playcard.selected { transform: translateY(-46px) scale(1.12) rotate(0deg); z-index: 7; overflow: visible; }
 .playcard:hover .detail, .playcard.selected .detail { display: block; }
 .playcard.ready { filter: drop-shadow(0 0 8px #7dfff0); }
 .minion.can-attack { box-shadow: 0 0 0 3px #3dff8a, 0 0 16px #3dff8a88; border-radius: 12px; }
@@ -259,37 +265,42 @@ button { border: 0; color: inherit; background: none; font: inherit; }
 @media (max-width: 800px) {
   .arena { background-position: center 42%; }
   .turn-banner { font-size: 28px; padding: 10px 18px; }
-  .opp-dock { top: 0; left: 8px; width: 48%; height: 34px; transform: none; }
-  .opp-hand { height: 64px; transform: translateY(-36px); }
-  .back { width: 36px; height: 48px; margin: 0 -8px; }
-  .hand-count { top: 34px; font-size: 11px; }
-  .compensation { top: 36px; left: auto; right: 8px; max-width: 46%; font-size: 11px; }
-  .unit-wrap, .minion { width: 108px; height: 140px; flex-basis: 108px; max-width: 108px; }
+  .opp-dock { top: 0; left: 50%; width: 86%; height: 46px; transform: translateX(-50%); }
+  .opp-hand { height: 78px; transform: translateY(-30px); }
+  .back { width: 46px; height: 62px; margin: 0 -12px; }
+  .hand-count { left: calc(50% + 64px); top: 4px; right: auto; font-size: 11px; transform: none; }
+  .compensation { top: 42px; left: 8px; right: auto; max-width: 70%; font-size: 11px; }
+  .unit-wrap { flex-basis: 96px; max-width: 108px; height: 100%; }
+  .minion { width: 100%; height: 100%; }
   .act-menu { max-width: 70vw; }
+  .battery { padding: 3px; }
+  .mana { width: 92px; flex-wrap: wrap; }
+  .mana i { width: 16px; height: 16px; }
+  .supply-read { height: 22px; line-height: 22px; font-size: 11px; }
+  .supply-read b { font-size: 18px; }
+  .core-slot.foe .battery, .core-slot.mine .battery { left: calc(100% + 4px); right: auto; top: 0; transform: none; }
   .hand-count { font-size: 12px; }
   .bays { top: 46px; left: 8px; width: auto; grid-template-columns: auto; }
   .pile { grid-template-columns: 42px 42px; }
   .deck-stack, .grave-stack { width: 42px; height: 54px; font-size: 14px; box-shadow: 3px 2px 0 #0b1612; }
   .deck-stack span, .grave-stack span { font-size: 9px; bottom: 4px; }
-  .core-slot.foe, .core-slot.mine { width: 92px; height: 84px; aspect-ratio: auto; left: 50%; transform: translateX(-50%); }
-  .core-slot.foe { top: 8px; }
-  .core-slot.mine { top: auto; bottom: 210px; }
-  .mana i { width: 16px; height: 16px; }
-  .core-slot.foe .battery, .core-slot.mine .battery { left: 50%; right: auto; top: 104%; transform: translateX(-50%); }
+  .core-slot.foe, .core-slot.mine { width: 78px; height: 72px; left: 8px; transform: none; }
+  .core-slot.foe { top: 70px; }
+  .core-slot.mine { top: auto; bottom: 248px; }
   .core-name { font-size: 11px; }
   .base-btn .hp { font-size: 22px; min-width: 36px; }
-  .slots.foe, .slots.mine { left: 8px; width: calc(100% - 16px); height: 132px; }
-  .slots.foe { top: 186px; }
-  .slots.mine { top: 42%; }
+  .slots.foe, .slots.mine { left: 8px; width: calc(100% - 16px); height: 132px; overflow-x: auto; overflow-y: hidden; }
+  .slots.foe { top: 136px; }
+  .slots.mine { top: 292px; }
   .midline { left: 8px; right: 8px; top: 39%; }
-  .minion { width: 108px; height: 140px; flex-basis: 108px; }
+  .minion { width: 100%; height: 100%; max-height: 124px; flex-basis: auto; }
   .link-mark { width: 36px; height: 64px; flex-basis: 36px; }
   .minion .mname, .playcard .cname { font-size: 13px; }
   .hand-dock { left: 8px; right: 8px; bottom: 0; height: 196px; }
   .hands.fan { overflow-x: auto; overflow-y: hidden; justify-content: flex-start; }
   .playcard { width: 148px; flex-basis: 148px; height: 190px; margin: 0 6px; transform: none; }
   .playcard:hover, .playcard.selected { transform: translateY(-8px) scale(1.04) rotate(0deg); }
-  .rail.tools { left: auto; top: auto; right: 8px; bottom: 204px; width: 132px; aspect-ratio: auto; }
+  .rail.tools { left: auto; top: auto; right: 8px; bottom: 204px; width: 120px; aspect-ratio: auto; z-index: 14; }
   .end-turn {
     width: 132px; height: 48px; padding: 0 8px; border-radius: 24px; font-size: 16px;
     background-image: url("scene/ui/end-turn-button-compact.webp");
