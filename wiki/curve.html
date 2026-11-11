@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PULSE 费用曲线</title>
+<link rel="stylesheet" href="../shared/pulse.css">
+<link rel="stylesheet" href="wiki.css">
+</head>
+<body>
+<header class="top">
+  <a class="pulse-brand brand" href="../index.html"><span class="pulse-mark">P</span><span><span class="pulse-name">PULSE</span><div class="pulse-sub">费用曲线</div></span></a>
+  <div class="titles">
+    <p class="kicker">待试玩 · playtest_draft</p>
+    <h1>费用曲线</h1>
+  </div>
+  <nav class="pulse-nav" aria-label="站点入口">
+    <a href="../index.html">大厅</a>
+    <a href="../dist/clash/index.html">回合战</a>
+    <a href="./index.html">图鉴</a>
+    <a href="./curve.html" aria-current="page">费用曲线</a>
+  </nav>
+</header>
+<main class="curve">
+  <p class="banner wait">数值来自 prompt <span id="commit">5e1caab</span> 的第 18 篇第 0 节，状态仍是待试玩。图鉴不改这些数字。</p>
+  <section>
+    <h2>每档张数</h2>
+    <p class="hint">下面的柱子按 96 张图鉴现数统计。3 到 5 费合计应是 34。</p>
+    <div id="bars" class="bars"></div>
+    <p id="bar-note" class="hint"></p>
+  </section>
+  <section>
+    <h2>系列核心</h2>
+    <table>
+      <thead><tr><th>费用</th><th>系列核心</th><th>这 96 张里有哪些</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Stamp 模块本体</td><td>Stamp-S3、两种针距、C3、C3U、C5、C6LoRa、P4</td></tr>
+        <tr><td>2</td><td>Atom 核心本体；Stamp 二星</td><td>Atom-Matrix、AtomS3、S3R 及摄像头/长焦/扩展/语音、Stamp-S3A</td></tr>
+        <tr><td>3</td><td>Stick 核心本体；Atom 二星</td><td>StickC-Plus2、Plus SE、StickS3、StickT2、Atom-Matrix v1.1</td></tr>
+        <tr><td>4</td><td>Core 初代本体</td><td>Fire v2.7。Basic、Gray 不在这 96 张里</td></tr>
+        <tr><td>5</td><td>Core2 本体</td><td>Core2、Core2 For AWS</td></tr>
+        <tr><td>6</td><td>CoreS3 本体；Core2 二星</td><td>CoreS3-SE、Lite、Thread、两台 Core2 的二星</td></tr>
+        <tr><td>7</td><td>Tough 本体</td><td>Tough、ToughC5</td></tr>
+        <tr><td>8</td><td>Dial 本体</td><td>Dial</td></tr>
+        <tr><td>9</td><td>Cardputer 本体；Dial 二星</td><td>Cardputer、Cardputer-Adv、Dial v1.1</td></tr>
+        <tr><td>10</td><td>Tab5、上位 ARM；Cardputer 二星</td><td>Tab5、CardputerZero、Cardputer v1.1</td></tr>
+      </tbody>
+    </table>
+  </section>
+  <section>
+    <h2>组合整机</h2>
+    <table>
+      <thead><tr><th>费用</th><th>系列组合整机</th><th>为什么不是核心档</th></tr></thead>
+      <tbody>
+        <tr><td>2</td><td>DinMeter、Air Quality</td><td>官方写成 Stamp-S3 / StampS3 套装。一星按 2 费曲线重配</td></tr>
+        <tr><td>3</td><td>这两台的二星、CoreMatrix</td><td>套装二星 +1。灯墙按普通 Core 的 4 费减 1</td></tr>
+        <tr><td>5</td><td>M5GO IoT Kit、PowerHub</td><td>套件比 Fire 高 1 费。电枢纽放中段，护卫，耐久 7</td></tr>
+        <tr><td>6</td><td>StamPLC</td><td>工控整机。壳里有邮票，不按邮票模块收 1 费</td></tr>
+        <tr><td>10</td><td>Cardputer Mesh Kit、CoreMP135</td><td>套件比掌机本体高 1 费。CoreMP135 是 Linux 整机，仍然不能发动来自上位的爱</td></tr>
+      </tbody>
+    </table>
+  </section>
+  <section>
+    <h2>配件定费</h2>
+    <ul class="rules">
+      <li>只给攻击 +1、又不占链节标记的帽子和转接件留在 1 费。</li>
+      <li>只给护卫，或普通链节标记，到 3 费。</li>
+      <li>护卫加链节、忽略护卫、攻击 +2，到 4 费。</li>
+      <li>忽略护卫或攻击 +2，再加链节标记，到 5 费。</li>
+      <li>基线链节仍是 1 费攻击 +1。千里眼因为忽略护卫是 4 费。护罩仍是 1 费。</li>
+    </ul>
+  </section>
+</main>
+<script>
+fetch('data/design-pack.json').then(response => response.json()).then(pack => {
+  const cards = Object.values(pack.cards || {});
+  const counts = {};
+  for (let cost = 1; cost <= 10; cost++) counts[cost] = 0;
+  cards.forEach(card => {
+    const cost = card.design && card.design.gameplay && card.design.gameplay.cost;
+    if (counts[cost] != null) counts[cost] += 1;
+  });
+  const max = Math.max(1, ...Object.values(counts));
+  document.getElementById('bars').innerHTML = Object.keys(counts).map(cost => {
+    const n = counts[cost];
+    return `<a class="bar" href="./index.html?cost=${cost}"><span style="height:${Math.round(n / max * 160)}px"></span><b>${n}</b><i>${cost}</i></a>`;
+  }).join('');
+  const mid = counts[3] + counts[4] + counts[5];
+  document.getElementById('bar-note').textContent = `1 费 ${counts[1]} 张，2 费 ${counts[2]} 张，3 到 5 费 ${mid} 张。8 费 ${counts[8]} 张。`;
+  document.getElementById('commit').textContent = (pack.source_commit || '').slice(0, 12);
+});
+</script>
+</body>
+</html>
