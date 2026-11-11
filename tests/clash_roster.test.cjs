@@ -170,7 +170,7 @@ check('guarded host blocks a guarding upgrade, and rush or entry effects resolve
   rush.play(0, 'art_h003');
   assert.equal(rush.units(0)[0].sick, false);
   rush.attack(0, 'art_h003', 'base');
-  assert.equal(rush.bases[1], 17);
+  assert.equal(rush.bases[1], 16);
 
   const draw = fresh();
   draw.supply = [5, 0];

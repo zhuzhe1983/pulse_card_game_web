@@ -402,6 +402,25 @@
     }
   });
 
+  function serviceCard(card) {
+    const kind = card.record_kind === 'design_only_host' ? '设计牌' : '服务牌';
+    const stats = card.kind === 'main' ? ` · 攻${card.attack} 耐${card.durability}${card.upper_host ? ' · 上位机' : ''}` : '';
+    return `<article class="service-card" data-service="${esc(card.template_id)}" data-sku="none">
+      <span class="glyph">${esc((card.name || '?').slice(0, 1))}</span>
+      <h3>${esc(card.name)}</h3>
+      <p class="meta">${kind} · ${card.cost} 费${stats}</p>
+      <p>${esc(card.role_note || '')}</p>
+      <p>${esc(card.hardware_note || '')}</p>
+    </article>`;
+  }
+
+  function renderServices(payload) {
+    const grid = $('#service-grid');
+    if (!grid) return;
+    const cards = (payload.cards || []).concat(payload.design_hosts || []);
+    grid.innerHTML = cards.map(serviceCard).join('');
+  }
+
   Promise.all([
     fetch('data/cards.json').then(response => {
       if (!response.ok) throw new Error('cards.json');
@@ -410,8 +429,13 @@
     fetch('data/design-pack.json').then(response => {
       if (!response.ok) throw new Error('design-pack.json');
       return response.json();
+    }),
+    fetch('data/clash_services.json').then(response => {
+      if (!response.ok) throw new Error('clash_services.json');
+      return response.json();
     })
-  ]).then(([catalog, designPack]) => {
+  ]).then(([catalog, designPack, servicePack]) => {
+    renderServices(servicePack);
     pack = designPack || pack;
     cards = api.mergeCatalog(catalog, pack).cards;
     globalThis.PULSEWikiCards = cards;

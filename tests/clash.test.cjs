@@ -101,9 +101,9 @@ check('series and hardware labels do not change the lesson', () => {
   const game = new C.Game(loaded.cards, data.decks.first, data.decks.second, loaded.rules, loaded.tokenId, loaded.capabilities);
   for (const step of lesson().lesson_steps) replayStep(game, step);
   assert.equal(game.bases[0], 20);
-  assert.equal(game.bases[1], 19);
+  assert.equal(game.bases[1], 18);
   assert.deepEqual(game.units(0).map(unit => unit.card_id), ['dian_zhen']);
-  assert.deepEqual(game.units(1).map(unit => unit.card_id), ['xi_tiao']);
+  assert.deepEqual(game.units(1).map(unit => unit.card_id), []);
 });
 
 function replayStep(game, step) {
@@ -136,13 +136,13 @@ check('lesson fixture matches every checkpoint', () => {
   assert.ok(game.hands[1].includes('jie_yi_ge_dian'));
   assert.equal(game.decks[0][0], 'dian_zhen');
   for (const step of fixture.lesson_steps) replayStep(game, step);
-  assert.deepEqual(game.bases, [20, 19]);
+  assert.deepEqual(game.bases, [20, 18]);
   assert.deepEqual(game.units(0).map(unit => unit.card_id), ['dian_zhen']);
-  assert.deepEqual(game.units(1).map(unit => unit.card_id), ['xi_tiao']);
+  assert.deepEqual(game.units(1).map(unit => unit.card_id), []);
   assert.equal(game.winner, null);
   assert.ok(game.log.join('\n').includes('同时结算'));
   const text = game.log.join('\n');
-  assert.ok(text.indexOf('小印进入座位0墓地') < text.indexOf('小印进入座位1墓地'));
+  assert.ok(text.indexOf('小印进入座位1墓地') < text.indexOf('小印进入座位0墓地'));
 });
 
 check('finishTurn is end plus the other side starting, with no gap', () => {
@@ -178,7 +178,7 @@ check('first three turns and the coin above the cap', () => {
   game.start_turn();
   game.play(0, 'xiao_yin');
   game.attack(0, 'xi_tiao', 'base');
-  assert.deepEqual(game.bases, [20, 19]);
+  assert.deepEqual(game.bases, [20, 18]);
   unchanged(game, () => game.attack(0, 'xiao_yin', 'base'), 'summoning_sickness');
   unchanged(game, () => game.attack(0, 'xi_tiao', 'base'), 'already_attacked');
   game.end_turn(0);
@@ -186,15 +186,18 @@ check('first three turns and the coin above the cap', () => {
   game.play(1, 'xi_tiao');
   game.attack(1, 'xiao_yin', 'xi_tiao');
   assert.deepEqual(game.graves[0], ['xi_tiao']);
-  assert.deepEqual(game.bases, [20, 19]);
-  assert.equal(game.units(1).find(unit => unit.card_id === 'xiao_yin').durability, 1);
+  assert.deepEqual(game.bases, [20, 18]);
+  assert.equal(game.units(1).find(unit => unit.card_id === 'xiao_yin'), undefined);
+  assert.equal(game.units(1).find(unit => unit.card_id === 'xi_tiao').durability, 2);
   game.end_turn(1);
   game.start_turn();
   game.play(0, 'dian_zhen');
-  game.attack(0, 'xiao_yin', 'xiao_yin');
+  game.attack(0, 'xiao_yin', 'xi_tiao');
   assert.deepEqual(game.graves[0], ['xi_tiao', 'xiao_yin']);
-  assert.deepEqual(game.graves[1], ['jie_yi_ge_dian', 'xiao_yin']);
+  assert.deepEqual(game.graves[1], ['jie_yi_ge_dian', 'xiao_yin', 'xi_tiao']);
+  assert.equal(game.units(0)[0].card_id, 'dian_zhen');
   assert.equal(game.units(0)[0].sick, true);
+  assert.deepEqual(game.units(1), []);
   assert.equal(game.winner, null);
 });
 
@@ -316,7 +319,7 @@ check('full board, attachments, guard bypass, mend and burn', () => {
   const attacker = full.boards[0][6];
   attacker.sick = false;
   full.attack(0, attacker.iid, foe.iid);
-  assert.equal(foe.durability, 4);
+  assert.equal(foe.durability, 3);
   assert.equal(full.boards[1][0].durability, 5);
   const queued = JSON.stringify(full.view());
   unchanged(full, () => full.play(0, 'xi_tiao', null, null, 99), 'bad_index');
@@ -332,7 +335,7 @@ check('full board, attachments, guard bypass, mend and burn', () => {
   const host = guard.units(0)[0];
   host.sick = false;
   guard.attack(0, 'dian_zhen', 'base');
-  assert.equal(guard.bases[1], 18);
+  assert.equal(guard.bases[1], 17);
 
   const mend = empty();
   mend.supply = [1, 1];
@@ -540,7 +543,7 @@ check('pack size is data, unknown effects and star ranks stay closed', () => {
   const played = new C.Game(ranked.cards, marked.decks.first, marked.decks.second, ranked.rules, ranked.tokenId, ranked.capabilities);
   played.start_turn();
   for (const step of lesson().lesson_steps.slice(1)) replayStep(played, step);
-  assert.deepEqual(played.bases, [20, 19]);
+  assert.deepEqual(played.bases, [20, 18]);
 
   const invented = JSON.parse(JSON.stringify(base));
   invented.cards[0] = Object.assign({}, invented.cards[0], { effect: 'rush', version: 'v1.2' });

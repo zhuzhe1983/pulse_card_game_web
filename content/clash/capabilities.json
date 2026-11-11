@@ -1,7 +1,7 @@
 {
   "ruleset_id": "pcg.clash.v0",
-  "baseline_commit": "2752e13b584c184bd073cc31f139802237cb5f66",
-  "effects": ["support", "knob", "mend", "damage", "heal_base", "supply", "play_draw", "play_damage"],
+  "baseline_commit": "64848ae38b276e370ec225f88f1498424ff68497",
+  "effects": ["support", "knob", "mend", "damage", "heal_base", "supply", "play_draw", "play_damage", "draw_one", "retrieve_grave", "arm_aiflow", "seize"],
   "bindings": {
     "support": {
       "source": "xiao_yin",

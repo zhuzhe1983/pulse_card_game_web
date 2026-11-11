@@ -2,26 +2,26 @@
   "ruleset_id": "pcg.clash.v0",
   "prompt_repo": "https://github.com/zhuzhe1983/pulse_card_game_prompt",
   "prompt_pr": 3,
-  "prompt_commit": "2752e13b584c184bd073cc31f139802237cb5f66",
+  "prompt_commit": "64848ae38b276e370ec225f88f1498424ff68497",
   "prompt_commit_merged": false,
   "previous_playtest_commit": "5b85cc15305d3fcb1585d1096aa03b7c1766e3fe",
   "copied_from_handoff": {
-    "HEAD.txt": "2752e13b584c184bd073cc31f139802237cb5f66",
+    "HEAD.txt": "64848ae38b276e370ec225f88f1498424ff68497",
     "content/clash_playtest.json": {
       "repo_path": "content/clash/clash_playtest.json",
-      "sha256": "7011dfb45290a60b2274f5ea72f9dee4537e85f7a277ac3c6d862ed6f870fd17"
+      "sha256": "4f54fe26e46807d6de40fec472eaaa60c9fdd3f06534815467328fdaf150cf4d"
     },
     "fixtures/clash_v0_lesson.json": {
       "repo_path": "content/clash/clash_v0_lesson.json",
-      "sha256": "856c6c9317953fbf8d4ab7137977680546e7d253a4ea251934cadfe00603e1a8"
+      "sha256": "072596c85d8581561fd67d7bcb00b8fad8d6479aea5dcbbc03b8a8653bd7335e"
     },
     "docs/01_GAMEPLAY.md": {
       "repo_path": "content/clash/01_GAMEPLAY.md",
-      "sha256": "996e2ef51cbc7be9f514b10bc3dbb6db284634db2402a030fcfd1fc2362c3787"
+      "sha256": "422355aa58b761eeb5a61d1dd3f2247ba88b44ecf1982474ecccd36a2adde7e4"
     },
     "content/clash_roster_96.json": {
       "repo_path": "content/clash/clash_roster_96.json",
-      "sha256": "3279ebcf6bac546a026f7e792a61e7c7a1763a36882dd1d6df66d05fa93723ab"
+      "sha256": "1779c5f7fcdad048f2403b54251855271398a595e6ae59929de2cc49d6c5f22e"
     },
     "docs/18_ROSTER_AND_GROWTH.md": {
       "repo_path": "content/clash/18_ROSTER_AND_GROWTH.md",
@@ -29,8 +29,8 @@
     },
     "WEB_IMPLEMENTATION_HANDOFF.md": {
       "repo_path": "content/clash/WEB_IMPLEMENTATION_HANDOFF.md",
-      "sha256": "ebe70f017305fd188a49a17086267a96ca1a2a49973d96c5dca428ff4158cafa"
+      "sha256": "9950294fffcdba9a4aab4c6e12cbd1969933be3a171350da7b5ab65c72439399"
     }
   },
-  "note": "战场是有序队列，没有固定张数。96 张扩展和升星链的数值没有改。结算不读阵营、美术 type、硬件型号或版本号。"
+  "note": "战场是有序队列。新增软件服务和树莓台不在 96 张图册里，也没有 SKU。结算不读阵营、美术 type 或版本号。"
 }

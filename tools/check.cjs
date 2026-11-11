@@ -2,7 +2,7 @@
 const {spawnSync}=require('node:child_process');
 const path=require('node:path');
 const root=path.resolve(__dirname,'..');
-for(const file of ['engine','store','readers','rtc','network-game','clash','clash_roster','wiki']){
+for(const file of ['engine','store','readers','rtc','network-game','clash','clash_roster','clash_synergy','wiki']){
  const run=spawnSync(process.execPath,[path.join(root,'tests',file+'.test.cjs')],{stdio:'inherit'});
  if(run.status!==0)process.exit(run.status||1);
 }
