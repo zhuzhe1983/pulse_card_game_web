@@ -96,6 +96,11 @@ async function main() {
     async function click(selector) {
       const found = await value(`(() => { const el = document.querySelector(${q(selector)}); if (!el) return ''; el.click(); return 'ok'; })()`);
       if (found !== 'ok') throw new Error('找不到 ' + selector);
+      if (String(selector).includes('end-turn')) {
+        await sleep(60);
+        await value(`(() => { const el = document.querySelector('[data-action="handoff-confirm"]'); if (el) el.click(); return 'ok'; })()`);
+        await sleep(40);
+      }
     }
     async function dblclick(selector) {
       const box = await value(`(() => { const el = document.querySelector(${q(selector)}); if (!el) return null; const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + Math.min(r.height / 2, 24) }; })()`);
@@ -124,7 +129,11 @@ async function main() {
     }
 
     eq(await attr('main.table', 'data-ruleset'), 'pcg.clash.v0', '规则编号');
-    eq(await attr('main.table', 'data-source-commit'), '5e1caabddd13559ad8d05f1b9ff8b681ec164052', '来源提交');
+    eq(await attr('main.table', 'data-source-commit'), '7ba58fb399956409ebc60323e2cca595c46112a0', '来源提交');
+    eq(await attr('main.table', 'data-mode'), 'ai', '默认人机');
+    eq(await attr('main.table', 'data-opening'), 'lesson', '默认是固定教学');
+    await click('[data-action="mode"][data-mode="hotseat"]');
+    eq(await attr('main.table', 'data-mode'), 'hotseat', '教学局改走本地双人');
     eq(await text('[data-seat="0"][data-stat="base"]'), '20', '先手基地');
     eq(await text('[data-seat="1"][data-stat="base"]'), '20', '后手基地');
     eq(await text('[data-seat="0"][data-stat="supply"]'), '1', '先手供电');
@@ -217,7 +226,7 @@ async function main() {
 
     await click('[data-action="scenario"][data-scenario="support-present"]');
     await click('[data-board-seat="0"][data-card="xiao_yin"]');
-    const abilityMenu = await text('.slots.mine .act-menu');
+    const abilityMenu = await text('.skill-bar');
     if (!abilityMenu.includes('复活厚壳 · 1电') || !abilityMenu.includes('打基地')) throw new Error('技能按钮 ' + abilityMenu);
     if (abilityMenu.includes('2电')) throw new Error('支援写成了 2 电');
     await shot('20-action-menu');
@@ -230,8 +239,8 @@ async function main() {
     eq(await attr('[data-board-seat="0"][data-slot="0"]', 'data-sick'), 'true', '厚壳新入场');
     eq(await cardsIn('[data-grave="0"]'), '', '厚壳离开墓地');
     await click('[data-board-seat="0"][data-card="xiao_yin"]');
-    const usedMenu = await text('.slots.mine .act-menu');
-    if (!usedMenu.includes('本回合用过')) throw new Error('用过的支援没有灰掉 ' + usedMenu);
+    const usedMenu = await text('.skill-bar');
+    if (!usedMenu.includes('本回合这个技能已经用过')) throw new Error('用过的支援没有灰掉 ' + usedMenu);
     await shot('21-action-disabled');
     await click('[data-action="support"]');
     eq(await attr('#last-error', 'data-code'), 'already_used_ability', '再支援');
@@ -416,8 +425,8 @@ async function main() {
     await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
     await click('[data-action="scenario"][data-scenario="synergy"]');
     eq(await attr('.formation', 'data-formation'), '10', '零键在最左，领队 10%');
-    await click('[data-action="upper-link"]');
     await click('[data-board-seat="0"][data-card="art_h050"]');
+    await click('[data-action="upper-link"]');
     await click('[data-board-seat="0"][data-card="qiao_jian"]');
     eq(await text('[data-seat="0"][data-stat="supply"]'), '9', '第一次上位连接把当前电补回有效上限');
     if (!(await text('.formation')).includes('上位')) throw new Error('上位连接没有显示');

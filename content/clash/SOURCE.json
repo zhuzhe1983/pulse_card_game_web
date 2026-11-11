@@ -2,11 +2,11 @@
   "ruleset_id": "pcg.clash.v0",
   "prompt_repo": "https://github.com/zhuzhe1983/pulse_card_game_prompt",
   "prompt_pr": 3,
-  "prompt_commit": "5e1caabddd13559ad8d05f1b9ff8b681ec164052",
+  "prompt_commit": "7ba58fb399956409ebc60323e2cca595c46112a0",
   "prompt_commit_merged": false,
-  "previous_playtest_commit": "902812bdac0e6784cb973e6fc4496435066a62fe",
+  "previous_playtest_commit": "5e1caabddd13559ad8d05f1b9ff8b681ec164052",
   "copied_from_handoff": {
-    "HEAD.txt": "5e1caabddd13559ad8d05f1b9ff8b681ec164052",
+    "HEAD.txt": "7ba58fb399956409ebc60323e2cca595c46112a0",
     "content/clash_playtest.json": {
       "repo_path": "content/clash/clash_playtest.json",
       "sha256": "9f255b0eec050cd14cafafa9b5ae58a218db330dbde300f7d0545a074797248f"
@@ -29,7 +29,7 @@
     },
     "WEB_IMPLEMENTATION_HANDOFF.md": {
       "repo_path": "content/clash/WEB_IMPLEMENTATION_HANDOFF.md",
-      "sha256": "9a86f0344efe1f5eb7c9ed026e4ed5834af1e1dfe12034175e9e1bc755d36f6c"
+      "sha256": "de2dd1c0ce132c821f76357247f47edcd490c8175c873e14920f1b6fc42625c8"
     },
     "content/clash_services.json": {
       "repo_path": "content/clash/clash_services.json",
@@ -38,7 +38,11 @@
     "docs/19_SYNERGY_AND_SERVICES.md": {
       "repo_path": "content/clash/19_SYNERGY_AND_SERVICES.md",
       "sha256": "54dc15b94dfb8d387b46a87d1c342d2fd525d0b1d1433e29c56ba65f1a23f364"
+    },
+    "docs/20_POINTER_AND_MODES.md": {
+      "repo_path": "content/clash/20_POINTER_AND_MODES.md",
+      "sha256": "c822d56f24bf3cab474aa74d05511654877fd796a7429c9019f9c73e63d2682d"
     }
   },
-  "note": "占位牌细条已退役，教学局改用 art_h024 新细条。支援是 1 费。技能按钮文案以交接文档为准。19 号协同文档字节与上一包相同。"
+  "note": "指针、绿标红×和模拟战对齐 prompt 7ba58fb。卡面数字仍是 5e1caab 的表，没有另改。占位牌细条已退役。模拟战候选是有实卡图且结算器认识的图册牌。"
 }

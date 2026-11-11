@@ -38,10 +38,17 @@
   }
 
   let game = null;
-  let ui = blankUi('lesson');
+  let ui = blankUi('versus');
+  ui.mode = 'ai';
+  let aiTimer = 0;
 
   function blankUi(scenario) {
-    return { scenario, reveal: false, catalog: false, handIndex: null, attacker: null, target: null, knob: false, aiming: false, linking: false, linkSource: null, chainIndex: null, menu: false, logOpen: false, showBanner: true, fresh: true, seen: new Set(), fx: null, error: null, log: [] };
+    return {
+      scenario, reveal: false, catalog: false, handIndex: null, attacker: null, target: null, knob: false,
+      aiming: false, linking: false, linkSource: null, chainIndex: null, menu: false, logOpen: false,
+      showBanner: true, fresh: true, seen: new Set(), fx: null, error: null, log: [],
+      handoff: false, seed: 0, opening: scenario === 'sim' ? 'sim' : 'lesson', simPool: 0, simExcluded: '', simNotes: ''
+    };
   }
 
   function push(text, code) {
@@ -67,14 +74,73 @@
     ui.error = null;
   }
 
-  function begin(scenario) {
+  function stopAi() {
+    ui.aiBusy = false;
+    if (aiTimer) clearTimeout(aiTimer);
+    aiTimer = 0;
+  }
+
+  function viewerBottom() {
+    return 0;
+  }
+
+  function sideLabel(seat) {
+    if (ui.mode === 'ai') return seat === 0 ? '你' : '对方';
+    return seat === 0 ? '座位 0' : '座位 1';
+  }
+
+  function canAct() {
+    if (!game || game.winner != null || game.phase !== 'main') return false;
+    if (ui.handoff || ui.aiBusy) return false;
+    if (ui.mode === 'ai' && game.seat !== 0) return false;
+    return true;
+  }
+
+  function simPool() {
+    return C.simCatalog(roster.cards, Object.keys(artbook));
+  }
+
+  function freshSeed() {
+    const buf = new Uint32Array(1);
+    if (root.crypto && root.crypto.getRandomValues) root.crypto.getRandomValues(buf);
+    return (buf[0] || ((Date.now() ^ (Math.random() * 0x100000000)) >>> 0)) || 1;
+  }
+
+  function begin(scenario, seed) {
+    stopAi();
     const keepReveal = ui.reveal;
     ui = blankUi(scenario);
     ui.reveal = keepReveal;
-    if (scenario === 'lesson') {
-      game = new C.Game(cards, content.decks.first.slice(), content.decks.second.slice(), rules, tokenId, pack.capabilities);
+    ui.mode = scenario === 'versus' || scenario === 'sim' ? 'ai' : 'hotseat';
+    ui.opening = scenario === 'sim' ? 'sim' : (scenario === 'versus' || scenario === 'lesson' ? 'lesson' : scenario);
+    ui.aiBusy = false;
+    ui.handoff = false;
+    if (scenario === 'lesson' || scenario === 'versus' || scenario === 'sim') {
+      let first = content.decks.first.slice();
+      let second = content.decks.second.slice();
+      if (scenario === 'sim') {
+        const catalog = simPool();
+        const built = C.buildSimDecks(catalog.included, seed == null ? freshSeed() : ((seed >>> 0) || 1));
+        ui.seed = built.seed;
+        ui.simPool = catalog.included.length;
+        ui.simExcluded = catalog.excluded.map(item => item.id + ':' + item.reason).join(',');
+        ui.simNotes = built.notes.filter(Boolean).join('，');
+        ui.built = built.decks;
+        first = built.decks[0].slice();
+        second = built.decks[1].slice();
+      } else {
+        ui.seed = 0;
+        ui.built = null;
+      }
+      game = new C.Game(cards, first, second, rules, tokenId, pack.capabilities);
       game.start_turn();
-      push('教学局。牌序固定，不洗牌。先手第 1 回合不抽牌，供电已回满。');
+      if (scenario === 'sim') {
+        push(`模拟战。种子 ${ui.seed}。可入池 ${ui.simPool} 张。你在下方，对方在上方。后手另发借一格电。${ui.simNotes ? ' ' + ui.simNotes : ''}`);
+      } else if (scenario === 'versus') {
+        push('固定教学。你在下方，对方在上方。结束回合后对方自动行动。这不是模拟战。');
+      } else {
+        push('本地双人。两人轮流，共用这一块屏幕。座位 0 在下方，座位 1 在上方。换人前要确认。');
+      }
     } else if (scenario === 'support-present') {
       game = C.Game.empty(cards, rules, pack.capabilities);
       game.supply = [6, 6];
@@ -180,6 +246,7 @@
 
   let handLock = 0;
   function deployFromHand(index) {
+    if (!canAct()) return note(new C.ClashError(C.reasonText('not_your_turn'), 'not_your_turn'));
     const now = Date.now();
     if (now < handLock) return;
     handLock = now + 120;
@@ -213,12 +280,6 @@
     });
     document.querySelectorAll('.minion').forEach(node => {
       node.classList.toggle('selected', !!(ui.attacker && node.dataset.iid === ui.attacker));
-      node.classList.toggle('hot', !!(ui.attacker && Number(node.dataset.seat) !== game.seat));
-    });
-    document.querySelectorAll('.core-wrap').forEach(node => {
-      const seatNode = node.querySelector('[data-stat="base"]');
-      const foe = seatNode && Number(seatNode.dataset.seat) !== game.seat;
-      node.classList.toggle('hot', !!(ui.attacker && foe));
     });
     const coachNode = document.querySelector('#coach');
     if (coachNode) coachNode.textContent = coach();
@@ -229,8 +290,12 @@
     }
     const pads = document.querySelector('.pads');
     if (pads) pads.innerHTML = actions();
+    const bottom = viewerBottom();
     const mine = document.querySelector('.slots.mine');
-    if (mine) mine.innerHTML = lane(game.seat);
+    const foe = document.querySelector('.slots.foe');
+    if (mine) mine.innerHTML = lane(bottom);
+    if (foe) foe.innerHTML = lane(1 - bottom);
+    applyMarks(null);
   }
 
   function coach() {
@@ -297,7 +362,7 @@
     return `<div class="mana" data-mana="${seat}" data-supply="${cur}" data-max="${max}">${bits.join('')}</div>`;
   }
   function handHtml(seat, dock) {
-    const show = ui.reveal || seat === game.seat;
+    const show = ui.reveal || (ui.mode === 'ai' ? seat === 0 : seat === game.seat);
     if (!show) {
       const count = game.hands[seat].length;
       const backs = game.hands[seat].map((_, index) => `<div class="back" style="--i:${index};--n:${count}" aria-hidden="true"></div>`).join('');
@@ -326,48 +391,49 @@
     const code = block ? ` data-block="${esc(block.code)}"` : '';
     return `<button type="button" class="act${off}" data-action="${action}"${code}${extra || ''}><img src="${icon}" alt=""><span class="act-copy"><strong>${esc(label)}</strong><em>${esc(tip)}</em>${why}</span></button>`;
   }
-  function attackBlock(unit) {
-    if (!unit) return null;
-    if (unit.sick) return { code: 'summoning_sickness', why: '新入场不能攻击' };
-    if (unit.attacked) return { code: 'already_attacked', why: '本回合用过' };
-    return null;
+  function blockFrom(result) {
+    if (!result || result.ok) return null;
+    return { code: result.code, why: C.reasonText(result.code) };
   }
-  function paidBlock(unit, cost, usedKey) {
-    if (unit && unit.ability_lock) return { code: 'seized_this_turn', why: '本回合不能发动' };
-    if (usedKey && game.ability_used[game.seat][usedKey]) return { code: 'already_used_ability', why: '本回合用过' };
-    if (game.supply[game.seat] < cost) return { code: 'not_enough_supply', why: '没电' };
-    return null;
+  function attackBlock(unit, target) {
+    if (!unit) return { code: 'bad_target', why: C.reasonText('bad_target') };
+    return blockFrom(C.probe(game, () => game.attack(game.seat, unit.iid, target)));
   }
   function supportBlock(unit) {
-    const cost = cards[unit.card_id].amount;
-    if (unit.ability_lock) return { code: 'seized_this_turn', why: '本回合不能发动' };
-    if (game.ability_used[game.seat].support) return { code: 'already_used_ability', why: '本回合用过' };
-    const reviveId = pack.capabilities.bindings.support.revive;
-    const banned = game.promoteBan[game.seat] || [];
-    if (!game.graves[game.seat].includes(reviveId) || banned.includes(reviveId)) {
-      return { code: 'no_shell_in_grave', why: '墓地没有厚壳' };
-    }
-    if (game.supply[game.seat] < cost) return { code: 'not_enough_supply', why: '没电' };
-    return null;
+    if (!unit) return { code: 'no_stamp_on_board', why: C.reasonText('no_stamp_on_board') };
+    return blockFrom(C.probe(game, () => game.support(game.seat)));
   }
   function unitMenu(unit) {
     const card = cards[unit.card_id];
     const bits = [];
-    bits.push(actButton('attack-base', 'scene/ui/lamp-attack-amber.webp', '打基地', '打对方基地。对方有护卫，且这台没有千里眼时，只能打护卫。', attackBlock(unit)));
+    bits.push(actButton('attack-base', 'scene/ui/lamp-attack-amber.webp', '打基地', '打对方基地。对方有护卫，且这台没有千里眼时，只能打护卫。', attackBlock(unit, 'base')));
     if (card.effect === 'support') {
       const cost = card.amount;
       bits.push(actButton('support', 'scene/ui/lamp-durability-teal.webp', `复活厚壳 · ${cost}电`, `花 ${cost} 点电，把自己墓地里的厚壳叫回最左边，满耐久。小印留在场上。`, supportBlock(unit)));
     }
     if (card.effect === 'knob') {
       const cost = card.amount;
-      bits.push(actButton('arm-knob', 'scene/ui/lamp-power-on-amber-128.webp', `攻击+1 · ${cost}电`, `花 ${cost} 点电，让一台己方单位本回合攻击 +1。可以点旋钮台自己。`, paidBlock(unit, cost, 'knob')));
+      const block = blockFrom(C.probe(game, () => game.knob(game.seat, unit.iid, unit.iid)));
+      bits.push(actButton('arm-knob', 'scene/ui/lamp-power-on-amber-128.webp', `攻击+1 · ${cost}电`, `花 ${cost} 点电，让一台己方单位本回合攻击 +1。可以点旋钮台自己。`, block));
     }
     if (card.upper_host) {
-      const used = game.upper_links[game.seat].some(item => item.source === unit.iid);
-      const block = used ? { code: 'already_used_ability', why: '本回合用过' } : paidBlock(unit, 1, '');
+      const block = blockFrom(C.probe(game, () => {
+        const ally = game.units(game.seat).find(item => item.iid !== unit.iid && game.isEsp32Main(item.card_id));
+        if (!ally) throw new C.ClashError('没有合法目标', 'bad_target');
+        game.upperLink(game.seat, unit.iid, ally.iid);
+      }));
       bits.push(actButton('upper-link', 'scene/cards/art-hostlove-432x576.webp', '接通 · 1电', '花 1 点电，把这台上位机连到一台己方 ESP32 主控。本回合第一次接上时当前供电 +1。', block));
     }
     return `<div class="act-menu" role="menu">${bits.join('')}</div>`;
+  }
+  function skillBar() {
+    if (!ui.attacker || !game) return '';
+    let found;
+    try { found = game.find(ui.attacker); } catch (error) { return ''; }
+    const unit = found[2];
+    if (!unit || found[0] !== game.seat || unit.link) return '';
+    const side = game.seat === 0 ? 'bottom' : 'top';
+    return `<div class="skill-bar ${side}" data-skill-for="${esc(unit.card_id)}">${unitMenu(unit)}</div>`;
   }
   function aimMenu(seat, unit) {
     if (seat === game.seat || unit.link || game.winner != null) return '';
@@ -385,7 +451,7 @@
     if (!unit) return '';
     const card = cards[unit.card_id];
     const selected = ui.attacker === unit.iid;
-    const hot = ui.attacker && seat !== game.seat;
+    const hot = false;
     const linked = game.upper_links[seat].some(item => item.source === unit.iid || item.target === unit.iid);
     const ribbons = [
       unit.sick ? '新入场' : '',
@@ -402,7 +468,7 @@
     if (unit.link) {
       return `<button type="button" class="link-mark${arrive ? ' arrive' : ''}" data-action="select-unit" data-link="1" data-board-seat="${seat}" data-slot="${slot}" data-seat="${seat}" data-iid="${esc(unit.iid)}" data-card="${esc(unit.card_id)}" data-host="${esc(unit.host_iid)}"><span class="mname">链</span><span class="ribbon">${esc(card.name)}</span></button>`;
     }
-    return `<button type="button" class="minion${selected ? ' selected' : ''}${hot ? ' hot' : ''}${canAttack ? ' can-attack' : ''}${arrive ? ' arrive' : ''}${lunge ? ' lunge' : ''}${hit ? ' hit' : ''}${C.hasGuard(cards, unit) ? ' guard' : ''}${unit.sick ? ' sick' : ''}${unit.attacked ? ' spent' : ''}" ${sceneAttr('unit_frame')} data-action="select-unit" data-board-seat="${seat}" data-slot="${slot}" data-seat="${seat}" data-iid="${esc(unit.iid)}" data-card="${esc(unit.card_id)}" data-sick="${unit.sick}" data-guard="${C.hasGuard(cards, unit)}" data-attack="${C.attackOf(cards, unit)}" data-durability="${unit.durability}">
+    return `<button type="button" class="minion${selected ? ' selected' : ''}${hot ? ' hot' : ''}${canAttack ? ' can-attack' : ''}${arrive ? ' arrive' : ''}${lunge ? ' lunge' : ''}${hit ? ' hit' : ''}${C.hasGuard(cards, unit) ? ' guard' : ''}${unit.sick ? ' sick' : ''}${unit.attacked ? ' spent' : ''}" ${sceneAttr('unit_frame')} data-action="select-unit" data-board-seat="${seat}" data-slot="${slot}" data-seat="${seat}" data-iid="${esc(unit.iid)}" data-card="${esc(unit.card_id)}" data-sick="${unit.sick}" data-attacked="${unit.attacked}" data-guard="${C.hasGuard(cards, unit)}" data-attack="${C.attackOf(cards, unit)}" data-durability="${unit.durability}">
       <span class="portrait">${picture(card, 'board')}</span>
       <span class="atk">${C.attackOf(cards, unit)}</span>
       <span class="hp">${unit.durability}</span>
@@ -441,8 +507,7 @@
         bits.push(html);
         return;
       }
-      const mine = seat === game.seat && ui.attacker === unit.iid;
-      bits.push(`<div class="unit-wrap">${html}${mine ? unitMenu(unit) : ''}${aimMenu(seat, unit)}</div>`);
+      bits.push(`<div class="unit-wrap" data-wrap="${esc(unit.iid)}">${html}</div>`);
     });
     if (inserting) bits.push(insertMark(row.length));
     return bits.join('');
@@ -470,7 +535,7 @@
     return `<div class="core-wrap${active ? ' active' : ''}${hot ? ' hot' : ''}">
       <button type="button" class="base-btn core${dropped ? ' flash' : ''}" ${sceneAttr('core_frame')} data-action="hit-base" data-seat="${seat}" aria-label="${seatName(seat)}核心">
         <img class="core-portrait" src="${portrait}" alt="">
-        <span class="core-name">${seatName(seat)}核心</span>
+        <span class="core-name">${sideLabel(seat)}</span>
         <span class="hp" data-seat="${seat}" data-stat="base">${game.bases[seat]}</span>
         ${delta ? `<span class="floater">-${delta}</span>` : ''}
       </button>
@@ -632,10 +697,16 @@
     const ghosts = captureGhosts();
     const over = game.winner == null ? '' : game.winner === 'draw' ? '平局' : `${seatName(game.winner)}获胜`;
     const active = game.seat;
-    const other = 1 - active;
-    const turnText = over || seatName(active) + '的回合';
-    const canEnd = game.winner == null && game.phase === 'main';
-    const scenarios = [['lesson', '教学局'], ['support-present', '小印已在场'], ['support-deploy', '先打出小印'], ['support-again', '厚壳再死'], ['promote-stamp', '小印升星'], ['grow', '超过五台'], ['crowd', '两边七台'], ['synergy', '协同与夺舍'], ['builder', '扩展组牌']];
+    const bottom = viewerBottom();
+    const other = 1 - bottom;
+    const turnText = over || (ui.mode === 'ai' ? (active === 0 ? '你的回合' : '对方的回合') : (active === 0 ? '座位 0 的回合' : '座位 1 的回合'));
+    const modeNote = ui.opening === 'sim'
+      ? `模拟战 · 种子 ${ui.seed} · 可入池 ${ui.simPool} 张。你在下方，对方在上方。`
+      : ui.mode === 'ai'
+        ? '固定教学：你在下方，对方在上方。结束回合后对方自动行动。这不是模拟战。'
+        : '两人轮流，共用这一块屏幕。座位 0 在下方，座位 1 在上方。';
+    const canEnd = canAct();
+    const scenarios = [['versus', '固定教学'], ['sim', '模拟战'], ['lesson', '本地双人'], ['support-present', '小印已在场'], ['support-deploy', '先打出小印'], ['support-again', '厚壳再死'], ['promote-stamp', '小印升星'], ['grow', '超过五台'], ['crowd', '两边七台'], ['synergy', '协同与夺舍'], ['builder', '扩展组牌']];
     $('#app').innerHTML = `<div class="table-page">
     <button type="button" class="menu-toggle" data-action="toggle-menu" aria-expanded="${ui.menu ? 'true' : 'false'}">菜单</button>
     <div class="menu-pop"${ui.menu ? '' : ' hidden'}>
@@ -651,26 +722,35 @@
       <div class="scenario-row">${scenarios.map(([id, label]) => `<button type="button" data-action="scenario" data-scenario="${id}">${label}</button>`).join('')}</div>
     </div>
     ${ui.reveal ? '<div class="banner" id="reveal-banner">教学明牌 · 双方手牌都看得见 · 牌库仍只显示张数</div>' : '<div id="reveal-banner" hidden></div>'}
-    <main class="arena table${ui.attacker ? ' aiming' : ''}${canDeploy() ? ' holding' : ''}" data-scene-status="${esc(scenebook.status || 'awaiting_generated_assets')}" data-scenario="${esc(ui.scenario)}" data-ruleset="${esc(content.ruleset_id)}" data-source-commit="${esc(C.SOURCE_COMMIT)}">
+    <main class="arena table${ui.attacker ? ' aiming' : ''}${canDeploy() ? ' holding' : ''}${ui.aiBusy ? ' ai-run' : ''}" data-scene-status="${esc(scenebook.status || 'awaiting_generated_assets')}" data-scenario="${esc(ui.scenario)}" data-ruleset="${esc(content.ruleset_id)}" data-source-commit="${esc(C.SOURCE_COMMIT)}" data-mode="${ui.mode}" data-opening="${esc(ui.opening)}" data-ai="${ui.aiBusy ? 'run' : 'idle'}" data-handoff="${ui.handoff ? '1' : '0'}" data-seed="${ui.seed || ''}" data-sim-pool="${ui.simPool || ''}" data-sim-excluded="${esc(ui.simExcluded || '')}" data-deck0="${esc(ui.built ? ui.built[0].join(',') : '')}" data-deck1="${esc(ui.built ? ui.built[1].join(',') : '')}">
       <div class="scene-bg" ${sceneAttr('arena_background')}></div>
       <div class="opp-dock">${handHtml(other, false)}</div>
       ${(game.hands[1] || []).includes(tokenId) ? '<p class="compensation">后手补偿：多 1 张牌 + 借一格电</p>' : ''}
-      <aside class="bays">${stack(other)}${stack(active)}</aside>
+      <aside class="bays">${stack(other)}${stack(bottom)}</aside>
       <div class="core-slot foe">${core(other)}</div>
       <div class="slots foe">${lane(other)}</div>
       <div class="midline">
+        <div class="mode-switch">
+          <button type="button" data-action="mode" data-mode="versus" aria-pressed="${ui.mode === 'ai' && ui.opening === 'lesson' ? 'true' : 'false'}">固定教学</button>
+          <button type="button" data-action="mode" data-mode="sim" aria-pressed="${ui.opening === 'sim' ? 'true' : 'false'}">模拟战</button>
+          <button type="button" data-action="mode" data-mode="hotseat" aria-pressed="${ui.mode === 'hotseat' ? 'true' : 'false'}">本地双人</button>
+          ${ui.opening === 'sim' ? `<button type="button" data-action="replay-seed">重放种子</button>` : ''}
+        </div>
+        <p class="mode-note">${esc(modeNote)}</p>
         <h3 id="turn-label" data-seat="${game.seat}">${esc(turnText)}</h3>
         <p class="formation" data-formation="${game.formationState(active).percent}">${esc(formationLine(active))}</p>
-        ${game.units(active).some(unit => cards[unit.card_id].upper_host && !unit.link) ? `<button type="button" class="upper-btn${ui.linking ? ' on' : ''}" data-action="upper-link"><img src="scene/cards/art-hostlove-432x576.webp" alt="">接通 · 1电</button>` : ''}
         ${strikeHint()}
         <p id="coach">${esc(coach())}</p>
         <p id="last-error" data-code="${esc(ui.error ? ui.error.code : '')}">${ui.error ? esc(ui.error.message) : ''}</p>
       </div>
-      <div class="slots mine">${lane(active)}</div>
-      <div class="core-slot mine">${core(active)}</div>
-      <section class="hand-dock" aria-label="当前手牌">${handHtml(active, true)}</section>
+      ${ui.aiBusy ? '<p class="ai-banner">对方正在行动</p>' : ''}
+      ${ui.handoff ? `<div class="handoff-mask" data-handoff="1"><div class="handoff-card"><p>轮到座位 ${game.seat}，请交给对方</p><p>两人轮流，共用这一块屏幕。确认之前不能替对方行动。</p><button type="button" data-action="handoff-confirm">交给座位 ${game.seat}</button></div></div>` : ''}
+      <div class="slots mine">${lane(bottom)}</div>
+      <div class="core-slot mine">${core(bottom)}</div>
+      ${skillBar()}
+      <section class="hand-dock" aria-label="当前手牌">${handHtml(bottom, true)}</section>
       <aside class="rail tools">
-        <button type="button" class="end-turn${canEnd ? ' hot' : ' wait'}" ${sceneAttr('end_turn')} data-action="end-turn">结束回合</button>
+        <button type="button" class="end-turn${canEnd && !ui.aiBusy && (ui.mode !== 'ai' || game.seat === 0) ? ' hot' : ' wait'}" ${sceneAttr('end_turn')} data-action="end-turn">结束回合</button>
         <div class="pads">${actions()}</div>
       </aside>
       <button type="button" class="log-toggle" data-action="toggle-log" aria-expanded="${ui.logOpen ? 'true' : 'false'}">记录</button>
@@ -687,9 +767,11 @@
     ui.fresh = false;
     document.body.dataset.ready = '1';
     document.body.dataset.ruleset = content.ruleset_id;
+    applyMarks(null);
   }
 
   function play(target, mode, index) {
+    if (!canAct()) return note(new C.ClashError(C.reasonText('not_your_turn'), 'not_your_turn'));
     const card = selectedCard();
     if (!card) return note(new C.ClashError('请先选择手牌', 'not_in_hand'));
     const seat = game.seat;
@@ -700,14 +782,19 @@
       return note(error);
     }
     ui.fx = { bases };
-    let text = `${seatName(seat)}打出${card.name}，费用 ${card.cost}。`;
+    let text = `${sideLabel(seat)}打出${card.name}，费用 ${card.cost}。`;
     if (card.effect === 'supply') text += `当前供电 ${game.supply[seat]}，上限仍是 ${game.max_supply[seat]}。`;
+    if (card.effect === 'seize' && target != null) {
+      const moved = game.find(target)[2];
+      text += ` 夺舍：${cards[moved.card_id].name}改由${sideLabel(seat)}控制，移到${sideLabel(seat)}这一侧最右。`;
+    }
     push(text);
     clearChoice();
     render();
   }
 
   function attack(target) {
+    if (!canAct()) return note(new C.ClashError(C.reasonText('not_your_turn'), 'not_your_turn'));
     if (!ui.attacker) return note(new C.ClashError('请先点一台己方单位', 'bad_target'));
     const attacker = game.find(ui.attacker)[2];
     const attackerId = ui.attacker;
@@ -779,7 +866,56 @@
     note(new C.ClashError('这台不是你的单位', 'bad_target'));
   }
 
+  function describeAi(action) {
+    if (action.type === 'support') return '对方发动复活厚壳。';
+    if (action.type === 'attack') return action.target === 'base' ? '对方攻击你的核心。' : '对方攻击你场上的单位。';
+    return `对方打出${cards[action.card].name}。`;
+  }
+
+  function startAi() {
+    stopAi();
+    ui.aiBusy = true;
+    ui.aiSteps = 0;
+    const failed = new Set();
+    push('对方正在行动。');
+    render();
+    const step = () => {
+      if (!ui.aiBusy || !game || ui.mode !== 'ai') return;
+      if (game.winner != null || game.seat !== 1 || game.phase !== 'main' || ui.aiSteps >= 16) {
+        if (game && game.winner == null && game.seat === 1 && game.phase === 'main') {
+          try { C.finishTurn(game); } catch (error) { note(error); }
+          push('对方结束回合。');
+        }
+        stopAi();
+        render();
+        return;
+      }
+      const action = C.planAi(C.aiView(game), failed);
+      ui.aiSteps += 1;
+      if (!action) {
+        try { C.finishTurn(game); } catch (error) { note(error); }
+        push('对方没有继续行动，结束回合。');
+        stopAi();
+        render();
+        return;
+      }
+      try {
+        C.applyAi(game, action);
+      } catch (error) {
+        failed.add(action.key);
+        aiTimer = setTimeout(step, 160);
+        return;
+      }
+      push(describeAi(action));
+      render();
+      aiTimer = setTimeout(step, 220);
+    };
+    aiTimer = setTimeout(step, 220);
+  }
+
   function endTurn() {
+    if (ui.aiBusy) return;
+    if (ui.mode === 'ai' && game.seat !== 0) return;
     const next = 1 - game.seat;
     const deckBefore = game.decks[next].length;
     const handBefore = game.hands[next].length;
@@ -806,13 +942,30 @@
     }
     push(text);
     ui.showBanner = true;
+    if (ui.mode === 'hotseat' && game.winner == null) ui.handoff = true;
     render();
+    if (ui.mode === 'ai' && game.winner == null && game.seat === 1 && !ui.handoff) startAi();
   }
 
   function act(action, el, event) {
     if (el && el.dataset && el.dataset.block) {
       const why = el.querySelector('.act-why');
-      return note(new C.ClashError(why ? why.textContent : '现在不能这么做', el.dataset.block));
+      return note(new C.ClashError(why ? why.textContent : C.reasonText(el.dataset.block), el.dataset.block));
+    }
+    const free = ['mode', 'toggle-menu', 'toggle-log', 'scenario', 'restart', 'handoff-confirm', 'replay-seed'];
+    if ((ui.aiBusy || ui.handoff || (ui.mode === 'ai' && game && game.seat !== 0)) && !free.includes(action)) {
+      return note(new C.ClashError(C.reasonText('not_your_turn'), 'not_your_turn'));
+    }
+    if (action === 'handoff-confirm') {
+      ui.handoff = false;
+      return render();
+    }
+    if (action === 'replay-seed') return begin('sim', ui.seed);
+    if (action === 'mode') {
+      if (el.dataset.mode === 'hotseat') begin('lesson');
+      else if (el.dataset.mode === 'sim') begin('sim');
+      else begin('versus');
+      return;
     }
     if (action === 'toggle-menu') { ui.menu = !ui.menu; return render(); }
     if (action === 'toggle-log') { ui.logOpen = !ui.logOpen; return render(); }
@@ -845,10 +998,10 @@
       return play(null, null, Number(el.dataset.index));
     }
     if (action === 'upper-link') {
-      ui.linking = !ui.linking;
-      ui.linkSource = null;
+      const selected = ui.attacker ? game.find(ui.attacker)[2] : null;
+      ui.linking = true;
+      ui.linkSource = selected && cards[selected.card_id].upper_host ? selected.iid : null;
       ui.handIndex = null;
-      ui.attacker = null;
       ui.knob = false;
       ui.error = null;
       return render();
@@ -913,18 +1066,512 @@
     if (action === 'end-turn') return endTurn();
   }
 
+  let gesture = null;
+  let swallowUntil = 0;
+  let blockDouble = false;
+  let inspectTimer = 0;
+  let dragNodes = [];
+
+  function clearDragNodes() {
+    dragNodes.forEach(node => node.remove());
+    dragNodes = [];
+    document.body.classList.remove('hand-out');
+    const arena = document.querySelector('.arena');
+    if (arena) arena.classList.remove('dragging');
+  }
+
+  function markHost(key) {
+    if (!key) return null;
+    if (key.startsWith('unit:')) {
+      const iid = key.slice(5);
+      const node = document.querySelector(`[data-wrap="${iid}"]`) || document.querySelector(`[data-iid="${iid}"]`);
+      return node;
+    }
+    if (key.startsWith('core:')) {
+      const seat = key.slice(5);
+      const button = document.querySelector(`[data-action="hit-base"][data-seat="${seat}"]`);
+      return button ? button.closest('.core-wrap') : null;
+    }
+    if (key.startsWith('seam:')) return document.querySelector(`.insert[data-index="${key.slice(5)}"]`);
+    if (key.startsWith('half:')) return document.querySelector(key.endsWith(String(viewerBottom())) ? '.slots.mine' : '.slots.foe');
+    return null;
+  }
+
+  function clearMarkAttrs() {
+    document.querySelectorAll('[data-mark]').forEach(node => node.removeAttribute('data-mark'));
+    document.querySelectorAll('.reject-badge').forEach(node => node.remove());
+  }
+
+  function intentKind() {
+    const card = selectedCard();
+    if (card) {
+      if (card.effect === 'seize') return 'seize';
+      if (card.effect === 'damage' || card.effect === 'play_damage') return 'damage';
+      if (card.effect === 'mend' || card.kind === 'attachment') return 'ally';
+      if (card.kind === 'main' || card.kind === 'spell') return 'deploy';
+    }
+    if (ui.knob || (ui.linking && ui.linkSource)) return 'ally';
+    if (ui.attacker) return 'attack';
+    return '';
+  }
+
+  function shortReject(code, kind) {
+    if (code === 'guard_blocks') return C.reasonText('guard_blocks');
+    if (kind === 'seize') return '不符合夺舍';
+    if (kind === 'attack' || kind === 'damage') return code === 'bad_target' ? '不是可选的敌方单位' : C.reasonText(code);
+    if (kind === 'ally') return code === 'bad_target' ? '不是可选的友方单位' : C.reasonText(code);
+    return C.reasonText(code);
+  }
+
+  function collectMarks() {
+    const legal = new Set();
+    let reason = { code: '', text: '' };
+    if (!canAct()) return { legal, reason };
+    const card = selectedCard();
+    const seat = game.seat;
+    if (card && game.supply[seat] < card.cost) {
+      return { legal, reason: { code: 'not_enough_supply', text: C.reasonText('not_enough_supply') } };
+    }
+    const tryPlay = (target, mode, index) => C.probe(game, () => game.play(seat, card.template_id, target, mode, index));
+    if (card && card.kind === 'main' && card.effect !== 'play_damage') {
+      const count = game.boards[seat].length;
+      for (let index = 0; index <= count; index += 1) {
+        if (tryPlay(null, null, index).ok) legal.add('seam:' + index);
+      }
+      if (!legal.size) reason = { code: 'bad_target', text: C.reasonText('bad_target') };
+      return { legal, reason };
+    }
+    if (card && card.kind === 'spell' && !wantsTarget(card)) {
+      const result = tryPlay(null, null, null);
+      if (result.ok) legal.add('half:' + seat);
+      else reason = { code: result.code, text: C.reasonText(result.code) };
+      return { legal, reason };
+    }
+    if (card && (card.effect === 'seize' || card.effect === 'damage' || card.effect === 'play_damage')) {
+      game.units(1 - seat).forEach(unit => {
+        if (tryPlay(unit.iid, null, null).ok) legal.add('unit:' + unit.iid);
+      });
+      if (card.kind === 'main') {
+        const count = game.boards[seat].length;
+        for (let index = 0; index <= count; index += 1) {
+          if (tryPlay(null, null, index).ok) legal.add('seam:' + index);
+        }
+      }
+      if (!legal.size) reason = { code: 'bad_target', text: C.reasonText('bad_target') };
+      return { legal, reason };
+    }
+    if (card && card.effect === 'mend') {
+      game.units(seat).forEach(unit => {
+        if (tryPlay(unit.iid, 'heal', null).ok || tryPlay(unit.iid, 'temp', null).ok) legal.add('unit:' + unit.iid);
+      });
+      if (!legal.size) reason = { code: 'bad_target', text: C.reasonText('bad_target') };
+      return { legal, reason };
+    }
+    if (card && card.kind === 'attachment') {
+      let host = false;
+      game.units(seat).forEach(unit => {
+        const result = tryPlay(unit.iid, null, null);
+        if (result.ok) {
+          legal.add('unit:' + unit.iid);
+          host = true;
+        }
+      });
+      if (card.chain_piece && host) {
+        const count = game.boards[seat].length;
+        for (let index = 0; index <= count; index += 1) legal.add('seam:' + index);
+      }
+      if (!legal.size) reason = { code: 'bad_target', text: C.reasonText('bad_target') };
+      return { legal, reason };
+    }
+    if (ui.knob) {
+      const source = game.units(seat).find(unit => cards[unit.card_id].effect === 'knob');
+      if (source) {
+        game.units(seat).forEach(unit => {
+          if (C.probe(game, () => game.knob(seat, source.iid, unit.iid)).ok) legal.add('unit:' + unit.iid);
+        });
+      }
+      if (!legal.size) reason = { code: 'bad_target', text: C.reasonText('bad_target') };
+      return { legal, reason };
+    }
+    if (ui.linking && ui.linkSource) {
+      game.units(seat).forEach(unit => {
+        if (C.probe(game, () => game.upperLink(seat, ui.linkSource, unit.iid)).ok) legal.add('unit:' + unit.iid);
+      });
+      if (!legal.size) reason = { code: 'bad_target', text: C.reasonText('bad_target') };
+      return { legal, reason };
+    }
+    if (ui.attacker) {
+      let blocked = null;
+      game.units(1 - seat).forEach(unit => {
+        const result = C.probe(game, () => game.attack(seat, ui.attacker, unit.iid));
+        if (result.ok) legal.add('unit:' + unit.iid);
+        else if (!blocked) blocked = result;
+      });
+      const base = C.probe(game, () => game.attack(seat, ui.attacker, 'base'));
+      if (base.ok) legal.add('core:' + (1 - seat));
+      else if (!blocked) blocked = base;
+      if (!legal.size && blocked) reason = { code: blocked.code, text: C.reasonText(blocked.code) };
+      return { legal, reason };
+    }
+    return { legal, reason };
+  }
+
+  function applyMarks(focusKey, bad) {
+    if (!document.querySelector('.arena')) return;
+    clearMarkAttrs();
+    const marks = collectMarks();
+    const arena = document.querySelector('.arena');
+    arena.classList.toggle('marking', marks.legal.size > 0 || !!(bad && bad.key));
+    marks.legal.forEach(key => {
+      const node = markHost(key);
+      if (!node) return;
+      node.dataset.mark = key === focusKey ? 'hot' : 'legal';
+    });
+    const reasonNode = document.querySelector('#last-error');
+    if (!ui.error && reasonNode && marks.reason.code && !marks.legal.size) {
+      reasonNode.dataset.code = marks.reason.code;
+      reasonNode.textContent = marks.reason.text;
+    }
+    if (bad && bad.key && !marks.legal.has(bad.key)) {
+      const node = markHost(bad.key);
+      if (node) {
+        node.dataset.mark = 'bad';
+        const badge = document.createElement('div');
+        badge.className = 'reject-badge';
+        badge.innerHTML = `<span class="cross" aria-hidden="true">×</span><span class="why">${esc(bad.text)}</span>`;
+        node.appendChild(badge);
+      }
+    }
+    return marks;
+  }
+
+  function pointHit(x, y) {
+    const stack = document.elementsFromPoint ? document.elementsFromPoint(x, y) : [document.elementFromPoint(x, y)];
+    for (const el of stack) {
+      if (!el || !el.closest) continue;
+      if (el.closest('.drag-ghost, .aim-arrow, .reject-badge, .peek')) continue;
+      const seam = el.closest('.insert');
+      if (seam) return { key: 'seam:' + seam.dataset.index, el: seam };
+      const link = el.closest('.link-mark');
+      if (link) return { key: 'unit:' + link.dataset.iid, el: link, link: true };
+      const unit = el.closest('.minion');
+      if (unit) return { key: 'unit:' + unit.dataset.iid, el: unit.closest('.unit-wrap') || unit };
+      const core = el.closest('.core-wrap');
+      if (core) {
+        const seatNode = core.querySelector('[data-stat="base"]');
+        return { key: 'core:' + (seatNode ? seatNode.dataset.seat : ''), el: core };
+      }
+      const lane = el.closest('.slots');
+      if (lane) return { key: 'half:' + (lane.classList.contains('mine') ? String(viewerBottom()) : String(1 - viewerBottom())), el: lane };
+      if (el.closest('.hand-dock, .opp-dock')) return { key: 'hand', el };
+    }
+    return null;
+  }
+
+  function specificReject(hit) {
+    if (!hit || hit.key === 'hand') return null;
+    const card = selectedCard();
+    const seat = game.seat;
+    const kind = intentKind();
+    let result = { ok: false, code: 'bad_target' };
+    if (card && hit.key.startsWith('seam:') && card.kind === 'main') {
+      result = C.probe(game, () => game.play(seat, card.template_id, null, null, Number(hit.key.slice(5))));
+    } else if (card && hit.key.startsWith('unit:')) {
+      const mode = card.effect === 'mend' ? 'heal' : null;
+      const index = card.chain_piece ? Number(hit.key.slice(5) ? 0 : 0) : null;
+      result = C.probe(game, () => game.play(seat, card.template_id, hit.key.slice(5), mode, card.chain_piece ? 0 : null));
+    } else if (card && hit.key.startsWith('core:')) {
+      result = { ok: false, code: card.effect === 'seize' ? 'bad_target' : 'bad_target' };
+    } else if (ui.attacker && hit.key.startsWith('unit:')) {
+      result = C.probe(game, () => game.attack(seat, ui.attacker, hit.key.slice(5)));
+    } else if (ui.attacker && hit.key.startsWith('core:')) {
+      if (hit.key.slice(5) === String(1 - seat)) result = C.probe(game, () => game.attack(seat, ui.attacker, 'base'));
+      else result = { ok: false, code: 'bad_target' };
+    } else if (ui.knob && hit.key.startsWith('unit:')) {
+      const source = game.units(seat).find(unit => cards[unit.card_id].effect === 'knob');
+      result = source ? C.probe(game, () => game.knob(seat, source.iid, hit.key.slice(5))) : result;
+    }
+    if (result.ok) return null;
+    return { key: hit.key, text: shortReject(result.code, kind) };
+  }
+
+  function hostNear(index, marks) {
+    const row = game.boards[game.seat];
+    const found = [];
+    row.forEach((unit, slot) => {
+      if (unit.link || !marks.legal.has('unit:' + unit.iid)) return;
+      found.push({ slot, unit });
+    });
+    found.sort((a, b) => Math.abs(a.slot - index) - Math.abs(b.slot - index) || a.slot - b.slot);
+    return found[0] ? found[0].unit : null;
+  }
+
+  function submitGesture(g, hit, marks) {
+    if (!canAct() || !hit || !marks.legal.has(hit.key)) return false;
+    if (g.kind === 'hand') {
+      ui.handIndex = g.handIndex;
+      const card = selectedCard();
+      if (!card) return false;
+      if (card.kind === 'main' && hit.key.startsWith('seam:')) return play(null, null, Number(hit.key.slice(5))) || true;
+      if ((card.kind === 'spell' && !wantsTarget(card) && hit.key === 'half:' + game.seat) || (card.kind === 'main' && card.effect === 'play_draw' && hit.key.startsWith('seam:'))) {
+        return play(null) || true;
+      }
+      if (card.kind === 'attachment' && hit.key.startsWith('unit:')) {
+        return play(hit.key.slice(5), null, card.chain_piece ? 0 : null) || true;
+      }
+      if (card.chain_piece && hit.key.startsWith('seam:')) {
+        const host = hostNear(Number(hit.key.slice(5)), marks);
+        if (!host) return false;
+        return play(host.iid, null, Number(hit.key.slice(5))) || true;
+      }
+      if ((card.effect === 'seize' || card.effect === 'damage' || card.effect === 'play_damage') && hit.key.startsWith('unit:')) {
+        return play(hit.key.slice(5)) || true;
+      }
+      if (card.effect === 'mend' && hit.key.startsWith('unit:')) {
+        ui.handIndex = g.handIndex;
+        ui.target = hit.key.slice(5);
+        ui.error = null;
+        render();
+        return true;
+      }
+      return false;
+    }
+    if (g.kind === 'unit' && ui.attacker) {
+      if (hit.key.startsWith('unit:') && marks.legal.has(hit.key)) return attack(hit.key.slice(5)) || true;
+      if (hit.key.startsWith('core:') && marks.legal.has(hit.key)) return attack('base') || true;
+    }
+    if (g.kind === 'knob' && hit.key.startsWith('unit:')) {
+      const source = game.units(game.seat).find(unit => cards[unit.card_id].effect === 'knob');
+      if (!source) return false;
+      try { game.knob(game.seat, source.iid, hit.key.slice(5)); }
+      catch (error) { note(error); return true; }
+      push(`旋钮台强化了${cards[game.find(hit.key.slice(5))[2].card_id].name}，本回合攻击 +1。`);
+      clearChoice();
+      render();
+      return true;
+    }
+    return false;
+  }
+
+  function showPeek(cardId) {
+    const card = cards[cardId];
+    if (!card) return;
+    document.querySelectorAll('.peek').forEach(node => node.remove());
+    const peek = document.createElement('div');
+    peek.className = 'peek';
+    peek.textContent = `${card.name} · ${blurb(card)} · 只查看，不出牌`;
+    document.body.appendChild(peek);
+    setTimeout(() => peek.remove(), 900);
+  }
+
+  function moveGhost(x, y) {
+    const ghost = document.querySelector('.drag-ghost');
+    if (!ghost) return;
+    ghost.style.left = x + 'px';
+    ghost.style.top = y + 'px';
+    const arrow = document.querySelector('.aim-arrow line');
+    if (!arrow || !gesture || !gesture.origin) return;
+    arrow.setAttribute('x2', x);
+    arrow.setAttribute('y2', y);
+  }
+
+  function ensureGhost(label, attack) {
+    if (document.querySelector('.drag-ghost')) return;
+    const ghost = document.createElement('div');
+    ghost.className = 'drag-ghost';
+    ghost.textContent = label;
+    document.body.appendChild(ghost);
+    dragNodes.push(ghost);
+    if (attack && gesture) {
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('class', 'aim-arrow');
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', gesture.origin.x);
+      line.setAttribute('y1', gesture.origin.y);
+      line.setAttribute('x2', gesture.x);
+      line.setAttribute('y2', gesture.y);
+      svg.appendChild(line);
+      document.body.appendChild(svg);
+      dragNodes.push(svg);
+    }
+  }
+
+  function refreshDrag() {
+    if (!gesture) return;
+    const hit = pointHit(gesture.x, gesture.y);
+    const marks = applyMarks(hit && hit.key, null) || { legal: new Set() };
+    const bad = hit && !marks.legal.has(hit.key) && hit.key !== 'hand' && !hit.key.startsWith('half:') ? specificReject(hit) : null;
+    if (bad) applyMarks(null, bad);
+    else if (hit && marks.legal.has(hit.key)) applyMarks(hit.key, null);
+    moveGhost(gesture.x, gesture.y);
+    const arrow = document.querySelector('.aim-arrow line');
+    if (arrow) arrow.setAttribute('stroke', bad ? '#ff2a2a' : '#1cff6a');
+  }
+
+  function beginDragVisual() {
+    const arena = document.querySelector('.arena');
+    if (arena) arena.classList.add('dragging');
+    if (gesture.kind === 'hand') {
+      document.body.classList.add('hand-out');
+      ui.handIndex = gesture.handIndex;
+      ui.attacker = null;
+      const laneEl = document.querySelector(game.seat === viewerBottom() ? '.slots.mine' : '.slots.foe');
+      if (laneEl) laneEl.innerHTML = lane(game.seat);
+      const card = selectedCard();
+      ensureGhost(card ? card.name : '牌', !!(card && wantsTarget(card)));
+    } else if (gesture.kind === 'knob') {
+      ui.knob = true;
+      ui.attacker = null;
+      ui.handIndex = null;
+      ensureGhost('攻击+1', true);
+    } else if (gesture.kind === 'unit') {
+      const unit = game.find(gesture.iid)[2];
+      const ready = unit && !unit.sick && !unit.attacked && !unit.link && Number(gesture.seat) === game.seat;
+      if (!ready) return;
+      ui.attacker = gesture.iid;
+      ui.handIndex = null;
+      const box = gesture.origin;
+      ensureGhost(cards[unit.card_id].name, true);
+      if (box) {
+        const arrow = document.querySelector('.aim-arrow line');
+        if (arrow) {
+          arrow.setAttribute('x1', box.x);
+          arrow.setAttribute('y1', box.y);
+        }
+      }
+    }
+    refreshDrag();
+  }
+
+  function finishGesture(cancelled) {
+    const g = gesture;
+    clearTimeout(inspectTimer);
+    inspectTimer = 0;
+    const hit = g ? pointHit(g.x, g.y) : null;
+    const dragged = !!(g && g.dragging);
+    const inspected = !!(g && g.inspect && !g.dragging);
+    gesture = null;
+    clearDragNodes();
+    if (dragged || inspected) {
+      swallowUntil = Date.now() + 80;
+      blockDouble = true;
+      setTimeout(() => { blockDouble = false; }, 400);
+    }
+    if (!g || cancelled || g.dead) {
+      if (dragged) {
+        clearChoice();
+        render();
+      }
+      return;
+    }
+    if (inspected) return;
+    if (!dragged) return;
+    ui.handIndex = g.kind === 'hand' ? g.handIndex : ui.handIndex;
+    if (g.kind === 'unit' && g.iid) ui.attacker = g.iid;
+    const marks = collectMarks();
+    const submitted = submitGesture(g, hit, marks);
+    if (!submitted) {
+      clearChoice();
+      render();
+    }
+  }
+
+  document.addEventListener('pointerdown', event => {
+    if (gesture && event.pointerId !== gesture.id) {
+      gesture.dead = true;
+      finishGesture(true);
+      return;
+    }
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    const hand = event.target.closest && event.target.closest('[data-action="select-hand"]');
+    const unit = event.target.closest && event.target.closest('.minion[data-action="select-unit"]');
+    const knob = event.target.closest && event.target.closest('[data-action="arm-knob"]');
+    if (!hand && !unit && !knob) return;
+    const rect = (unit || hand || knob).getBoundingClientRect();
+    gesture = {
+      id: event.pointerId,
+      x0: event.clientX,
+      y0: event.clientY,
+      x: event.clientX,
+      y: event.clientY,
+      t0: Date.now(),
+      dragging: false,
+      inspect: false,
+      dead: false,
+      kind: hand ? 'hand' : knob ? 'knob' : 'unit',
+      handIndex: hand ? Number(hand.dataset.handIndex) : null,
+      cardId: hand ? hand.dataset.card : '',
+      iid: unit ? unit.dataset.iid : '',
+      seat: unit ? unit.dataset.seat : '',
+      origin: { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
+    };
+    clearTimeout(inspectTimer);
+    inspectTimer = setTimeout(() => {
+      if (!gesture || gesture.dragging || gesture.id !== event.pointerId) return;
+      gesture.inspect = true;
+      if (gesture.cardId) showPeek(gesture.cardId);
+    }, 400);
+  }, true);
+
+  document.addEventListener('pointermove', event => {
+    if (!gesture || event.pointerId !== gesture.id) return;
+    gesture.x = event.clientX;
+    gesture.y = event.clientY;
+    const dist = Math.hypot(gesture.x - gesture.x0, gesture.y - gesture.y0);
+    if (dist > 10) {
+      if (gesture.inspect) return;
+      event.preventDefault();
+      if (!gesture.dragging) {
+        gesture.dragging = true;
+        clearTimeout(inspectTimer);
+        beginDragVisual();
+      } else refreshDrag();
+    }
+  }, { passive: false });
+
+  document.addEventListener('pointerup', event => {
+    if (!gesture || event.pointerId !== gesture.id) return;
+    gesture.x = event.clientX;
+    gesture.y = event.clientY;
+    finishGesture(false);
+  });
+  document.addEventListener('pointercancel', event => {
+    if (!gesture || event.pointerId !== gesture.id) return;
+    gesture.dead = true;
+    finishGesture(true);
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && gesture) {
+      gesture.dead = true;
+      finishGesture(true);
+    }
+  });
+  document.addEventListener('contextmenu', event => {
+    if (!gesture) return;
+    event.preventDefault();
+    gesture.dead = true;
+    finishGesture(true);
+  });
+
   document.addEventListener('click', event => {
+    if (Date.now() < swallowUntil) {
+      swallowUntil = 0;
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
     const el = event.target.closest('[data-action]');
     if (!el || !$('#app').contains(el)) return;
     event.preventDefault();
     act(el.dataset.action, el, event);
   });
   document.addEventListener('dblclick', event => {
+    if (Date.now() < swallowUntil || blockDouble) return;
     const el = event.target.closest('[data-action="select-hand"]');
     if (!el || !$('#app').contains(el)) return;
     event.preventDefault();
     deployFromHand(Number(el.dataset.handIndex));
   });
 
-  begin('lesson');
+  begin('versus');
 })(globalThis);

@@ -1,14 +1,30 @@
 /* pcg.clash.v0 table rules.
- * Bound to prompt commit 5e1caabddd13559ad8d05f1b9ff8b681ec164052.
+ * Bound to prompt commit 7ba58fb399956409ebc60323e2cca595c46112a0.
  * Card numbers come from the playtest JSON. Combat reads kind, cost, attack,
  * durability, guard, bonuses and the closed effect list only.
  * star, family and version are stored when a pack supplies them and are not read here. */
 (function (root) {
   'use strict';
   const RULESET = 'pcg.clash.v0';
-  const SOURCE_COMMIT = '5e1caabddd13559ad8d05f1b9ff8b681ec164052';
+  const SOURCE_COMMIT = '7ba58fb399956409ebc60323e2cca595c46112a0';
   const IMPLEMENTED_EFFECTS = Object.freeze(['support', 'knob', 'mend', 'damage', 'heal_base', 'supply', 'play_draw', 'play_damage', 'draw_one', 'retrieve_grave', 'arm_aiflow', 'seize']);
   const IMPLEMENTED = new Set(IMPLEMENTED_EFFECTS);
+  const REASON_TEXT = Object.freeze({
+    summoning_sickness: '刚上场，本回合不能攻击',
+    already_attacked: '这台本回合已经攻击过',
+    not_enough_supply: '供电不足',
+    guard_blocks: '对方有护卫，只能攻击护卫',
+    bad_target: '没有合法目标',
+    already_used_ability: '本回合这个技能已经用过',
+    seized_this_turn: '刚改由你控制，本回合不能发动',
+    not_your_turn: '现在不能替这一方操作',
+    no_shell_in_grave: '墓地没有厚壳',
+    no_stamp_on_board: '场上没有小印',
+    already_has_attachment: '这台已经有配件',
+    already_has_guard: '这台已经有护卫',
+    bad_index: '插入位置不对',
+    game_over: '终局已锁定'
+  });
 
   class ClashError extends Error {
     constructor(message, code = 'rejected') {
@@ -800,9 +816,283 @@
     game.start_turn();
   }
 
+  function aiView(game) {
+    const seat = 1;
+    const show = unit => ({
+      iid: unit.iid,
+      card_id: unit.card_id,
+      attack: attackOf(game.cards, unit),
+      durability: unit.durability,
+      sick: !!unit.sick,
+      attacked: !!unit.attacked,
+      guard: hasGuard(game.cards, unit),
+      attached: unit.attachments.length > 0,
+      effect: game.cards[unit.card_id].effect || null,
+      amount: game.cards[unit.card_id].amount || 0,
+      lock: !!unit.ability_lock
+    });
+    return {
+      supply: game.supply[seat],
+      baseSelf: game.bases[seat],
+      hand: game.hands[seat].map(id => {
+        const card = game.cards[id];
+        return {
+          id, cost: card.cost, kind: card.kind, effect: card.effect || null,
+          amount: card.amount || 0, grants_guard: !!card.grants_guard
+        };
+      }),
+      own: game.units(seat).map(show),
+      opp: game.units(0).map(show),
+      ownGrave: game.graves[seat].slice(),
+      usedSupport: !!game.ability_used[seat].support
+    };
+  }
+
+  function planAi(view, failed) {
+    const blocked = key => failed && failed.has(key);
+    const support = view.own.find(unit => unit.effect === 'support' && !unit.lock);
+    if (support && !view.usedSupport && view.ownGrave.includes('hou_ke') && view.supply >= support.amount) {
+      const key = 'support';
+      if (!blocked(key)) return { type: 'support', key };
+    }
+    const mains = view.hand.filter(card => card.kind === 'main' && card.cost <= view.supply);
+    mains.sort((a, b) => b.cost - a.cost || a.id.localeCompare(b.id));
+    for (const card of mains) {
+      const key = 'play:' + card.id;
+      if (!blocked(key)) return { type: 'play', card: card.id, target: null, key };
+    }
+    const seize = view.hand.find(card => card.effect === 'seize' && card.cost <= view.supply);
+    if (seize && view.opp.length) {
+      const target = view.opp.slice().sort((a, b) => b.durability - a.durability || a.iid.localeCompare(b.iid))[0];
+      const key = 'play:' + seize.id + ':' + target.iid;
+      if (!blocked(key)) return { type: 'play', card: seize.id, target: target.iid, key };
+    }
+    const damage = view.hand.find(card => card.effect === 'damage' && card.cost <= view.supply);
+    if (damage && view.opp.length) {
+      const target = view.opp.slice().sort((a, b) => a.durability - b.durability || a.iid.localeCompare(b.iid))[0];
+      const key = 'play:' + damage.id + ':' + target.iid;
+      if (!blocked(key)) return { type: 'play', card: damage.id, target: target.iid, key };
+    }
+    const coin = view.hand.find(card => card.effect === 'supply' && card.cost <= view.supply);
+    if (coin && !blocked('play:' + coin.id)) return { type: 'play', card: coin.id, target: null, key: 'play:' + coin.id };
+    const heal = view.hand.find(card => card.effect === 'heal_base' && card.cost <= view.supply);
+    if (heal && view.baseSelf < 20 && !blocked('play:' + heal.id)) return { type: 'play', card: heal.id, target: null, key: 'play:' + heal.id };
+    const part = view.hand.find(card => card.kind === 'attachment' && card.cost <= view.supply);
+    const host = part && view.own.find(unit => !unit.attached && !(part.grants_guard && unit.guard));
+    if (part && host) {
+      const key = 'play:' + part.id + ':' + host.iid;
+      if (!blocked(key)) return { type: 'play', card: part.id, target: host.iid, key };
+    }
+    const ready = view.own.filter(unit => !unit.sick && !unit.attacked && !unit.lock);
+    for (const unit of ready) {
+      const guards = view.opp.filter(enemy => enemy.guard);
+      const target = guards.length
+        ? guards.slice().sort((a, b) => a.durability - b.durability || a.iid.localeCompare(b.iid))[0].iid
+        : 'base';
+      const key = 'attack:' + unit.iid + ':' + target;
+      if (!blocked(key)) return { type: 'attack', iid: unit.iid, target, key };
+    }
+    return null;
+  }
+
+  function applyAi(game, action) {
+    if (action.type === 'support') game.support(1);
+    else if (action.type === 'attack') game.attack(1, action.iid, action.target);
+    else if (action.type === 'play') game.play(1, action.card, action.target == null ? null : action.target, null);
+    else throw new ClashError('未知电脑行动', 'bad_target');
+  }
+
+  function snapshot(game) {
+    return JSON.stringify({
+      bases: game.bases, max_supply: game.max_supply, supply: game.supply, fatigue: game.fatigue,
+      decks: game.decks, hands: game.hands, boards: game.boards, graves: game.graves,
+      ability_used: game.ability_used, promoteBan: game.promoteBan, upper_links: game.upper_links,
+      upper_pulsed: game.upper_pulsed, aiflow_armed: game.aiflow_armed, seat: game.seat,
+      turns_started: game.turns_started, phase: game.phase, winner: game.winner, log: game.log, _nextId: game._nextId
+    });
+  }
+
+  function restore(game, raw) {
+    const snap = JSON.parse(raw);
+    Object.keys(snap).forEach(key => { game[key] = snap[key]; });
+  }
+
+  function probe(game, fn) {
+    const raw = snapshot(game);
+    try {
+      fn();
+      return { ok: true, code: '', message: '' };
+    } catch (error) {
+      return { ok: false, code: error.code || 'rejected', message: error.message || String(error) };
+    } finally {
+      restore(game, raw);
+    }
+  }
+
+  function reasonText(code) {
+    return REASON_TEXT[code] || REASON_TEXT.bad_target;
+  }
+
+  function mulberry32(seed) {
+    let a = seed >>> 0;
+    return function rng() {
+      a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function shuffle(list, rng) {
+    const out = list.slice();
+    for (let i = out.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(rng() * (i + 1));
+      const swap = out[i];
+      out[i] = out[j];
+      out[j] = swap;
+    }
+    return out;
+  }
+
+  function simCatalog(rosterCards, artRids) {
+    const art = new Set(artRids || []);
+    const included = [];
+    const excluded = [];
+    (rosterCards || []).forEach(card => {
+      const effect = card.effect || null;
+      if (card.kind !== 'main' && card.kind !== 'attachment') {
+        excluded.push({ id: card.template_id, name: card.name || '', reason: '不是主控或配件' });
+        return;
+      }
+      if (effect && !IMPLEMENTED.has(effect)) {
+        excluded.push({ id: card.template_id, name: card.name || '', reason: '结算器还不认识效果 ' + effect });
+        return;
+      }
+      if (!card.rid || !art.has(card.rid)) {
+        excluded.push({ id: card.template_id, name: card.name || '', reason: '没有真实卡面' });
+        return;
+      }
+      included.push(card);
+    });
+    return { included, excluded };
+  }
+
+  function takeCards(rng, list, count, used) {
+    const bag = shuffle(list.filter(card => !used.has(card.template_id)), rng);
+    const got = bag.slice(0, count);
+    got.forEach(card => used.add(card.template_id));
+    return got;
+  }
+
+  function deckShape(list) {
+    return {
+      size: list.length,
+      unique: new Set(list.map(card => card.template_id)).size === list.length,
+      mains: list.filter(card => card.kind === 'main').length,
+      lowMains: list.filter(card => card.kind === 'main' && card.cost <= 2).length,
+      mid: list.filter(card => card.cost >= 3 && card.cost <= 5).length,
+      high: list.filter(card => card.cost >= 6).length,
+      parts: list.filter(card => card.kind === 'attachment').length,
+      topCheap: list.slice(0, 4).filter(card => card.cost <= 2).length
+    };
+  }
+
+  function shapeOk(shape, relaxed) {
+    if (!shape.unique || shape.mains < 4 || shape.lowMains < 1 || shape.size < 8) return false;
+    if (relaxed) return true;
+    return shape.size === 12 && shape.lowMains >= 2 && shape.mid >= 2 && shape.high >= 1 && shape.parts >= 2 && shape.topCheap >= 2;
+  }
+
+  function orderDeck(picked, rng, notes) {
+    const cheap = picked.filter(card => card.cost <= 2);
+    const rest = picked.filter(card => card.cost > 2);
+    const top = cheap.slice(0, 2);
+    const body = shuffle(rest.concat(cheap.slice(2)), rng);
+    const ordered = top.concat(body);
+    if (ordered.slice(0, 4).filter(card => card.cost <= 2).length < 2) notes.push('牌池不足');
+    return ordered;
+  }
+
+  function buildSimDeck(pool, rng) {
+    const notes = [];
+    const mains = pool.filter(card => card.kind === 'main');
+    const parts = pool.filter(card => card.kind === 'attachment');
+    const lowMains = mains.filter(card => card.cost <= 2);
+    const mid = pool.filter(card => card.cost >= 3 && card.cost <= 5);
+    const high = pool.filter(card => card.cost >= 6);
+    let wantHigh = 1;
+    let wantMid = 2;
+    let relaxed = false;
+    function assemble() {
+      const used = new Set();
+      let picked = [];
+      picked = picked.concat(takeCards(rng, lowMains, Math.min(2, lowMains.length), used));
+      if (wantMid) picked = picked.concat(takeCards(rng, mid, wantMid, used));
+      if (wantHigh) picked = picked.concat(takeCards(rng, high, wantHigh, used));
+      const haveParts = picked.filter(card => card.kind === 'attachment').length;
+      if (haveParts < 2) picked = picked.concat(takeCards(rng, parts, 2 - haveParts, used));
+      const haveMains = picked.filter(card => card.kind === 'main').length;
+      if (haveMains < 4) picked = picked.concat(takeCards(rng, mains, 4 - haveMains, used));
+      const room = Math.max(0, 12 - picked.length);
+      picked = picked.concat(takeCards(rng, pool, room, used));
+      return picked.slice(0, 12);
+    }
+    let picked = assemble();
+    if (!shapeOk(deckShape(picked), false)) {
+      wantHigh = 0;
+      relaxed = true;
+      notes.push('放宽高费');
+      picked = assemble();
+    }
+    if (!shapeOk(deckShape(picked), false) && wantMid > 1) {
+      wantMid = 1;
+      notes.push('减少中费');
+      picked = assemble();
+    }
+    if (!shapeOk(deckShape(picked), true)) {
+      notes.push('牌池不足');
+      if (picked.length < 8) picked = picked.concat(pool.filter(card => !picked.some(item => item.template_id === card.template_id)).slice(0, 8 - picked.length));
+    }
+    const ordered = orderDeck(picked, rng, notes);
+    return { ids: ordered.map(card => card.template_id), notes, shape: deckShape(ordered) };
+  }
+
+  function buildSimDecks(pool, seed) {
+    const seed0 = seed >>> 0;
+    const left = buildSimDeck(pool, mulberry32(seed0 || 1));
+    const rightSeed = (Math.imul(seed0 || 1, 0x9E3779B1) >>> 0) || 1;
+    const right = buildSimDeck(pool, mulberry32(rightSeed));
+    return {
+      seed: seed0,
+      decks: [left.ids, right.ids],
+      notes: left.notes.concat(right.notes),
+      shapes: [left.shape, right.shape]
+    };
+  }
+
+  function runAiTurn(game) {
+    const done = [];
+    const failed = new Set();
+    let steps = 0;
+    while (steps < 16 && game.winner == null && game.seat === 1 && game.phase === 'main') {
+      const action = planAi(aiView(game), failed);
+      if (!action) break;
+      steps += 1;
+      try {
+        applyAi(game, action);
+        done.push(action);
+      } catch (error) {
+        failed.add(action.key);
+      }
+    }
+    if (game.winner == null && game.seat === 1 && game.phase === 'main') finishTurn(game);
+    return done;
+  }
+
   const api = Object.freeze({
     RULESET, SOURCE_COMMIT, IMPLEMENTED_EFFECTS, ClashError, loadCards, loadPack,
-    rulesFromPayload, starOf, familyOf, attackOf, hasGuard, bypassGuard, Game, finishTurn
+    rulesFromPayload, starOf, familyOf, attackOf, hasGuard, bypassGuard, Game, finishTurn,
+    aiView, planAi, applyAi, runAiTurn, probe, reasonText, simCatalog, buildSimDecks
   });
   root.PCGClash = api;
   if (typeof module === 'object' && module.exports) module.exports = api;
