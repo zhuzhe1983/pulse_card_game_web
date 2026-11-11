@@ -62,6 +62,9 @@ img { max-width: 100%; }
   position: sticky; top: 12px; background: var(--paper); border: 1px solid var(--line);
   border-radius: 18px; padding: 14px; box-shadow: var(--shadow);
 }
+@media (min-width: 801px) {
+  #filters { max-height: calc(100vh - 108px); overflow: auto; }
+}
 fieldset { border: 0; margin: 14px 0 0; padding: 0; }
 legend { font-weight: 750; padding: 0; }
 .hint, .keys, .result-line { color: var(--muted); font-size: 13px; line-height: 1.5; }

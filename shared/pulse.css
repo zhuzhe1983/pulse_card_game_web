@@ -16,7 +16,26 @@
   font-synthesis: none;
 }
 * { box-sizing: border-box; }
-body { margin: 0; min-width: 320px; }
+body { margin: 0; min-width: 320px; padding-bottom: 32px; }
+.pulse-credit {
+  position: fixed;
+  left: 10px;
+  bottom: 8px;
+  z-index: 4;
+  margin: 0;
+  pointer-events: none;
+  max-width: calc(100vw - 20px);
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 252, 245, .94);
+  color: var(--muted);
+  border: 1px solid var(--line);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: .01em;
+  line-height: 1.35;
+  white-space: nowrap;
+}
 button, input, select, textarea { font: inherit; }
 button { cursor: pointer; }
 button:disabled { cursor: not-allowed; opacity: .42; }

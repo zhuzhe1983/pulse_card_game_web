@@ -23,7 +23,26 @@
   font-synthesis: none;
 }
 * { box-sizing: border-box; }
-body { margin: 0; min-width: 320px; }
+body { margin: 0; min-width: 320px; padding-bottom: 32px; }
+.pulse-credit {
+  position: fixed;
+  left: 10px;
+  bottom: 8px;
+  z-index: 4;
+  margin: 0;
+  pointer-events: none;
+  max-width: calc(100vw - 20px);
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 252, 245, .94);
+  color: var(--muted);
+  border: 1px solid var(--line);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: .01em;
+  line-height: 1.35;
+  white-space: nowrap;
+}
 button, input, select, textarea { font: inherit; }
 button { cursor: pointer; }
 button:disabled { cursor: not-allowed; opacity: .42; }
@@ -104,6 +123,25 @@ button:focus-visible, a:focus-visible { outline: 3px solid #eea03d; outline-offs
   font-display: swap;
 }
 [hidden] { display: none !important; }
+.pulse-credit {
+  position: fixed;
+  z-index: 15;
+  left: 12px;
+  bottom: calc(clamp(156px, 11vw, 196px) * 1.36 - 8px + 16px);
+  margin: 0;
+  pointer-events: none;
+  max-width: min(280px, 46vw);
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  line-height: 1.35;
+  font-weight: 750;
+  letter-spacing: .01em;
+  color: #d7efe6;
+  background: #07110ee6;
+  border: 1px solid #7dfff055;
+  white-space: nowrap;
+}
 body { background: #05070a; color: #e7f2ea; }
 button { border: 0; color: inherit; background: none; font: inherit; }
 .table-page { height: 100vh; width: 100vw; background: #05070a; overflow: hidden; }
@@ -596,7 +634,7 @@ body.hand-out .playcard { width: 72px !important; height: 34px !important; margi
   }
   .hands.fan {
     box-sizing: border-box; width: 100%; min-width: 0; max-width: 100%; height: 100%;
-    margin: 0; padding: 0 8px 12px; justify-content: flex-start; align-items: flex-end;
+    margin: 0; padding: 0 8px 18px; justify-content: flex-start; align-items: flex-end;
     overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain;
     scroll-snap-type: x proximity; touch-action: pan-x; scrollbar-width: thin;
   }
@@ -616,6 +654,10 @@ body.hand-out .playcard { width: 72px !important; height: 34px !important; margi
   }
   .act-menu { max-width: 70vw; }
   .end-confirm { top: 318px; right: 8px; left: 8px; bottom: auto; width: auto; padding: 6px; }
+  .pulse-credit {
+    left: 6px; bottom: 1px; max-width: calc(100vw - 12px);
+    font-size: 10px; line-height: 14px; padding: 0 6px; border-radius: 0 8px 0 0;
+  }
   .end-confirm p { font-size: 13px; }
   .end-confirm button { min-height: 28px; font-size: 12px; padding: 2px 8px; }
   .skill-bar.bottom { left: 8px; right: 120px; bottom: 232px; height: 36px; }
@@ -664,6 +706,7 @@ body.hand-out .playcard { width: 72px !important; height: 34px !important; margi
 </head>
 <body>
 <div id="app"></div>
+<p class="pulse-credit">这就是傻子 Grok Bot 做的网站</p>
 <script>globalThis.PCGClashContent={"ruleset_id":"pcg.clash.v0","balance":"playtest_unverified","base_life":20,"max_supply":10,"hand_limit":8,"board_limit":null,"opening_hand":[3,4],"deck_size_min":8,"deck_size_max":12,"minimum_main_units":4,"classification":{"game_role":"主控单位、配件或战术。只决定这张牌在回合战里怎么用。","hardware_controller":"以研究目录里的硬件结论为准，例如独立可编程宿主、辅助可编程 MCU、无芯片连接件。不从游戏角色反推，也不把带可编程 MCU 的 Chain 写成无主控。","art_type":"美术 type A / type B 按该硬件自己的卡面家族。本试玩卡表不填这个字段，也不用游戏角色代替它。"},"cards":[{"template_id":"xiao_yin","name":"小印","kind":"main","cost":1,"attack":2,"durability":2,"guard":false,"attack_bonus":0,"grants_guard":false,"bypass_guard":false,"effect":"support","amount":1,"series":"stamp","game_role":"main","hardware_controller":"independent_host","art_type":null,"role_note":"主控单位。支援：支付 1 点供电，把墓地里的厚壳工控以满耐久召回。每回合限 1 次。小印留在场上。复活的厚壳本回合不能攻击。","hardware_note":"灵感是能独立运行的邮票形主机。卡名不写型号。它和厚壳工控没有芯片一对一绑定。","esp32_main":true,"cost_band":"series_core","cost_line":"stamp_core","series_confidence":"official","cost_note":"基线就是 Stamp-S3 本体。支援费用降到 1。","chip_tier":"s3","chip_tier_note":"官方芯片栏写 ESP32-S3。中档。","host_family":"other","series_key":"stamp_core"},{"template_id":"dian_zhen","name":"点阵哨","kind":"main","cost":2,"attack":1,"durability":4,"guard":true,"attack_bonus":0,"grants_guard":false,"bypass_guard":false,"effect":null,"amount":0,"series":"atom","role_note":"主控单位，自带护卫。","hardware_note":"灵感是带灯阵的独立小主机。","esp32_main":true,"cost_band":"series_core","cost_line":"atom_core","series_confidence":"official","cost_note":"基线就是 Atom-Matrix 本体。","chip_tier":"classic","chip_tier_note":"官方芯片栏是经典 ESP32（LX6 或 PICO），不是 C3/S3/P4。","host_family":"atom","series_key":"atom_core"},{"template_id":"xuan_niu","name":"旋钮台","kind":"main","cost":8,"attack":4,"durability":5,"guard":false,"attack_bonus":0,"grants_guard":false,"bypass_guard":false,"effect":"knob","amount":1,"series":"dial","role_note":"主控单位。你的回合支付 1 点供电，让一个己方单位本回合攻击 +1。每回合限 1 次。","hardware_note":"灵感是带旋钮的独立桌面主机。","esp32_main":true,"cost_band":"series_core","cost_line":"dial_body","series_confidence":"official","cost_note":"基线就是 Dial 本体，按 Dial 档，不按邮票模块。","chip_tier":"s3","chip_tier_note":"官方芯片栏写 ESP32-S3。中档。","host_family":"other","series_key":"dial_body"},{"template_id":"qiao_jian","name":"敲键","kind":"main","cost":9,"attack":5,"durability":4,"guard":false,"attack_bonus":0,"grants_guard":false,"bypass_guard":false,"effect":null,"amount":0,"series":"cardputer","role_note":"主控单位。攻击高、耐久低。","hardware_note":"灵感是带键盘的掌上主机。不写成某一版型号，也不和厚壳工控混成同一张卡。","esp32_main":true,"cost_band":"series_core","cost_line":"cardputer_body","series_confidence":"official","cost_note":"基线就是 Cardputer 本体。","chip_tier":"s3","chip_tier_note":"官方芯片栏写 ESP32-S3。中档。","host_family":"other","series_key":"cardputer_body"},{"template_id":"hou_ke","name":"厚壳工控","kind":"main","cost":6,"attack":3,"durability":5,"guard":true,"attack_bonus":0,"grants_guard":false,"bypass_guard":false,"effect":null,"amount":0,"series":"stamplc","game_role":"main","hardware_controller":"independent_host","art_type":null,"role_note":"主控单位，自带护卫。自己不能把小印从墓地叫回来。它死在墓地里时，要由场上的小印支援才能回来。","hardware_note":"灵感是机壳里已经焊有一块邮票主机的工控机。场上的小印是另一张卡，不是壳里那一块原装芯片。","esp32_main":true,"cost_band":"series_machine","cost_line":"stamp_machine","series_confidence":"official","cost_note":"基线就是 StamPLC 工控整机，不降到 1 费。","chip_tier":"s3","chip_tier_note":"官方芯片栏写 ESP32-S3。中档。","host_family":"other","series_key":"stamp_machine"},{"template_id":"lian_jie","name":"链节","kind":"attachment","cost":1,"attack":0,"durability":0,"guard":false,"attack_bonus":1,"grants_guard":false,"bypass_guard":false,"effect":null,"amount":0,"series":"chain","game_role":"attachment","hardware_controller":"auxiliary_programmable_mcu","art_type":null,"role_note":"游戏角色是配件。装到一台己方主控上，使它攻击 +1。同时在队伍里放一个链节标记，用来算连续 Chain。标记不能攻击，也不能被攻击。宿主离开或升星丢掉配件时，标记一起拿走，配件只进墓地一次。这个角色不改写硬件结论。","hardware_note":"对应目录里的 Chain 节点。那些节点写的是 STM32G031 一类辅助可编程单片机，不是无主控。Chain DualKey 是另一条记录，主控是 ESP32-S3，能独立运行，链节不代表它。美术 type A/B 以后按该硬件的卡面家族填，不从游戏角色推导。","chain_piece":true,"cost_band":"accessory","cost_line":"accessory","series_confidence":"official","cost_note":"战术或配件，不按主机系列改费用。","mount_class":"chain","atom_bus":null,"mount_note":"基线链节，没有单独的 96 张图。按 Chain 装配。","face_numerals":"bonus"},{"template_id":"qian_li","name":"千里眼","kind":"attachment","cost":4,"attack":0,"durability":0,"guard":false,"attack_bonus":0,"grants_guard":false,"bypass_guard":true,"effect":null,"amount":0,"series":"unit","role_note":"配件。宿主攻击时可以不理会对方护卫。反击仍然发生。","hardware_note":"Unit 系列里有的只是传感器。这张按外接眼睛来做，不因为系列名就猜成主控。","cost_band":"accessory","cost_line":"accessory","series_confidence":"official","cost_note":"忽略护卫能绕过护卫打基地，和 96 张里的同类配件一起上调到 4 费。","mount_class":"unit","atom_bus":null,"mount_note":"基线千里眼。硬件说明按 Unit。只装 Atom，占 Unit 口。","face_numerals":"bonus"},{"template_id":"hu_zhao","name":"护罩","kind":"attachment","cost":1,"attack":0,"durability":0,"guard":false,"attack_bonus":0,"grants_guard":true,"bypass_guard":false,"effect":null,"amount":0,"series":"module","role_note":"配件。让宿主获得护卫。宿主本来就有护卫时不能安装。一台主控同时只装一个配件。","hardware_note":"灵感是套在主机外面的保护件，自己不站到场上。","cost_band":"accessory","cost_line":"accessory","series_confidence":"official","cost_note":"战术或配件，不按主机系列改费用。","mount_class":"base","atom_bus":"plain","mount_note":"基线护罩没有官方 SKU。待试玩按底座，只装 Atom，用来演示已有护卫不能再装。","face_numerals":"bonus"},{"template_id":"bu_ji","name":"补给包","kind":"spell","cost":1,"attack":0,"durability":0,"guard":false,"attack_bonus":0,"grants_guard":false,"bypass_guard":false,"effect":"mend","amount":2,"series":"tactic","role_note":"战术。选择一个己方单位：恢复 2 点耐久，或者本回合攻击 +1。不能超过卡面耐久。不能治疗基地。","hardware_note":"没有对应某一颗具体芯片。","cost_band":"accessory","cost_line":"accessory","series_confidence":"official","cost_note":"战术或配件，不按主机系列改费用。"},{"template_id":"gan_rao","name":"干扰","kind":"spell","cost":2,"attack":0,"durability":0,"guard":false,"attack_bonus":0,"grants_guard":false,"bypass_guard":false,"effect":"damage","amount":2,"series":"tactic","role_note":"战术。对一个敌方单位造成 2 点耐久伤害。护卫拦不住战术。没有反击。","hardware_note":"没有对应某一颗具体芯片。","cost_band":"accessory","cost_line":"accessory","series_confidence":"official","cost_note":"战术或配件，不按主机系列改费用。"},{"template_id":"hui_chong","name":"回充","kind":"spell","cost":2,"attack":0,"durability":0,"guard":false,"attack_bonus":0,"grants_guard":false,"bypass_guard":false,"effect":"heal_base","amount":4,"series":"tactic","role_note":"战术。己方基地恢复 4 点生命，不超过 20。","hardware_note":"没有对应某一颗具体芯片。","cost_band":"accessory","cost_line":"accessory","series_confidence":"official","cost_note":"战术或配件，不按主机系列改费用。"}],"second_player_token":{"template_id":"jie_yi_ge_dian","name":"借一格电","kind":"spell","cost":0,"attack":0,"durability":0,"guard":false,"attack_bonus":0,"grants_guard":false,"bypass_guard":false,"effect":"supply","amount":1,"series":"system","role_note":"后手补偿，不放进 12 张代表卡，也不放进牌库。打出后本回合当前供电 +1，可以暂时高于上限。下回合开始会把供电设回上限。","hardware_note":"规则代币，不是硬件。"},"decks":{"first":["art_h024","xiao_yin","bu_ji","dian_zhen","lian_jie","hou_ke","gan_rao","qiao_jian"],"second":["art_h024","hu_zhao","xiao_yin","gan_rao","dian_zhen","hui_chong","hou_ke","qiao_jian"]},"retired":[{"template_id":"xi_tiao","name":"细条","replaced_by":"art_h024","reason":"不是官方产品，曾标为存疑。已退役。教学和牌库改用 H024 新细条，模板 id 是 art_h024。"}]};
 </script>
 <script>globalThis.PCGClashCapabilities={"ruleset_id":"pcg.clash.v0","baseline_commit":"64848ae38b276e370ec225f88f1498424ff68497","effects":["support","knob","mend","damage","heal_base","supply","play_draw","play_damage","draw_one","retrieve_grave","arm_aiflow","seize"],"bindings":{"support":{"source":"xiao_yin","revive":"hou_ke","once":"per_player_turn"},"knob":{"source":"xuan_niu","temp_attack":1,"once":"per_player_turn"}},"reserved":{"star":"卡上可选的整数 1、2 或 3。结算不读它。不能从 v1.1、v1.2、v1.3 这类版本号推出来。","family":"卡上可选的家族字符串。不是 series，也不是版本号，更不是星级。结算不读它。","version":"卡上可选的不透明字符串。出现也不表示星级。"},"not_implemented":[],"note":"已实现的效果只有这份清单。升星看卡上的 next_template_id、growth_kind 和 star，不从版本号推断。阵营和美术 type 按规则不进结算。多写一个效果名不会让引擎学会新技能。"};
