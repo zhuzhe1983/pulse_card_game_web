@@ -2,7 +2,7 @@
 
 ## 回合战试玩（pcg.clash.v0）
 
-从仓库根目录打开大厅。规则绑定 prompt 提交 `7ba58fb399956409ebc60323e2cca595c46112a0`。占位牌细条已退役，教学局使用 H024 新细条。大厅可以进入回合战、图鉴和旧版点数对局。
+接手开发先读 [HANDOFF.md](HANDOFF.md)。当前规则绑定以 `content/clash/SOURCE.json` 的 `prompt_commit` 为准。占位牌细条已退役，教学局使用 H024 新细条。大厅可以进入回合战、图鉴和旧版点数对局。
 
 ```bash
 python3 -m http.server 8002 --bind 127.0.0.1
