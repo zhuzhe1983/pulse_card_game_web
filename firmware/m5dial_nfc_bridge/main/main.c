@@ -7,6 +7,7 @@
  *   - the round LCD shows a READY / card-identity panel
  */
 #include "esp_log.h"
+#include "esp_system.h"
 #include "nvs_flash.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -15,12 +16,31 @@
 #include "pcg_proto.h"
 #include "usb_cdc.h"
 #include "display_gc9a01.h"
+#include "buzzer.h"
 
 static const char *TAG = "pcg_m5dial";
 
 /* M5Dial internal I2C to the WS1850S NFC front-end. */
 #define SDA_GPIO 11
 #define SCL_GPIO 12
+
+static const char *reset_name(void)
+{
+    switch (esp_reset_reason()) {
+    case ESP_RST_POWERON: return "poweron";
+    case ESP_RST_SW: return "sw";
+    case ESP_RST_PANIC: return "panic";
+    case ESP_RST_INT_WDT: return "int_wdt";
+    case ESP_RST_TASK_WDT: return "task_wdt";
+    case ESP_RST_WDT: return "wdt";
+    case ESP_RST_DEEPSLEEP: return "deepsleep";
+    case ESP_RST_BROWNOUT: return "brownout";
+    case ESP_RST_USB: return "usb";
+    case ESP_RST_JTAG: return "jtag";
+    case ESP_RST_CPU_LOCKUP: return "lockup";
+    default: return "other";
+    }
+}
 
 void app_main(void)
 {
@@ -32,18 +52,24 @@ void app_main(void)
         nvs_flash_init();
     }
 
-    display_init();
+    buzzer_init();
+    if (display_init() != 0)
+        ESP_LOGE(TAG, "display init failed");
 
     pcg_rc522_conf_t rc = { .sda = SDA_GPIO, .scl = SCL_GPIO, .freq = 400000 };
     bool nfc_ok = rc522_init(&rc);
     ESP_LOGI(TAG, "NFC init %s", nfc_ok ? "ok" : "failed");
+    display_note_nfc(nfc_ok);
 
-    /* Capabilities = uid + ndef_read. This build reads a tag's PULSE identity
-     * NDEF but does not rewrite tags, so ndef_write is NOT advertised and the
-     * web page keeps its "写卡" button off — an honest read-only bridge. */
+    /* uid + ndef_read + ndef_write. Writes still require overwrite:true from
+     * the host, and the page planner refuses UID, lock and unformatted tags.
+     * A read-only host that never sends write keeps the previous behavior. */
     pcg_proto_t proto;
-    pcg_proto_init(&proto, "PULSE M5Dial NFC bridge", 1 | 2, NULL, NULL, NULL);
+    pcg_proto_init(&proto, "PULSE M5Dial NFC bridge", 1 | 2 | 4, NULL, NULL, NULL);
+    pcg_proto_set_reset(&proto, reset_name());
     pcg_proto_set_ready(&proto, nfc_ok);
+    display_note_card("boot", reset_name());
+    ESP_LOGI(TAG, "reset reason %s", reset_name());
 
     usb_cdc_start(&proto);
     nfc_read_start(&proto);

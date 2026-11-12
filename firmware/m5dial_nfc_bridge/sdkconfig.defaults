@@ -1,23 +1,40 @@
-# Target: M5Dial (ESP32-S3)
+# Target: M5Dial original (Stamp-S3) and v1.1 (Stamp-S3A).
+# Both modules are ESP32-S3FN8: 8 MB quad flash, 3.3 V. Official product
+# pages do not list PSRAM, so this firmware must not enable it.
+# https://docs.m5stack.com/en/core/Dial
+# https://docs.m5stack.com/en/core/Dial_v1.1
+#
+# SPI mode is DIO at 80 MHz, matching the GigaDevice flash identified on
+# hardware (JEDEC c8/4017). QIO makes the chip watchdog-reset in a loop
+# (rst:0x7 TG0WDT_SYS_RST). The image header must say 8 MB; a larger size
+# fails the bootloader probe because the chip is smaller than the header.
 CONFIG_IDF_TARGET_ESP32S3=y
 
 # TinyUSB: expose the M5Dial as a USB CDC (serial) device so the web app's
 # Web Serial path can talk pcg.reader.v1.
 CONFIG_TINYUSB_CDC_ENABLED=y
 
-# M5Dial has 32 MB flash + 8 MB octal PSRAM. The PSRAM shares the flash SPI
-# bus, and the ROM/bootloader must be told the octal PSRAM exists or flash
-# access fails. These must match the factory hardware.
-CONFIG_ESPTOOLPY_FLASHSIZE_32MB=y
-CONFIG_ESPTOOLPY_FLASHMODE_QIO=y
+CONFIG_ESPTOOLPY_FLASHSIZE_8MB=y
+CONFIG_ESPTOOLPY_FLASHMODE_DIO=y
 CONFIG_ESPTOOLPY_FLASHFREQ_80M=y
-CONFIG_SPIRAM=y
-CONFIG_SPIRAM_MODE_OCT=y
-CONFIG_SPIRAM_SPEED_80M=y
+CONFIG_SPIRAM=n
 
-# NFC reader I2C (M5Dial internal bus: SCL=G12, SDA=G11)
-CONFIG_I2C_NUM0_SDA_GPIO=11
-CONFIG_I2C_NUM0_SCL_GPIO=12
+# Pin the same single-app map the bridge already uses, and keep it inside 8 MB.
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
 
-# Native console on UART0; TinyUSB owns the USB for CDC data.
+# NFC reader I2C pins are set in main.c (SDA=GPIO11, SCL=GPIO12). There is no
+# IDF Kconfig symbol for those pins; do not invent one here.
+
+# Native console on UART0. USB-Serial-JTAG must stay off: it shares the
+# USB pins with TinyUSB, and a host opening the CDC port (DTR / baud) otherwise
+# resets the chip. That looked like the screen flashing on and then going dark.
 CONFIG_ESP_CONSOLE_UART_DEFAULT=y
+CONFIG_ESP_CONSOLE_SECONDARY_NONE=y
+CONFIG_USJ_ENABLE_USB_SERIAL_JTAG=n
+
+# Fallback strings. The running firmware replaces the serial with the MAC.
+CONFIG_TINYUSB_DESC_MANUFACTURER_STRING="PULSE"
+CONFIG_TINYUSB_DESC_PRODUCT_STRING="PULSE M5Dial NFC"
+CONFIG_TINYUSB_DESC_CDC_STRING="PULSE M5Dial NFC"
+CONFIG_TINYUSB_DESC_SERIAL_STRING="123456"

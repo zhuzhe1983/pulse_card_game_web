@@ -104,7 +104,7 @@ NTAG215 的 504 字节用户读写区适合保存玩家 UUID、卡面、版本�
 | 设备/连接方式 | 本版支持 | 说明 |
 |---|---|---|
 | USB/蓝牙键盘式 UID 读卡器 | 读取 UID | 点击卡号框再刷卡并回车；需输出十六进制原始字节顺序 |
-| **M5Dial USB NFC 桥** | **Web Serial 读 UID + PULSE 身份 NDEF** | ESP-IDF 固件把 M5Dial 变成 USB 刷卡器；配网页烧录器 `dist/flash.html`。详见 `firmware/m5dial_nfc_bridge` |
+| **M5Dial USB NFC 桥** | **Web Serial 读 UID + PULSE 身份 NDEF** | ESP-IDF 固件把原版与 v1.1（均为 ESP32-S3FN8，8MB Flash，不启用 PSRAM）变成 USB 刷卡器，按 DIO 80MHz 烧录；配网页烧录器 `dist/flash.html`。详见 `firmware/m5dial_nfc_bridge` |
 | PCG vendor USB 协议桥 | WebUSB 读卡；可选 NDEF 读写 | 需要实现 `pcg.reader.v1` 固件，并提供 class `0xFF` bulk IN/OUT |
 | ESP32 + PN532 串口桥 | Web Serial 读卡 | 附带 UID 只读 Arduino 例程；固件尚未编译/实机验证，需核对芯片、引脚及库版本 |
 | Android 手机内置 NFC | 读取 NDEF、写入玩家身份 | 需要支持 Web NFC 的浏览器、NDEF 标签和安全上下文 |

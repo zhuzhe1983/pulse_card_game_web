@@ -334,6 +334,22 @@ bool rc522_select(pcg_tag_id_t *out, uint32_t max_ms)
     return out->uid_len == 4 || out->uid_len == 7 || out->uid_len == 10;
 }
 
+int rc522_write_page(uint8_t page, const uint8_t data[4])
+{
+    uint8_t buf[8], crc[2], resp[2];
+    uint8_t rl = sizeof resp, vb = 0;
+    if (!data || page < 3 || page > 129) return -1;
+    buf[0] = 0xA2;
+    buf[1] = page;
+    memcpy(buf + 2, data, 4);
+    if (calc_crc(buf, 6, crc) != RC_OK) return -1;
+    buf[6] = crc[0];
+    buf[7] = crc[1];
+    if (transceive(buf, 8, resp, &rl, &vb, 0, false) != RC_OK) return -1;
+    if (vb == 4 && (resp[0] & 0x0F) != 0x0A) return -1;
+    return 0;
+}
+
 size_t rc522_read_memory(uint8_t *out, size_t out_len, uint32_t addr)
 {
     uint8_t page = (uint8_t)(addr / 4);

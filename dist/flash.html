@@ -32,8 +32,8 @@
 <body>
 <div class="card">
   <h1>PULSE · M5Dial 固件烧录器</h1>
-  <span class="tag">m5dial_nfc_bridge · pcg.reader.v1 · 需 Chrome/Edge + Web Serial</span>
-  <p>把 M5Dial 通过 USB-C 连到电脑，在下方选择串口并烧录。固件会在屏幕上显示指示灯状态，并通过 USB 串口对话 <b>pcg.reader.v1</b>。</p>
+  <span class="tag">m5dial_nfc_bridge · pcg.reader.v1 · ESP32-S3FN8 · 8MB · DIO · 80MHz · 无 PSRAM</span>
+  <p>把 M5Dial（原版 Stamp-S3 或 v1.1 Stamp-S3A）通过 USB-C 连到电脑，在下方选择串口并烧录。两版都是 8MB Flash，官方未列 PSRAM。固件会在屏幕上显示指示灯状态，并通过 USB 串口对话 <b>pcg.reader.v1</b>。</p>
 
   <div class="row">
     <button id="btn-connect" class="secondary">连接设备</button>
@@ -42,7 +42,7 @@
 
   <div class="row firmware">
     <label for="firm">固件：</label>
-    <span id="firm-name">m5dial_nfc_bridge_merged.bin</span>
+    <span id="firm-name">m5dial_nfc_bridge_merged_dio.bin</span>
     （<span id="firm-size">-</span>）
   </div>
 
@@ -58,13 +58,13 @@
 
   <div class="note">
     首次使用需要 Chrome/Edge 并通过 <b>localhost</b> 或 <b>HTTPS</b> 打开本页（Web Serial 要求安全上下文）。<br>
-    若 M5Dial 没出现在列表，重新插拔 USB 或按住复位，然后点“连接设备”。
+    若 M5Dial 没出现在列表，重新插拔 USB 或按住复位，然后点“连接设备”。烧录参数固定为 DIO / 80MHz / 8MB；镜像头不是这组参数时本页会拒绝烧录。
   </div>
 </div>
 
 <script type="module">
-import { ESPLoader, ESPWebSerialPort } from
-  'https://cdn.jsdelivr.net/npm/esptool-js@0.9.7/bundle.min.js';
+import { ESPLoader, Transport } from
+  'https://unpkg.com/esptool-js@0.7.1/bundle.js';
 
 const $ = id => document.getElementById(id);
 const logEl = $('log');
@@ -78,30 +78,65 @@ function log(msg, cls='info'){
 const setConn = t => $('conn-status').textContent = t;
 const setProg = (t,p) => { $('prog').textContent = t; $('bar').style.width = (p!=null?p:0)+'%'; };
 
+// Original and v1.1 are ESP32-S3FN8. esptool-js only rewrites the image
+// header at address 0, so the app header at 0x10000 is checked here first.
+const FLASH_MODE = 'dio';
+const FLASH_FREQ = '80m';
+const FLASH_SIZE = '8MB';
+const FLASH_LIMIT = 8 * 1024 * 1024;
+
 let transport = null;
 let firmwareUrl = null;
-const flashSizeMB = 32;
+let loader = null;
 
 const btnConnect = $('btn-connect');
 const btnFlash = $('btn-flash');
 const btnErase = $('btn-erase');
 
+function terminal() {
+  return {
+    clean() {},
+    writeLine(text) { log(String(text).replace(/\u001b\[[0-9;]*m/g, '')); },
+    write(text) { log(String(text).replace(/\u001b\[[0-9;]*m/g, '')); },
+  };
+}
+
+function headerOk(data, offset) {
+  if (data.length < offset + 24 || data[offset] !== 0xE9) return false;
+  if (data[offset + 2] !== 0x02) return false;
+  const b3 = data[offset + 3];
+  const chip = data[offset + 12] | (data[offset + 13] << 8);
+  return (b3 & 0x0f) === 0x0f && (b3 >> 4) === 0x03 && chip === 0x0009;
+}
+
+function assertFlashImage(data) {
+  if (data.length === 0 || data.length > FLASH_LIMIT) {
+    throw new Error('固件长度 ' + data.length + ' 不在 8MB 以内');
+  }
+  if (!headerOk(data, 0) || !headerOk(data, 0x10000)) {
+    throw new Error('镜像头不是 DIO / 80MHz / 8MB（ESP32-S3）。请换用本页自带的合并镜像');
+  }
+}
+
 async function connect() {
   const rawPort = await navigator.serial.requestPort();
-  transport = new ESPWebSerialPort(rawPort, { baudrate: 460800, debug: log });
-  await transport.connect();
+  transport = new Transport(rawPort, false);
+  loader = new ESPLoader({
+    transport,
+    baudrate: 115200,
+    romBaudrate: 115200,
+    terminal: terminal(),
+  });
   setConn('已连接串口，读取芯片…');
-  const loader = new ESPLoader(transport, 115200, { debug: log });
-  await loader.main();
-  const chip = await loader.chip;
+  const chip = await loader.main('default_reset');
   log('芯片：' + chip, 'ok');
+  log('烧录参数：DIO / 80MHz / 8MB', 'info');
   return loader;
 }
 
 btnConnect.addEventListener('click', async () => {
   try {
-    const loader = await connect();
-    transport = loader ? loader.transport : null;
+    await connect();
     setConn('已连接：可烧录');
   } catch (e) {
     log('连接失败：' + e.message, 'err');
@@ -110,23 +145,31 @@ btnConnect.addEventListener('click', async () => {
 });
 
 btnFlash.addEventListener('click', async () => {
-  if (!transport) { log('请先连接设备', 'warn'); return; }
   if (!firmwareUrl) { log('固件文件未就绪', 'warn'); return; }
   setProg('准备烧录…', 0);
   try {
-    const loader = await connect();
-    await loader.setFlashSize(flashSizeMB);
+    const active = await connect();
     const resp = await fetch(firmwareUrl);
-    const buf = await resp.arrayBuffer();
-    const data = new Uint8Array(buf);
-    await loader.writeFlash({
-        fileArray: [{ data, address: 0x0 }],
-        eraseAll: false, flashMode: 'dio', flashFreq: '80m',
-        progressCallback: (c,t)=>setProg('已写 ' + Math.floor(c/t*100) + '%', c/t*100) });
+    if (!resp.ok) throw new Error('固件下载失败 ' + resp.status);
+    const data = new Uint8Array(await resp.arrayBuffer());
+    assertFlashImage(data);
+    log('镜像头检查通过：bootloader 与 app 均为 DIO / 80MHz / 8MB', 'ok');
+    await active.writeFlash({
+      fileArray: [{ data, address: 0x0 }],
+      flashMode: FLASH_MODE,
+      flashFreq: FLASH_FREQ,
+      flashSize: FLASH_SIZE,
+      eraseAll: false,
+      compress: true,
+      reportProgress: (_file, written, total) => {
+        const pct = total ? Math.floor(written / total * 100) : 0;
+        setProg('已写 ' + pct + '%', pct);
+      },
+    });
     setProg('完成', 100);
-    log('烧录完成 ✓' + ` (${data.length} bytes)`, 'ok');
+    log('烧录完成 ✓' + ` (${data.length} bytes，${FLASH_MODE} ${FLASH_FREQ} ${FLASH_SIZE})`, 'ok');
     setConn('完成，设备即将重启');
-    await transport.close?.();
+    await active.after('hard_reset');
   } catch(e){
     log('烧录失败：' + e.message, 'err');
     setConn('烧录失败');
@@ -134,11 +177,10 @@ btnFlash.addEventListener('click', async () => {
 });
 
 btnErase.addEventListener('click', async () => {
-  if (!transport) { log('请先连接设备','warn'); return; }
   setProg('擦除…',0);
   try {
-    const esptool = await connect();
-    await esptool.eraseFlash();
+    const active = await connect();
+    await active.eraseFlash();
     setProg('擦除完成',100); log('Flash 已擦除 ✓','ok');
   } catch(e){ log('擦除失败：'+e.message,'err'); }
 });
@@ -147,9 +189,14 @@ btnErase.addEventListener('click', async () => {
 const defaultUrl = new URL('firmware/m5dial_nfc_bridge_merged_dio.bin', document.baseURI).href;
 firmwareUrl = defaultUrl;
 $('firm-name').textContent = 'm5dial_nfc_bridge_merged_dio.bin';
-fetch(defaultUrl).then(r=>r.arrayBuffer())
-  .then(b=> $('firm-size').textContent = (b.byteLength/1024).toFixed(1)+' KB')
-  .catch(()=> log('找不到固件文件（firmware/…）','warn'));
+fetch(defaultUrl).then(r => {
+  if (!r.ok) throw new Error(String(r.status));
+  return r.arrayBuffer();
+}).then(b => {
+  $('firm-size').textContent = (b.byteLength/1024).toFixed(1)+' KB';
+  try { assertFlashImage(new Uint8Array(b)); log('本地固件头：DIO / 80MHz / 8MB', 'ok'); }
+  catch (e) { log(e.message, 'err'); }
+}).catch(() => log('找不到固件文件（firmware/…）','warn'));
 
 log('准备就绪。点击“连接设备”，然后“烧录固件”。','info');
 </script>

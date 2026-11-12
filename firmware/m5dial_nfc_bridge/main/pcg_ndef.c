@@ -5,16 +5,21 @@
 #define PCG_MIME "application/vnd.pcg.identity+json"
 #define PCG_MIME_LEN 33u
 
-/* Extract the NDEF message from raw NTAG2 memory pages (4 bytes per page).
- * pages 0..3 UID/BCC/lock · page 4 = CC · page 5+ = NDEF TLV then 0xFE.
+/* Extract the NDEF message from NTAG user memory.
+ * A full tag image has the TLV at page 4 (offset 16). A buffer that already
+ * starts at page 4 begins with 0x03 / 0x00 / 0xFE and is scanned from byte 0.
+ * CC itself lives on page 3 and is not required here.
  */
 size_t pcg_ndef_extract(const uint8_t *mem, size_t mem_len,
                         uint8_t *out, size_t out_len)
 {
-    size_t cc = 4 * 4;                  /* page 4 */
-    if (mem_len < cc + 1) return 0;
-    size_t i = cc;
-    size_t end = cc + 64;
+    size_t i = 0;
+    if (!mem || !mem_len) return 0;
+    if (!(mem[0] == 0x03 || mem[0] == 0x00 || mem[0] == 0xFE)) {
+        i = 16;                         /* whole-tag image: page 4 */
+        if (mem_len < i + 1) return 0;
+    }
+    size_t end = i + 32;
     if (end > mem_len) end = mem_len;
 
     for (; i < end; ) {

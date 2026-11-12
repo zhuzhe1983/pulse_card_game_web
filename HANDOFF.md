@@ -148,6 +148,8 @@ NFC 只在 Android Chrome、HTTPS、并且存在 `NDEFReader` 时启用「开始
 
 浏览器测试用的是 Chrome 的窗口尺寸仿真。代码里没有真机触摸通过的记录。
 
+`firmware/m5dial_nfc_bridge` 已合进 web 仓库：8MB DIO 烧录配置、M5Dial CDC 连接和 hello 之后保持会话。网页烧录器是 `dist/flash.html`，镜像是 `dist/firmware/m5dial_nfc_bridge_merged_dio.bin`。这只是源码和镜像合入，没有在实体 M5Dial 上烧录或刷卡验证。不要把合入当成实机通过。
+
 ## 7. 最近发布
 
 `main` 上最近几次和对应的 `gh-pages`：

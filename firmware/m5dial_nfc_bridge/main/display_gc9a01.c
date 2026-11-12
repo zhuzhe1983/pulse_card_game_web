@@ -6,12 +6,17 @@
  * Pixels stream over SPI (no framebuffer).
  */
 #include "display_gc9a01.h"
-#include "pcg_ndef.h"
+#include "gc9a01_seq.h"
+#include "ui_model.h"
+#include "buzzer.h"
 #include "driver/spi_master.h"
 #include "driver/gpio.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
+#include "freertos/queue.h"
 #include "freertos/task.h"
+#include "freertos/semphr.h"
+#include <stdio.h>
 #include <string.h>
 
 static const char *TAG = "lcd";
@@ -122,12 +127,15 @@ static void draw_char(uint16_t x, uint16_t y, char ch, uint16_t color)
 {
     int idx = ch - 0x20;
     if (idx < 0 || idx > 94) idx = 0;
+    if (gc9_window_bytes(x, y, x + 4, y + 6) < 0) return;
     set_window(x, y, x + 4, y + 6);
     gpio_set_level(PIN_DC, 1);
+    /* FONT5 stores five column bytes. Bit 0 is the top row. */
     for (int row = 0; row < 7; row++) {
-        uint8_t bits = FONT5[idx][row];
-        for (int col = 0; col < 5; col++)
-            lcd_data16((bits & (0x10 >> col)) ? color : 0x0000);
+        for (int col = 0; col < 5; col++) {
+            uint8_t bits = FONT5[idx][col];
+            lcd_data16((bits & (1u << row)) ? color : 0x0000);
+        }
     }
 }
 static void draw_text(uint16_t x, uint16_t y, const char *s, uint16_t color)
@@ -135,70 +143,147 @@ static void draw_text(uint16_t x, uint16_t y, const char *s, uint16_t color)
     while (*s && x + 5 <= LCD_W) { draw_char(x, y, (uint8_t)*s++, color); x += 6; }
 }
 
-static void fill_screen(uint16_t color)
+static int emit_init(uint8_t cmd, const uint8_t *data, uint8_t n, uint16_t delay_ms, void *ctx)
 {
-    fill_rect(0, 0, LCD_W - 1, LCD_H - 1, color);
+    (void)ctx;
+    lcd_cmd(cmd);
+    if (n && data) lcd_data(data, n);
+    if (delay_ms) vTaskDelay(pdMS_TO_TICKS(delay_ms));
+    return 0;
 }
 
-void display_init(void)
+static uint16_t bg_for(const char *kind, int nfc_ok)
+{
+    if (!nfc_ok) return 0x8000;
+    if (!kind) return 0x0320;
+    if (!strcmp(kind, "pulse")) return 0x0320;
+    if (!strcmp(kind, "blank") || !strcmp(kind, "unformatted")) return 0x020C;
+    if (!strcmp(kind, "foreign")) return 0xC300;
+    if (!strcmp(kind, "error") || !strcmp(kind, "unsupported")) return 0xA000;
+    return 0x0018;
+}
+
+static void paint(const char *a, const char *b, const char *c, const char *kind, int nfc_ok)
+{
+    uint16_t bg = bg_for(kind, nfc_ok);
+    fill_rect(0, 0, LCD_W - 1, LCD_H - 1, 0xFFFF);
+    fill_rect(6, 6, LCD_W - 7, LCD_H - 7, bg);
+    draw_text(16, 70, a && a[0] ? a : "PULSE", 0xFFFF);
+    draw_text(16, 92, b ? b : "", 0xFFE0);
+    draw_text(16, 114, c ? c : "", 0xFFFF);
+    draw_text(16, 160, "pcg.reader.v1", 0xC618);
+}
+
+typedef struct {
+    char l1[22], l2[22], l3[22], kind[16];
+    int nfc_ok;
+} frame_t;
+
+static QueueHandle_t frames;
+static SemaphoreHandle_t mu;
+static ui_model_t model;
+static int cur_nfc = 1, cur_usb = 0;
+static char cur_kind[16] = "idle";
+static char cur_uid[24];
+
+static void push_frame(void)
+{
+    frame_t f;
+    char l1[22], l2[22], l3[22];
+    ui_beep_t beep = ui_model_apply(&model, cur_nfc, cur_usb, cur_kind, cur_uid, l1, l2, l3);
+    memset(&f, 0, sizeof f);
+    snprintf(f.l1, sizeof f.l1, "%s", l1);
+    snprintf(f.l2, sizeof f.l2, "%s", l2);
+    snprintf(f.l3, sizeof f.l3, "%s", l3);
+    snprintf(f.kind, sizeof f.kind, "%s", cur_kind);
+    f.nfc_ok = cur_nfc;
+    if (frames) xQueueOverwrite(frames, &f);
+    buzzer_request(beep);
+}
+
+static void panel_task(void *arg)
+{
+    (void)arg;
+    frame_t f;
+    while (xQueueReceive(frames, &f, portMAX_DELAY) == pdTRUE)
+        paint(f.l1, f.l2, f.l3, f.kind, f.nfc_ok);
+}
+
+int display_init(void)
 {
     gpio_config_t io = { 0 };
+    /* CS is owned by the SPI peripheral. Driving it as a GPIO as well holds
+     * the panel deselected, which leaves the backlight on and the glass black. */
     io.mode = GPIO_MODE_OUTPUT;
-    io.pin_bit_mask = (1ULL << PIN_CS) | (1ULL << PIN_DC) | (1ULL << PIN_RST) | (1ULL << PIN_BL);
+    io.pin_bit_mask = (1ULL << PIN_DC) | (1ULL << PIN_RST) | (1ULL << PIN_BL);
     gpio_config(&io);
-    gpio_set_level(PIN_CS, 1); gpio_set_level(PIN_DC, 1);
-    gpio_set_level(PIN_RST, 1); gpio_set_level(PIN_BL, 1);
+    gpio_set_level(PIN_DC, 1);
+    gpio_set_level(PIN_RST, 1);
+    gpio_set_level(PIN_BL, 0);
 
-    spi_bus_config_t bus = { .mosi_io_num = PIN_MOSI, .sclk_io_num = PIN_SCK,
-                             .max_transfer_sz = 4096 };
-    ESP_ERROR_CHECK(spi_bus_initialize(SPI2_HOST, &bus, SPI_DMA_CH_AUTO));
-    spi_device_interface_config_t dev = { .clock_speed_hz = 40u * 1000 * 1000,
-                                          .mode = 0, .spics_io_num = PIN_CS,
-                                          .queue_size = 1 };
-    ESP_ERROR_CHECK(spi_bus_add_device(SPI2_HOST, &dev, &spi));
-
-    gpio_set_level(PIN_RST, 0); vTaskDelay(pdMS_TO_TICKS(10));
-    gpio_set_level(PIN_RST, 1); vTaskDelay(pdMS_TO_TICKS(120));
-
-    /* GC9A01 power/display on — a minimal but valid sequence. */
-    lcd_cmd(0x01); vTaskDelay(pdMS_TO_TICKS(120));
-    lcd_cmd(0x11); vTaskDelay(pdMS_TO_TICKS(120));  /* sleep out */
-    lcd_cmd(0x36); { uint8_t b=0x48; lcd_data(&b,1); }   /* MADCTL RGB */
-    lcd_cmd(0x3A); { uint8_t b=0x05; lcd_data(&b,1); }   /* 16bit */
-    lcd_cmd(0x29);  /* display on */
-
-    fill_screen(0x0000);
-    draw_text(8, 12, "PULSE M5Dial", 0xFFFF);
-    draw_text(8, 30, "USB NFC reader", 0x9CFC);
-    draw_text(8, 48, "READY", 0x07E0);
-}
-
-static char ident[512] = "";
-static int cur_state = 0;
-
-void display_set_identity(const char *json)
-{
-    snprintf(ident, sizeof ident, "%s", json ? json : "");
-}
-
-void display_show_state(int s)
-{
-    cur_state = s;
-    fill_rect(0, 0, LCD_W - 1, LCD_H - 1, 0x0000);
-    if (s == 0) {
-        draw_text(8, 20, "READY - tap a card", 0x07E0);
-    } else if (s == 2) {
-        draw_text(8, 20, "Card (no NDEF)", 0xFFE0);
-    } else {
-        char skin[8]="", name[24]="", type[16]="";
-        if (pcg_ndef_json_string(ident, "type", type, sizeof type))
-            draw_text(8, 20, type, 0x07E0);
-        if (pcg_ndef_json_string(ident, "skin", skin, sizeof skin) && skin[0]) {
-            char l[24]; snprintf(l, sizeof l, "skin %s", skin);
-            draw_text(8, 40, l, 0xFFFF);
-        }
-        pcg_ndef_json_string(ident, "name", name, sizeof name);
-        if (name[0]) draw_text(8, 60, name, 0xFFFF);
+    spi_bus_config_t bus = {
+        .mosi_io_num = PIN_MOSI,
+        .miso_io_num = -1,
+        .sclk_io_num = PIN_SCK,
+        .quadwp_io_num = -1,
+        .quadhd_io_num = -1,
+        .max_transfer_sz = 4096,
+    };
+    if (spi_bus_initialize(SPI2_HOST, &bus, SPI_DMA_CH_AUTO) != ESP_OK) {
+        ESP_LOGE(TAG, "SPI bus failed; backlight left off");
+        return -1;
     }
-    draw_text(8, LCD_H - 20, "PULSE / pcg.reader.v1", 0x4A69);
+    spi_device_interface_config_t dev = {
+        .clock_speed_hz = 20 * 1000 * 1000,
+        .mode = 0,
+        .spics_io_num = PIN_CS,
+        .queue_size = 1,
+    };
+    if (spi_bus_add_device(SPI2_HOST, &dev, &spi) != ESP_OK) {
+        ESP_LOGE(TAG, "SPI device failed; backlight left off");
+        return -1;
+    }
+
+    gpio_set_level(PIN_RST, 0); vTaskDelay(pdMS_TO_TICKS(20));
+    gpio_set_level(PIN_RST, 1); vTaskDelay(pdMS_TO_TICKS(120));
+    if (gc9a01_walk(emit_init, NULL) != 0) {
+        ESP_LOGE(TAG, "panel init sequence failed");
+        return -1;
+    }
+
+    ui_model_reset(&model);
+    snprintf(cur_kind, sizeof cur_kind, "idle");
+    paint("BOOT", "lcd on", "USB wait", "idle", 1);
+    gpio_set_level(PIN_BL, 1);
+
+    mu = xSemaphoreCreateMutex();
+    frames = xQueueCreate(1, sizeof(frame_t));
+    if (frames) xTaskCreate(panel_task, "lcd", 4096, NULL, 3, NULL);
+    ESP_LOGI(TAG, "GC9A01 frame painted, backlight on");
+    return 0;
+}
+
+static void with_model(void (*fn)(void *), void *arg)
+{
+    if (mu) xSemaphoreTake(mu, portMAX_DELAY);
+    fn(arg);
+    push_frame();
+    if (mu) xSemaphoreGive(mu);
+}
+
+static void set_nfc(void *arg) { cur_nfc = arg ? 1 : 0; }
+static void set_usb(void *arg) { cur_usb = arg ? 1 : 0; }
+static void set_card(void *arg)
+{
+    const char *const *s = arg;
+    snprintf(cur_kind, sizeof cur_kind, "%s", s[0] && s[0][0] ? s[0] : "idle");
+    snprintf(cur_uid, sizeof cur_uid, "%s", s[1] ? s[1] : "");
+}
+
+void display_note_nfc(int nfc_ok) { with_model(set_nfc, nfc_ok ? (void *)1 : NULL); }
+void display_note_usb(int open) { with_model(set_usb, open ? (void *)1 : NULL); }
+void display_note_card(const char *kind, const char *uid)
+{
+    const char *s[2] = { kind, uid };
+    with_model(set_card, s);
 }

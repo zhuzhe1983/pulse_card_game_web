@@ -5,7 +5,7 @@
 | 方式 | 能读什么 | 能写什么 | 使用条件 |
 |---|---|---|---|
 | 键盘 UID 读卡器 | NFC-A 卡的十六进制 UID | 不支持 | 将扫描结果输入页面的 UID 输入框；读卡器设为十六进制输出 |
-| M5Dial·USB NFC 桥 | NFC-A/NTAG215 的 UID 与 PULSE 身份 NDEF | **只读**（本版不开写卡） | `firmware/m5dial_nfc_bridge` 固件 + Web Serial；网页“串口”按钮直接连接 |
+| M5Dial·USB NFC 桥 | NFC-A/NTAG215 的 UID 与 PULSE 身份 NDEF | **只读**（本版不开写卡） | `firmware/m5dial_nfc_bridge` 固件（原版与 v1.1 均为 8MB Flash、DIO，不启用 PSRAM）+ Web Serial；网页“串口”按钮直接连接 |
 | WebUSB PCG bridge | UID，可选 PULSE NDEF 描述 | 桥同时声明读写能力时，写入并读回核对玩家身份 | 固件实现下述 `pcg.reader.v1`；vendor-specific 接口，bulk IN/OUT |
 | Web Serial PCG bridge | 与 WebUSB 相同 | 取决于桥声明的能力 | 串口固件实现同一 JSON 行协议；默认 115200 baud |
 | Android Web NFC | NDEF 标签内的 PULSE 身份；浏览器返回 UID 时也读取 UID | 小型玩家身份 NDEF | 支持 Web NFC 的 Android Chrome、设备带 NFC、网页处于前台 |
@@ -64,7 +64,19 @@ WebUSB 固件须提供 class `0xFF` 的接口，至少一个 bulk IN 和一个 b
 ```
 
 ```json
-{"type":"hello","protocol":"pcg.reader.v1","device":"My PN532 bridge","capabilities":["uid","ndef_read","ndef_write"]}
+{"type":"hello","protocol":"pcg.reader.v1","device":"My PN532 bridge","capabilities":["uid","ndef_read","ndef_write"],"reset":"poweron"}
+```
+
+`reset` 是可选诊断字段，表示本次启动的复位原因（`poweron`、`panic`、`task_wdt`、`int_wdt`、`brownout`、`usb` 等）。旧网页忽略不认识的字段。握手完成前，已经放在读卡器上的卡会在这条应答之后补发一条 `card`，不需要先拿开再贴上，也不会因为卡一直放着而重复刷卡。
+
+会话中可以查询状态，不写卡：
+
+```json
+{"type":"diag"}
+```
+
+```json
+{"type":"diag","reset":"poweron","session":true,"nfc_ready":true,"card_present":true,"uid":"04AA1B2C3D4E5F","ndef":"foreign"}
 ```
 
 只会读 UID 的桥必须仅返回 `["uid"]`。`ndef_write` 必须与 `ndef_read` 同时提供才能启用网页写卡。不能通过虚报能力打开按钮。
@@ -72,10 +84,12 @@ WebUSB 固件须提供 class `0xFF` 的接口，至少一个 bulk IN 和一个 b
 卡片进入感应区后发出：
 
 ```json
-{"type":"card","uid":"04AA1B2C3D4E5F","tech":"nfc-a","descriptor":null}
+{"type":"card","uid":"04AA1B2C3D4E5F","tech":"nfc-a","descriptor":null,"ndef":"blank","tag":{"type":"NTAG215","cc":"E1103E00","capacity":496,"writable":true,"lock":"open","ndef_hex":"","ndef_hex_truncated":false}}
 ```
 
-有合法 PULSE NDEF 时，`descriptor` 为上文的身份对象。UID 按字节顺序输出大写十六进制，4、7 或 10 字节；NTAG215 通常为 7 字节。移开卡后发出：
+`ndef` 区分 `blank`（已有 CC、用户区空）、`unformatted`（没有标准 CC，固件不猜测容量、不写 CC）、`pulse`（本游戏身份）、`foreign`（有别的 NDEF，例如网址）、`unsupported`、`error`。`tag.cc` 是 capability container 的十六进制，`capacity` 为 CC 给出的 NDEF 字节数（NTAG215 的 `0x3E` 是 496）。`lock` 为 `open`、`cc`、`static` 或 `dynamic`。`ndef_hex` 是读到的原始 NDEF 消息，用来在覆盖前留底；过长时 `ndef_hex_truncated` 为 true。这些字段是可选的，旧网页只看 `uid` 和 `descriptor`。
+
+有合法 PULSE NDEF 时，`descriptor` 为上文的身份对象。UID 按字节顺序输出大写十六进制，4、7 或 10 字节；NTAG215 通常为 7 字节。移开已经报告过的卡后发出：
 
 ```json
 {"type":"removed"}
@@ -89,7 +103,7 @@ WebUSB 固件须提供 class `0xFF` 的接口，至少一个 bulk IN 和一个 b
 {"type":"write","request_id":"request-unique-id","expected_uid":"04AA1B2C3D4E5F","mime":"application/vnd.pcg.identity+json","descriptor":{"game":"pcg","v":1,"type":"player","id":"12345678-1234-4123-8123-123456789abc","skin":"01"},"overwrite":false}
 ```
 
-固件必须在写入前重新读取 UID；与 `expected_uid` 不同则拒绝。如果已有 NDEF 且 `overwrite:false`，拒绝。写入后再读取标签内容，并返回真实读回结果：
+固件必须在写入前重新读取 UID；与 `expected_uid` 不同则拒绝（`card removed`）。`overwrite` 不是 `true` 时一律拒绝，包括空白卡；空白卡也要等主机明确确认后才写。未格式化（没有标准 CC）的卡拒绝写入，避免猜成 NTAG215 后改 CC。写入只编程 page 4–129 的用户区，不改 UID、静态锁、动态锁或 CC。写入后再读取同一用户区，不一致则 `readback failed`，不得报告成功：
 
 ```json
 {"type":"write_result","request_id":"request-unique-id","ok":true,"uid":"04AA1B2C3D4E5F","descriptor":{"game":"pcg","v":1,"type":"player","id":"12345678-1234-4123-8123-123456789abc","skin":"01"}}

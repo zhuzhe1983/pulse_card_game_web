@@ -22,6 +22,15 @@ typedef struct {
     char uid[24];            /* uppercase hex, NUL-terminated */
     bool has_descriptor;     /* true when descriptor follows */
     char descriptor[PCG_NDEF_MAX];
+    /* blank, unformatted, pulse, foreign, unsupported, error, or empty. */
+    char ndef_kind[16];
+    char tag_type[12];
+    char cc_hex[12];
+    int capacity;            /* -1 when unknown */
+    int writable;            /* 1, 0, or -1 */
+    char lock[12];
+    char ndef_hex[481];
+    int ndef_hex_truncated;
 } pcg_card_t;
 
 /* Result of one host-initiated write request. */
@@ -48,6 +57,9 @@ struct pcg_proto {
 
     char current_uid[24];    /* last reported UID (for removal suppression) */
     bool card_present;
+    char presence_ndef[16];
+    char reset_reason[16];
+    void (*on_session)(struct pcg_proto *p);
 };
 
 void pcg_proto_init(pcg_proto_t *p, const char *device_name,
@@ -60,6 +72,7 @@ bool pcg_proto_has_write_ndef(pcg_proto_t *p);
 
 /* Set/clear the NFC-ready flag. */
 void pcg_proto_set_ready(pcg_proto_t *p, bool ready);
+void pcg_proto_set_reset(pcg_proto_t *p, const char *reason);
 
 /* Handle one complete JSON line received from the host (after a '\n'). */
 void pcg_proto_on_line(pcg_proto_t *p, const char *line, size_t len);

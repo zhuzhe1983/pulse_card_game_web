@@ -21,15 +21,50 @@ idf.py set-target esp32s3
 idf.py build
 ```
 
+## 屏幕、蜂鸣器和连接状态
+
+官方引脚（[Dial](https://docs.m5stack.com/en/core/Dial) PinMap，以及 M5Unified 的 `board_M5Dial`）：
+
+- GC9A01：RS/DC=G4，MOSI=G5，SCK=G6，CS=G7，RST=G8，BL=G9
+- 蜂鸣器：G3，方波，空闲不响；新卡一声，读失败两声
+- FT3267 触摸在同一条 I2C（0x38，INT=G14）。本读卡器不用触摸
+- WS1850S：SDA=G11，SCL=G12，地址 0x28
+
+顶栏圆点在代码里默认是灰的（`#a1a8a1`）。只有 `hello` 握手成功后的 `connected` / `reading` 才加上 `on`，变成绿色（`#4d9673`）。浏览器选择器里的「已配对」不是这个状态。
+
+USB-Serial-JTAG 在这份配置里关掉。只打开串口、不发 `hello` 时设备可以保持连接；`hello` 应答本身很小。应答曾经在 TinyUSB 接收回调里放在 4096 字节的栈上，而 USB 任务栈也只有 4096，应答发出后任务被踩坏，大约一秒内 CDC 报 `Device not configured` 并重新枚举。协议处理现在在独立任务里，回复缓冲放在 BSS。`hello` 带 `reset` 字段，`diag` 可查询会话和当前卡。已经贴着的卡会在握手后补发一次 `card`，拿着不放不会重复刷卡。
+
+网页用 115200 打开，不用 1200。
+
+这次云端构建没有上板，也没有写过任何实体卡。
+
+## 硬件与 Flash
+
+原版 M5Dial（[Stamp-S3](https://docs.m5stack.com/en/core/Dial)）和 M5Dial v1.1（[Stamp-S3A](https://docs.m5stack.com/en/core/Dial_v1.1)）都是 **ESP32-S3FN8：8MB Quad Flash**。两份官方规格都没有列出 PSRAM，本固件不启用 PSRAM，也不假定板上有 8MB Octal PSRAM。
+
+实机 `esptool` 识别为 8MB GigaDevice（JEDEC `c8/4017`，quad，3.3V），ESP32-S3 rev0.2。烧录参数固定为 **DIO、80MHz、8MB**：
+
+- **DIO**：烧成 QIO 会进入启动看门狗循环（`rst:0x7 (TG0WDT_SYS_RST)`）。
+- **8MB**：镜像头若写成更大容量，引导程序会报 `Detected size smaller than the size in the binary image header. Probe failed.`，因为芯片比头里写的小。
+
+镜像头：byte2 `0x02` = DIO；byte3 `0x3f` = 80MHz（低 4 位 `0xf`）+ 8MB（高 4 位 `0x3`）。`sdkconfig.defaults` 和 `tools/build_dist.sh` 都钉死这组参数。`CMakeLists.txt` 会在生成出别的 Flash 容量、QIO 或 PSRAM 时直接让配置失败。
+
+分区表 `partitions.csv` 与原先的单应用布局相同（nvs / phy_init / factory 1MB），工厂分区在 `0x110000` 结束，落在 8MB 以内。
+
 ## 烧录
 
 M5Dial 原生 USB 走 **USB-Serial-JTAG**，直接 `idf.py flash` 即可；因为要用网页 flasher，建议烧 **merged 合并镜像**：
 
 ```bash
-# 生成单个合并文件（供网页 flasher 用）
-cd build
+# 在已 export 的 ESP-IDF 5.3.x 环境里，从本目录生成 dist 镜像并自检
+./tools/build_dist.sh
+```
+
+等价的手工合并（在 `build/` 下）：
+
+```bash
 esptool.py --chip esp32s3 merge_bin -o merged_dio.bin \
-  --flash_mode dio --flash_freq 80m --flash_size 32MB \
+  --flash_mode dio --flash_freq 80m --flash_size 8MB \
   0x0 bootloader/bootloader.bin \
   0x8000 partition_table/partition-table.bin \
   0x10000 m5dial_nfc_bridge.bin
@@ -38,19 +73,17 @@ esptool.py --chip esp32s3 merge_bin -o merged_dio.bin \
 烧录（三件套）：
 ```bash
 esptool.py --chip esp32s3 -p /dev/cu.usbmodemXXXX -b 460800 write_flash \
-  --flash_mode dio --flash_freq 80m --flash_size 32MB \
+  --flash_mode dio --flash_freq 80m --flash_size 8MB \
   0x0 build/bootloader/bootloader.bin \
   0x8000 build/partition_table/partition-table.bin \
   0x10000 build/m5dial_nfc_bridge.bin
 ```
 
-**务必用 `dio`**：M5Dial 出厂固件就是 SPI **DIO 80MHz / 32MB**，header 里存了 `0x02`（DIO）。烧成 QIO 会导致启动看门狗循环（`rst:0x7 (TG0WDT_SYS_RST)`）。
-
-> 本机一次演示的固件头：`e9 04 02 5f` → byte2=`0x02`=DIO，byte3 低取 80MHz、大 flash。
+`elf2image` 会按 `sdkconfig` 写入 bootloader 和 app 两份头。`merge_bin` 的 `--flash_size` 只会改写地址 0 的 bootloader 头，所以 app 头的 8MB 必须来自这次编译，不能靠事后改一个字节冒充。
 
 ## 网页烧录器
 
-`dist/flash.html`（与游戏同目录）用 `esptool-js` 走 Web Serial 烧 `dist/firmware/m5dial_nfc_bridge_merged_dio.bin`。
+`dist/flash.html`（与游戏同目录）用 `esptool-js` 0.7.1 走 Web Serial 烧 `dist/firmware/m5dial_nfc_bridge_merged_dio.bin`。页面把烧录参数固定为 `dio` / `80m` / `8MB`，并在烧录前检查合并镜像里 bootloader（0x0）和 app（0x10000）两份头。
 - 需要 Chrome/Edge + 安全上下文（localhost 或 HTTPS）
 - 连接后选 serial → 烧录。若列表空，重新插拔或按住复位再点刷新。
 

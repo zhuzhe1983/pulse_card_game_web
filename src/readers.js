@@ -107,6 +107,21 @@
     return { secure: root.isSecureContext !== false, webusb: !!nav.usb, serial: !!nav.serial, webnfc: typeof root.NDEFReader === 'function', keyboard: true };
   }
 
+  // The top-bar dot is green only after hello. Chrome's "已配对" is an
+  // earlier permission grant and is not one of these states.
+  function lampOn(state) { return state === 'connected' || state === 'reading'; }
+  function connectionLabel(state) {
+    if (lampOn(state)) return '已连接';
+    if (state === 'connecting') return '握手中';
+    if (state === 'error') return '未连上';
+    return '未连接';
+  }
+  // 1200 baud plus a DTR drop is the ESP ROM reset gesture. Never use it.
+  function serialOpenPlan(baudRate) {
+    if (baudRate === 1200) return { ok: false, reason: '1200' };
+    return { ok: true, baudRate, dtrToggle: false };
+  }
+
   class ReaderManager {
     constructor({ onCard = () => {}, onStatus = () => {} } = {}) {
       this.onCard = onCard; this.onStatus = onStatus;
@@ -130,7 +145,7 @@
       const now = Date.now();
       if (signature === this._lastSignature && (continuous || now - this._lastAt < 900)) return null;
       this._lastSignature = signature; this._lastAt = now; this._lastUID = uid;
-      const card = { uid, source: event.source, descriptor, tech: 'nfc-a' };
+      const card = { uid, source: event.source, descriptor, tech: 'nfc-a', ndef: event.ndef || (descriptor ? 'pulse' : 'unknown') };
       try {
         Promise.resolve(this.onCard(card)).catch(error => this._status('error', event.source, error.message || '处理刷卡结果失败。', this.state.canWrite));
       } catch (error) { this._status('error', event.source, error.message || '处理刷卡结果失败。', this.state.canWrite); }
@@ -163,7 +178,7 @@
       if (message.type === 'removed') { this._lastSignature = ''; this._lastUID = null; return; }
       if (message.type === 'card') {
         if (message.tech !== undefined && message.tech !== 'nfc-a') fail('CARD_TECH', '当前版本只接收 NFC-A 卡。');
-        this._emitCard({ uid: message.uid, source: this._source, descriptor: message.descriptor == null ? null : message.descriptor }, true);
+        this._emitCard({ uid: message.uid, source: this._source, descriptor: message.descriptor == null ? null : message.descriptor, ndef: typeof message.ndef === 'string' ? message.ndef : '' }, true);
       } else if (message.type === 'write_result') {
         const pending = this._pending.get(message.request_id);
         if (!pending) return;
@@ -239,17 +254,30 @@
         await this.disconnect(); this._status('error', 'webusb', error.message || 'USB 连接失败。'); throw error;
       }
     }
-    async connectSerial({ baudRate = 115200 } = {}) {
+    async connectM5Dial(opts = {}) {
+      // CDC ACM is class 0x02. The WebUSB button filters class 0xFF and will
+      // not list this device. 0x1001 is the other board's USB-Serial-JTAG.
+      return this.connectSerial(Object.assign({}, opts, {
+        filters: [{ usbVendorId: 0x303A, usbProductId: 0x4001 }],
+      }));
+    }
+    async connectSerial({ baudRate = 115200, filters } = {}) {
       this._secure();
       if (!root.navigator || !root.navigator.serial) fail('SERIAL_UNAVAILABLE', '此浏览器不支持 Web Serial。');
-      if (![9600, 19200, 38400, 57600, 115200, 230400].includes(baudRate)) fail('SERIAL_BAUD', '不支持这个串口速率。');
-      const port = await root.navigator.serial.requestPort();
+      const plan = serialOpenPlan(baudRate);
+      if (!plan.ok || ![9600, 19200, 38400, 57600, 115200, 230400].includes(baudRate)) fail('SERIAL_BAUD', '不支持这个串口速率。不会使用 1200bps。');
+      const port = filters
+        ? await root.navigator.serial.requestPort({ filters })
+        : await root.navigator.serial.requestPort();
+      const info = port.getInfo ? port.getInfo() : {};
+      if (info.usbProductId === 0x1001) fail('SERIAL_WRONG_PORT', '这是另一台 USB JTAG（303A:1001，cu.usbmodem101），不是 M5Dial CDC。');
       await this.disconnect();
       const epoch = ++this._epoch;
       this._source = 'serial'; this._port = port;
-      this._status('connecting', 'serial', '正在连接 PCG 串口读卡桥…');
+      this._status('connecting', 'serial', '已选出串口。浏览器里的「已配对」只是授权记录，灯要等握手成功才变绿。');
       try {
-        await port.open({ baudRate });
+        await port.open({ baudRate: plan.baudRate });
+        this._status('connecting', 'serial', '串口已打开（115200）。正在等 pcg.reader.v1 握手…');
         const decoder = new JsonLineDecoder();
         const reader = port.readable.getReader(); this._serialReader = reader;
         this._send = async value => {
@@ -272,7 +300,7 @@
         await this._send({ type: 'hello', protocol: PROTOCOL });
         await hello;
         if (epoch !== this._epoch) fail('DISCONNECTED', '连接已取消。');
-        this._status('connected', 'serial', 'PCG 串口读卡桥已连接', this._canWrite);
+        this._status('connected', 'serial', '握手完成，M5Dial 已连接。灯现在应为绿色。', this._canWrite);
         return this.state;
       } catch (error) {
         await this.disconnect(); this._status('error', 'serial', error.message || '串口连接失败。'); throw error;
@@ -370,7 +398,7 @@
     }
   }
 
-  const api = { ReaderManager, ReaderError, normalizeUID, parseDescriptor, encodeDescriptor, JsonLineDecoder, capabilities, MIME, PROTOCOL };
+  const api = { ReaderManager, ReaderError, normalizeUID, parseDescriptor, encodeDescriptor, JsonLineDecoder, capabilities, lampOn, connectionLabel, serialOpenPlan, MIME, PROTOCOL };
   root.PCGReaders = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof globalThis !== 'undefined' ? globalThis : window);
