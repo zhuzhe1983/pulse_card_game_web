@@ -60,6 +60,7 @@
       card.precise_model_or_revision,
       card.filename_stem,
       identity.game_name_zh,
+      identity.game_name_en,
       identity.faction,
       identity.v8_game_name_zh,
       growth.family,

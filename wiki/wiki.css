@@ -112,6 +112,10 @@ legend { font-weight: 750; padding: 0; }
 #detail::backdrop { background: rgba(28, 20, 12, .62); }
 .sheet { overflow: auto; max-height: calc(100vh - 28px); padding: 16px; }
 .sheet-head { display: flex; justify-content: space-between; gap: 12px; align-items: start; }
+.detail-controls { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.sheet-head>div:first-child {min-width:0;}
+.sheet-head h2 {overflow-wrap:anywhere;}
+html:lang(en) .panel dl { grid-template-columns:minmax(100px,auto) minmax(0,1fr); }
 .sheet-head h2 { margin: 0; font-size: 32px; letter-spacing: -.04em; }
 .rid { margin: 4px 0 0; font-family: ui-monospace, monospace; color: var(--muted); }
 .close { width: 40px; height: 40px; border-radius: 12px; font-size: 22px; }

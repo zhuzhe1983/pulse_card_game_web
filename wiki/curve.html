@@ -4,8 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PULSE 费用曲线</title>
-<link rel="stylesheet" href="../shared/pulse.css">
-<link rel="stylesheet" href="wiki.css">
+<link rel="stylesheet" href="../shared/pulse.css?v=2361b0a09c56">
+<link rel="stylesheet" href="wiki.css?v=a7aacc0d7610">
+<script src="../shared/locales/en.js?v=b79cda882b6f"></script>
+<script src="../shared/i18n.js?v=58fd26c9bace"></script>
 </head>
 <body>
 <header class="top">
@@ -90,10 +92,10 @@ fetch(new URL('data/design-pack.json', document.baseURI)).then(response => {
     return `<a class="bar" href="./index.html?cost=${cost}"><span style="height:${Math.round(n / max * 160)}px"></span><b>${n}</b><i>${cost}</i></a>`;
   }).join('');
   const mid = counts[3] + counts[4] + counts[5];
-  document.getElementById('bar-note').textContent = `1 费 ${counts[1]} 张，2 费 ${counts[2]} 张，3 到 5 费 ${mid} 张。8 费 ${counts[8]} 张。`;
+  PULSEI18n.setText(document.getElementById('bar-note'), `1 费 ${counts[1]} 张，2 费 ${counts[2]} 张，3 到 5 费 ${mid} 张。8 费 ${counts[8]} 张。`);
   document.getElementById('commit').textContent = (pack.source_commit || '').slice(0, 12);
 }).catch(error => {
-  document.getElementById('bar-note').textContent = '费用张数没有读到：' + error.message;
+  PULSEI18n.setText(document.getElementById('bar-note'), '费用张数没有读到：' + error.message);
 });
 </script>
 

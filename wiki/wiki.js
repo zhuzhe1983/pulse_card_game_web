@@ -1,5 +1,6 @@
 (function () {
   'use strict';
+  const I = globalThis.PULSEI18n;
   const api = globalThis.PULSEWiki;
   const $ = selector => document.querySelector(selector);
   const detail = $('#detail');
@@ -16,6 +17,7 @@
   let pack = {status: 'pending_integration', cards: {}, families: {}};
   let state = readState();
   let zoomOpen = false;
+  let servicePayload = null;
 
   function esc(value) {
     return String(value ?? '').replace(/[&<>"']/g, char => ({
@@ -43,6 +45,7 @@
 
   function pageUrl(next) {
     const params = new URLSearchParams();
+    params.set('lang', I.locale);
     ['q', 'type', 'series', 'group', 'family', 'growth', 'star', 'cost', 'band', 'sort', 'card'].forEach(key => {
       if (next[key]) params.set(key, next[key]);
     });
@@ -67,9 +70,9 @@
       const play = card.design && card.design.gameplay;
       return play && play.cost != null ? Number(play.cost) : 99;
     };
-    const nameOf = card => (card.design && card.design.identity && card.design.identity.game_name_zh) || '';
+    const nameOf = card => I.text((card.design && card.design.identity && card.design.identity.game_name_zh) || '');
     if (state.sort === 'rid') list.sort((a, b) => a.rid.localeCompare(b.rid));
-    else if (state.sort === 'name') list.sort((a, b) => nameOf(a).localeCompare(nameOf(b), 'zh'));
+    else if (state.sort === 'name') list.sort((a, b) => nameOf(a).localeCompare(nameOf(b), I.locale));
     else list.sort((a, b) => costOf(a) - costOf(b) || a.rid.localeCompare(b.rid));
     return list;
   }
@@ -94,13 +97,13 @@
 
   function paintChoices() {
     const typeMap = api.tally(cards, card => card.type);
-    $('#type-chips').innerHTML = chip('type', '', '全部', cards.length)
+    I.setHTML($('#type-chips'), chip('type', '', '全部', cards.length)
       + chip('type', 'typeA', 'typeA', typeMap.get('typeA') || 0)
-      + chip('type', 'typeB', 'typeB', typeMap.get('typeB') || 0);
+      + chip('type', 'typeB', 'typeB', typeMap.get('typeB') || 0));
     const seriesMap = api.tally(cards, card => card.product_series || '');
-    $('#series-chips').innerHTML = chip('series', '', '全部', cards.length) + optionKeys(seriesMap).map(key => chip('series', key === '' ? '_none' : key, key === '' ? '未归类' : key, seriesMap.get(key))).join('');
+    I.setHTML($('#series-chips'), chip('series', '', '全部', cards.length) + optionKeys(seriesMap).map(key => chip('series', key === '' ? '_none' : key, key === '' ? '未归类' : key, seriesMap.get(key))).join(''));
     const groupMap = api.tally(cards, card => card.nav_group || '');
-    $('#group-chips').innerHTML = chip('group', '', '全部', cards.length) + optionKeys(groupMap).map(key => chip('group', key === '' ? '_none' : key, key === '' ? '未按前缀' : key, groupMap.get(key))).join('');
+    I.setHTML($('#group-chips'), chip('group', '', '全部', cards.length) + optionKeys(groupMap).map(key => chip('group', key === '' ? '_none' : key, key === '' ? '未按前缀' : key, groupMap.get(key))).join(''));
     paintGrowth();
     paintStars();
     paintCosts();
@@ -119,11 +122,11 @@
       return play && play.cost != null ? String(play.cost) : '';
     });
     const nums = [...costs.keys()].filter(Boolean).sort((a, b) => Number(a) - Number(b));
-    $('#cost-chips').innerHTML = chip('cost', '', '全部', cards.length) + nums.map(cost => chip('cost', cost, cost + ' 费', costs.get(cost))).join('');
+    I.setHTML($('#cost-chips'), chip('cost', '', '全部', cards.length) + nums.map(cost => chip('cost', cost, cost + ' 费', costs.get(cost))).join(''));
     const bands = api.tally(cards, card => (card.design && card.design.gameplay && card.design.gameplay.cost_band) || '');
-    $('#band-chips').innerHTML = chip('band', '', '全部档', cards.length) + ['series_core', 'series_machine', 'accessory'].filter(id => bands.has(id)).map(id => chip('band', id, BAND[id], bands.get(id))).join('');
+    I.setHTML($('#band-chips'), chip('band', '', '全部档', cards.length) + ['series_core', 'series_machine', 'accessory'].filter(id => bands.has(id)).map(id => chip('band', id, BAND[id], bands.get(id))).join(''));
     const sortBox = document.querySelector('#sort-chips');
-    if (sortBox) sortBox.innerHTML = chip('sort', 'cost', '按费用', '') + chip('sort', 'rid', '按编号', '') + chip('sort', 'name', '按中文名', '');
+    if (sortBox) I.setHTML(sortBox, chip('sort', 'cost', '按费用', '') + chip('sort', 'rid', '按编号', '') + chip('sort', 'name', '按中文名', ''));
   }
 
   function paintGrowth() {
@@ -133,8 +136,8 @@
     const chainHtml = chip('reset-growth', '', '全部', cards.length) + chain.map(family => chip('family', family.id, family.label, family.members.length)).join('');
     const lateralHtml = lateral.map(family => `<button type="button" class="chip${state.family === family.id ? ' on' : ''}" data-kind="family" data-value="${esc(family.id)}" aria-pressed="${state.family === family.id ? 'true' : 'false'}" title="${esc(family.summary || '')}">${esc(family.label)}等 <span>${family.members.length}</span></button>`).join('');
     const soloCount = cards.filter(card => card.design && card.design.growth.kind === 'solo').length;
-    $('#chain-chips').innerHTML = chainHtml;
-    $('#lateral-chips').innerHTML = lateralHtml + chip('growth', 'solo', '单张', soloCount);
+    I.setHTML($('#chain-chips'), chainHtml);
+    I.setHTML($('#lateral-chips'), lateralHtml + chip('growth', 'solo', '单张', soloCount));
   }
 
   function paintStars() {
@@ -145,9 +148,9 @@
       stars.set(key, (stars.get(key) || 0) + 1);
     });
     const numbered = [...stars.keys()].filter(key => key !== 'none').sort((a, b) => Number(a) - Number(b));
-    $('#star-chips').innerHTML = chip('star', '', '全部', cards.length)
+    I.setHTML($('#star-chips'), chip('star', '', '全部', cards.length)
       + numbered.map(key => chip('star', key, key + ' 星', stars.get(key))).join('')
-      + (stars.has('none') ? chip('star', 'none', '无星级', stars.get('none')) : '');
+      + (stars.has('none') ? chip('star', 'none', '无星级', stars.get('none')) : ''));
   }
 
   function markChips() {
@@ -166,12 +169,12 @@
 
   function paintGrid() {
     const list = filtered();
-    $('#result-count').textContent = String(list.length);
+    I.setText($('#result-count'), String(list.length));
     if (!list.length) {
-      grid.innerHTML = '<p class="empty">没有符合条件的卡。</p>';
+      I.setHTML(grid, '<p class="empty">没有符合条件的卡。</p>');
       return;
     }
-    grid.innerHTML = list.map(card => {
+    I.setHTML(grid, list.map(card => {
       const thumb = card.assets.web.char_thumb_webp;
       const name = card.design ? card.design.identity.game_name_zh : '';
       const growth = card.design && card.design.growth;
@@ -188,7 +191,7 @@
         <span class="cost-lamp" data-cost="${esc(card.design ? card.design.gameplay.cost : '')}">${esc(card.design ? card.design.gameplay.cost : '')}</span>
         <span class="group-line">${esc(GROWTH[growth && growth.kind] || '')}${esc(familyLabel)}${card.design ? ' · ' + esc(card.design.gameplay.cost) + '费 · ' + esc(tierText(card.design.gameplay)) : ''}</span>
       </button>`;
-    }).join('');
+    }).join(''));
   }
 
   function effectLines(card) {
@@ -214,7 +217,7 @@
   function stats(card) {
     const play = card.design.gameplay;
     const tier = `<div class="stat"><span>系列档</span><strong>${esc(tierText(play) || '未标')}</strong></div>`;
-    const reason = play.cost_note ? `<p class="cost-reason"><span>定费理由</span> ${esc(play.cost_note)}</p>` : '';
+    const reason = play.cost_note ? `<p class="cost-reason"><span>基线定费说明（数值以本页为准）</span> ${esc(play.cost_note)}</p>` : '';
     if (play.role === 'attachment') {
       return `<div class="stat cost-stat"><span class="cost-lamp lg">${esc(play.cost)}</span><span>费用</span></div>${tier}<div class="stat"><span>配件效果</span><strong>${esc(effectLines(card).join('、'))}</strong></div><div class="stat"><span>攻 / 耐</span><strong class="missing">配件不用</strong></div>${reason}`;
     }
@@ -243,7 +246,7 @@
       const inherit = card.design.gameplay.role === 'attachment'
         ? '配件升星时，旧配件进墓地，新配件仍装在同一个宿主上。宿主的新入场和已攻击不变。'
         : (rules.inheritance || '');
-      return `<section class="panel growth" data-growth="chain" data-family="${esc(view.family)}"><h3>升星 · ${esc((pack.families[view.family] || {}).label || view.family)} · ${esc(view.star)} 星</h3><p class="flag">星级来自设计包，不是把 v1.1 / v1.2 / v1.3 机械换成星星。没有第三星。</p><p>${esc(card.design.growth.basis)}</p><p class="fine">升星规则：${esc(rules.cost || '')} ${esc(rules.deck || '')} 不降星。${esc(inherit)} ${sample}这是设计规则，网页引擎是否已接入以实际版本为准。</p><div class="compare">${neighbor(view.prev, '上一级')}<article class="here"><h4>这一级 · ${esc(view.star)} 星</h4><p>${esc(card.design.identity.game_name_zh)}</p><p class="fine">${esc(card.precise_model_or_revision || card.official_product_name_en)}</p><p>${compareStats(card)}</p></article>${neighbor(view.next, '下一级')}</div></section>`;
+      return `<section class="panel growth" data-growth="chain" data-family="${esc(view.family)}"><h3>升星 · ${esc((pack.families[view.family] || {}).label || view.family)} · ${esc(view.star)} 星</h3><p class="flag">星级来自设计包，不是把 v1.1 / v1.2 / v1.3 机械换成星星。没有第三星。</p><p>${esc(card.design.growth.basis)}</p><p class="fine"><span>升星规则：</span><span>${esc(rules.cost || '')}</span> <span>${esc(rules.deck || '')}</span> <span>不降星。</span><span>${esc(inherit)}</span> <span>${sample}</span><span>这是设计规则，网页引擎是否已接入以实际版本为准。</span></p><div class="compare">${neighbor(view.prev, '上一级')}<article class="here"><h4>这一级 · ${esc(view.star)} 星</h4><p>${esc(card.design.identity.game_name_zh)}</p><p class="fine">${esc(card.precise_model_or_revision || card.official_product_name_en)}</p><p>${compareStats(card)}</p></article>${neighbor(view.next, '下一级')}</div></section>`;
     }
     if (view.mode === 'lateral') {
       const items = view.members.map(item => `<li><button type="button" class="text-btn" data-action="open" data-rid="${esc(item.rid)}">${esc(item.design.identity.game_name_zh)} · ${esc(item.official_product_name_en)}</button></li>`).join('');
@@ -256,7 +259,7 @@
     const identity = card.design.identity;
     const oldRow = card.game_card_v8;
     if (!identity.v8_game_name_zh && !identity.v8_change && !oldRow) return '';
-    return `<details class="draft"><summary>旧 v8 草案对照</summary><p class="flag">这里不是现在的中文名。Core2 的旧名「厚壳」已经改成「二代壳」，避免和厚壳工控混在一起。</p><dl>${identity.v8_game_name_zh ? `<dt>旧中文名</dt><dd>${esc(identity.v8_game_name_zh)}</dd>` : ''}${identity.v8_change ? `<dt>这次怎么改</dt><dd>${esc(identity.v8_change)}</dd>` : ''}${oldRow ? `<dt>旧表技能原文</dt><dd>${esc(oldRow.skill || '空')}</dd><dt>旧表来源</dt><dd>${esc(oldRow.source || '')}</dd>` : ''}</dl></details>`;
+    return `<details class="draft"><summary>旧 v8 草案对照</summary><p class="flag">这里不是现在的中文名。Core2 的旧名「厚壳」已经改成「二代壳」，避免和厚壳工控混在一起。</p><dl>${identity.v8_game_name_zh ? `<dt>旧中文名</dt><dd>${esc(identity.v8_game_name_zh)}</dd>` : ''}${identity.v8_change ? `<dt>这次怎么改</dt><dd>${esc(identity.v8_change)}</dd>` : ''}${oldRow ? `<dt>旧表技能原文</dt><dd data-i18n-ignore lang="zh-CN">${esc(oldRow.skill || '空')}</dd><dt>旧表来源</dt><dd><code>${esc(oldRow.source || '')}</code></dd>` : ''}</dl></details>`;
   }
 
   function technical(card) {
@@ -277,7 +280,7 @@
     zoomOpen = false;
     const card = cards.find(item => item.rid === state.card);
     if (!card || !card.design) {
-      detail.innerHTML = `<div class="sheet"><div class="sheet-head"><h2 id="detail-title">没有这张卡</h2><button type="button" class="close" data-action="close" aria-label="关闭">×</button></div><p>链接里的 rid 不在这 96 张里。</p></div>`;
+      I.setHTML(detail, `<div class="sheet"><div class="sheet-head"><h2 id="detail-title">没有这张卡</h2><div class="detail-controls">${I.control()}<button type="button" class="close" data-action="close" aria-label="关闭">×</button></div></div><p>链接里的 rid 不在这 96 张里。</p></div>`);
       return;
     }
     const view = state.view === 'card' ? 'card' : 'char';
@@ -291,8 +294,8 @@
     const controller = card.design.hardware_class || {};
     const identity = card.design.identity;
     const star = card.design.growth.star;
-    detail.innerHTML = `<div class="sheet"><div class="sheet-head"><div><p class="kicker">官方型号 · 卡图标题不改</p><h2 id="detail-title">${esc(card.official_product_name_en)}</h2><p class="zh design">${esc(identity.game_name_zh)}</p><p class="rid">${esc(card.rid)} · ${esc(card.precise_model_or_revision || '')}</p></div><button type="button" class="close" data-action="close" aria-label="关闭">×</button></div>
-      <p class="badges"><span class="type ${esc(card.type)}">硬件 ${esc(card.type)}</span><span class="type role">游戏角色 ${esc(ROLE[card.design.gameplay.role] || '')}</span><span class="type growth">${esc(GROWTH[card.design.growth.kind] || '')}${star ? ' ' + esc(star) + ' 星' : ''}</span><span class="type draft">playtest_draft</span></p>
+    I.setHTML(detail, `<div class="sheet"><div class="sheet-head"><div><p class="kicker">官方型号 · 卡图标题不改</p><h2 id="detail-title">${esc(card.official_product_name_en)}</h2><p class="zh design">${esc(identity.game_name_zh)}</p><p class="rid">${esc(card.rid)} · ${esc(card.precise_model_or_revision || '')}</p></div><div class="detail-controls">${I.control()}<button type="button" class="close" data-action="close" aria-label="关闭">×</button></div></div>
+      <p class="badges"><span class="type ${esc(card.type)}">硬件 ${esc(card.type.replace(/^type/, ''))}</span><span class="type role">游戏角色 ${esc(ROLE[card.design.gameplay.role] || '')}</span><span class="type growth">${esc(GROWTH[card.design.growth.kind] || '')}${star ? ' ' + esc(star) + ' 星' : ''}</span><span class="type draft">playtest_draft</span></p>
       ${back ? `<p class="back-callout" data-surface="back"><strong>背面 · 用户选择</strong><br>这张主体是用户指定的官方背面，不是正面。<br>${notes}</p>` : ''}
       <div class="detail-grid"><div><div class="stage"><img id="hero" src="${esc(webPath(card, view === 'card' ? 'card_webp' : 'char_webp'))}" alt="${alt}"></div><p class="star-slot" data-star="${star || 'none'}">${star ? '★'.repeat(star) + ' ' + star + ' 星' : '无星级'}</p><div class="toolbar"><div class="seg" role="group" aria-label="图片"><button type="button" data-action="view" data-view="char" aria-pressed="${view === 'char' ? 'true' : 'false'}">主体${back ? '（背面）' : ''}</button><button type="button" data-action="view" data-view="card" aria-pressed="${view === 'card' ? 'true' : 'false'}">整卡</button></div><button type="button" class="text-btn" data-action="zoom">放大</button></div><div class="downloads"><a href="${esc(webPath(card, 'char_webp'))}" download>下载主体展示图（WebP）</a><a href="${esc(webPath(card, 'card_webp'))}" download>下载整卡展示图（WebP）</a></div><p class="fine">下载的是网页展示版 WebP，不是原始 PNG 或 SVG。星级不画进图片。</p></div>
       <div><section class="panel design-panel"><h3>战术改版 · 待试玩</h3><p class="flag">战术改版，待试玩。数值与网页对局一致；技能是游戏创作，不是官方硬件规格。</p><p>${esc(identity.game_description)}</p><dl><dt>游戏阵营</dt><dd>${esc(identity.faction)}</dd><dt>设计说明</dt><dd>${esc(identity.balance_intent || '')}</dd></dl><div class="stats">${stats(card)}</div><h3>技能</h3><ul class="skills">${effectLines(card).map(line => `<li>${esc(line)}</li>`).join('')}</ul></section>
@@ -300,7 +303,7 @@
       <section class="panel hardware-panel"><h3>官方硬件</h3><dl><dt>系列</dt><dd>${card.product_series ? esc(card.product_series) : '未归类'}</dd><dt>浏览前缀</dt><dd>${esc(card.nav_group || '未按前缀')} <span class="fine">不是成长家族</span></dd><dt>美术 type</dt><dd>${esc(card.type)} / ${esc(card.style)}</dd><dt>主控归类</dt><dd>${esc(CONTROLLER[controller.controller] || controller.controller || '')} <span class="fine">来自芯片栏，不是游戏角色</span>${controller.note ? '<br>' + esc(controller.note) : ''}</dd><dt>SKU</dt><dd>${esc(card.trusted_sku || '')} · ${esc(card.sku_status || '')}</dd><dt>芯片</dt><dd>${(card.official_main_chips || []).length ? '<ul class="skills">' + card.official_main_chips.map(item => `<li>${esc(item)}</li>`).join('') + '</ul>' : '规格未记录可编程主控'}</dd><dt>资料</dt><dd><a href="${esc(card.official_product_link)}" target="_blank" rel="noopener noreferrer">官方产品页</a></dd>${notes && !back ? `<dt>画面说明</dt><dd>${notes}</dd>` : ''}<dt>授权说明</dt><dd>${esc(card.license_or_usage_note || '')}</dd></dl></section>
       ${v8Block(card)}${technical(card)}
       <div class="result-nav"><button type="button" class="text-btn" data-action="open" data-rid="${prev ? esc(prev.rid) : ''}" ${prev ? '' : 'disabled'}>结果中的上一张</button><button type="button" class="text-btn" data-action="open" data-rid="${next ? esc(next.rid) : ''}" ${next ? '' : 'disabled'}>结果中的下一张</button></div></div></div>
-      <div id="zoom" hidden><button type="button" class="close" data-action="close-zoom" aria-label="关闭放大">×</button><img alt=""></div></div>`;
+      <div id="zoom" hidden><button type="button" class="close" data-action="close-zoom" aria-label="关闭放大">×</button><img alt=""></div></div>`);
   }
 
   function openCard(rid, mode) {
@@ -348,12 +351,12 @@
 
   function paintBanners() {
     const counts = pack.counts || {};
-    $('#total-pill').textContent = cards.length + ' 张';
-    $('#art-banner').textContent = `美术预览，尚未验收。这 ${cards.length} 张图就是图鉴里的对应卡，对战牌桌用其中的主体图。`;
-    $('#design-banner').textContent = `设计已接到 ${pack.ruleset_id || 'pcg.clash.v0'}，状态仍是 playtest_draft、待试玩。${counts.chains || 0} 条升星链、${counts.star1 || 0} 张一星、${counts.star2 || 0} 张二星，没有三星。中文名和技能不是官方规格。`;
+    I.setText($('#total-pill'), cards.length + ' 张');
+    I.setText($('#art-banner'), `美术预览，尚未验收。这 ${cards.length} 张图就是图鉴里的对应卡，对战牌桌用其中的主体图。`);
+    I.setText($('#design-banner'), `设计已接到 ${pack.ruleset_id || 'pcg.clash.v0'}，状态仍是 playtest_draft、待试玩。${counts.chains || 0} 条升星链、${counts.star1 || 0} 张一星、${counts.star2 || 0} 张二星，没有三星。中文名和技能不是官方规格。`);
     const rules = pack.growth_rules || {};
-    $('#rules-note').textContent = rules.cost ? '升星：' + rules.cost + '不降星。' : '';
-    $('#source-line').textContent = pack.source_commit ? '设计来源 ' + pack.source_repo + ' ' + pack.source_commit : '';
+    I.setText($('#rules-note'), rules.cost ? '升星：' + rules.cost + '不降星。' : '');
+    I.setText($('#source-line'), pack.source_commit ? '设计来源 ' + pack.source_repo + ' ' + pack.source_commit : '');
   }
 
   function render() {
@@ -443,7 +446,7 @@
     const kind = card.record_kind === 'design_only_host' ? '设计牌' : '服务牌';
     const stats = card.kind === 'main' ? ` · 攻${card.attack} 耐${card.durability}${card.upper_host ? ' · 上位机' : ''}` : '';
     return `<article class="service-card" data-service="${esc(card.template_id)}" data-sku="none">
-      <span class="glyph">${esc((card.name || '?').slice(0, 1))}</span>
+      <span class="glyph" aria-hidden="true" data-i18n-ignore>${esc(I.text(card.name || '?').slice(0, 1))}</span>
       <h3>${esc(card.name)}</h3>
       <p class="meta">${kind} · ${card.cost} 费${stats}</p>
       <p>${esc(card.role_note || '')}</p>
@@ -452,10 +455,11 @@
   }
 
   function renderServices(payload) {
+    servicePayload = payload;
     const grid = $('#service-grid');
     if (!grid) return;
     const cards = (payload.cards || []).concat(payload.design_hosts || []);
-    grid.innerHTML = cards.map(serviceCard).join('');
+    I.setHTML(grid, cards.map(serviceCard).join(''));
   }
 
   Promise.all([
@@ -475,6 +479,7 @@
     renderServices(servicePack);
     pack = designPack || pack;
     cards = api.mergeCatalog(catalog, pack).cards;
+    cards.forEach(card => { if (card.design) card.design.identity.game_name_en = I.text(card.design.identity.game_name_zh, 'en'); });
     globalThis.PULSEWikiCards = cards;
     const landed = state;
     const listState = Object.assign({}, landed, {card: ''});
@@ -482,6 +487,11 @@
     render();
     if (landed.card) openCard(landed.card, 'push');
   }).catch(error => {
-    grid.innerHTML = `<p class="empty">图鉴资料没有读到（${esc(error.message)}）。请用静态服务器打开本目录。</p>`;
+    I.setHTML(grid, `<p class="empty">图鉴资料没有读到（${esc(error.message)}）。请用静态服务器打开本目录。</p>`);
+  });
+  window.addEventListener('pulse:language', () => {
+    render();
+    if (state.card) { const wasZoomOpen = zoomOpen; paintDetail(); if (wasZoomOpen) openZoom(); }
+    if (servicePayload) renderServices(servicePayload);
   });
 })();
