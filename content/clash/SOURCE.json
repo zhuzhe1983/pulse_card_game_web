@@ -3,7 +3,7 @@
   "prompt_repo": "https://github.com/zhuzhe1983/pulse_card_game_prompt",
   "prompt_pr": 3,
   "prompt_commit": "8a9acd2e221708835dab446d019a47dcd90896c6",
-  "prompt_commit_merged": false,
+  "prompt_commit_merged": true,
   "previous_playtest_commit": "9171f2594608b5e43b1aef66ed04feb21c902cf6",
   "copied_from_handoff": {
     "HEAD.txt": "7ba58fb399956409ebc60323e2cca595c46112a0",
@@ -44,5 +44,15 @@
       "sha256": "8fa5b0a990b31d044fead84a576b05c9c34f24a28a1fbec161bde4d715d595c8"
     }
   },
-  "note": "8a9acd2 正式去掉最左主控加攻，教学局结束是基地 19 对 20。交接「局面」一节仍写着百分比公式，和同一份交接后面的整数规则以及教学局 19 对 20 冲突，本地按整数保留。"
+  "note": "prompt PR #3 已合并；copied_from_handoff 为历史基线来源，基线范围见本目录 README.md。当前数值与技能由 current_profile 覆盖，旧源码提交不代表当前完整实现。",
+  "current_profile": {
+    "balance_version": "tactical-v1",
+    "status": "implemented_playtest",
+    "spec": "docs/TACTICAL_V1.md",
+    "balance": "content/clash/clash_balance.json",
+    "tactics": "content/clash/clash_tactics.json",
+    "upstream_main_before_revision": "6a3ce9d77dcdb78e0ae6f567e8ec012405894d05",
+    "prompt_commit": "4da06b6b22cec772489d91c42b180a9c1950c5dd",
+    "reference_sha256": "d334073d56d4bd06b3633b44e49cdc0b770642b33d05ae868c116f4080fe170c"
+  }
 }

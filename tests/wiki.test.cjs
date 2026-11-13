@@ -20,19 +20,21 @@ ok(pack.status === 'integrated' && pack.design_status === 'playtest_draft', 'des
 ok(pack.ruleset_id === 'pcg.clash.v0', 'ruleset');
 ok(pack.source_commit === '8a9acd2e221708835dab446d019a47dcd90896c6', 'source commit');
 ok(wiki.filterCards(cards, {cost: '1'}).length === cards.filter(card => card.design.gameplay.cost === 1).length, 'cost filter matches the printed cost');
-ok(wiki.filterCards(cards, {cost: '10'}).some(card => card.rid === 'H050'), 'zero key is in the 10 cost tier');
+ok(wiki.filterCards(cards, {cost: '7'}).some(card => card.rid === 'H050'), 'zero key is in the tactical 7 cost tier');
 ok(wiki.filterCards(cards, {band: 'series_machine'}).some(card => card.rid === 'H041'), 'StamPLC stays in the machine band');
 ok(cards.find(card => card.rid === 'H038').design.gameplay.cost === 1 && cards.find(card => card.rid === 'H038').design.gameplay.attack === 2 && cards.find(card => card.rid === 'H038').design.gameplay.durability === 2, 'stamp S3 is 1 cost 2/2');
-ok(cards.find(card => card.rid === 'H041').design.gameplay.cost === 6 && cards.find(card => card.rid === 'H041').design.gameplay.durability === 5 && cards.find(card => card.rid === 'H041').design.gameplay.attack === 3, 'industrial shell is 6 cost 3/5');
+ok(cards.find(card => card.rid === 'H041').design.gameplay.cost === 5 && cards.find(card => card.rid === 'H041').design.gameplay.durability === 5 && cards.find(card => card.rid === 'H041').design.gameplay.attack === 3, 'industrial shell is 5 cost 3/5');
 const costCounts = cards.reduce((map, card) => {
   const cost = card.design.gameplay.cost;
   map[cost] = (map[cost] || 0) + 1;
   return map;
 }, {});
-ok(costCounts[1] === 24 && costCounts[2] === 21 && costCounts[3] + costCounts[4] + costCounts[5] === 34, 'mid costs leave 24/21 and 34 in the middle');
+ok(pack.balance_version === 'tactical-v1', 'wiki displays the active balance profile');
+const balance = JSON.parse(fs.readFileSync(path.join(root, 'content/clash/clash_balance.json')));
+for (const raw of roster.cards) { const expected = {...raw,...balance.card_overrides[raw.template_id]}; const current = pack.cards[raw.rid].gameplay; ok(current.cost === expected.cost, raw.rid + ' cost matches runtime'); if(raw.kind === 'main') { ok(current.attack === expected.attack && current.durability === expected.durability && current.effect === expected.effect, raw.rid + ' body and skill match runtime'); } }
 const playOf = rid => cards.find(card => card.rid === rid).design.gameplay;
 ok(playOf('H016').cost === 3 && playOf('H016').attack === 1 && playOf('H016').durability === 4 && playOf('H016').guard === true, 'CoreMatrix is 3/1/4 guard');
-ok(playOf('H017').cost === 5 && playOf('H017').attack === 3 && playOf('H017').durability === 7 && playOf('H017').guard === true && playOf('H017').cost_band === 'series_machine', 'PowerHub is 5/3/7 guard');
+ok(playOf('H017').cost === 6 && playOf('H017').attack === 4 && playOf('H017').durability === 7 && playOf('H017').guard === true && playOf('H017').cost_band === 'series_machine', 'PowerHub is 6/4/7 guard');
 ok(playOf('H036').cost === 2 && playOf('H036').attack === 3 && playOf('H036').durability === 2 && playOf('H036').series_confidence === 'official', 'DinMeter is the 2-cost S3 kit');
 ok(playOf('H036a').cost === 3 && playOf('H036a').attack === 4 && playOf('H036a').durability === 2, 'DinMeter star 2 is 3/4/2');
 ok(playOf('H037').cost === 2 && playOf('H037').attack === 3 && playOf('H037').durability === 2 && playOf('H037').series_confidence === 'official', 'Air Quality is the 2-cost S3 kit');
@@ -123,10 +125,11 @@ cards.forEach(card => {
 });
 ok(chainCount === 9, 'nine chain starts');
 
-const app = fs.readFileSync(path.join(root, 'src/app.js'), 'utf8');
-const dist = fs.readFileSync(path.join(root, 'dist/index.html'), 'utf8');
-ok(app.includes('wikiHref') && app.split('卡牌图鉴').length === 2, 'one wiki link in the game source');
-ok(dist.includes('wikiHref') && !dist.includes('wiki.js'), 'playable page links out and does not embed the wiki');
+const app = fs.readFileSync(path.join(root, 'src/clash/app.js'), 'utf8');
+const dist = fs.readFileSync(path.join(root, 'dist/clash/index.html'), 'utf8');
+ok(app.includes('data-nav="wiki"'), 'active game links to the wiki');
+ok(dist.includes('data-nav="wiki"') && !dist.includes('wiki.js'), 'clash links out without embedding the wiki');
+ok(!app.includes('data-nav="legacy"'), 'no legacy game entry');
 ok(!/https?:\/\//.test(fs.readFileSync(path.join(wikiRoot, 'index.html'), 'utf8')), 'wiki html has no absolute http url');
 const serviceFile = path.join(wikiRoot, 'data/clash_services.json');
 const servicePack = JSON.parse(fs.readFileSync(serviceFile, 'utf8'));

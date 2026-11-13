@@ -7,7 +7,7 @@
   'use strict';
   const RULESET = 'pcg.clash.v0';
   const SOURCE_COMMIT = '8a9acd2e221708835dab446d019a47dcd90896c6';
-  const IMPLEMENTED_EFFECTS = Object.freeze(['support', 'knob', 'mend', 'damage', 'heal_base', 'supply', 'play_draw', 'play_damage', 'draw_one', 'retrieve_grave', 'arm_aiflow', 'seize']);
+  const IMPLEMENTED_EFFECTS = Object.freeze(['support', 'knob', 'mend', 'damage', 'heal_base', 'supply', 'play_draw', 'play_damage', 'draw_one', 'retrieve_grave', 'arm_aiflow', 'seize', 'damage_all', 'freeze', 'bounce', 'execute', 'overclock', 'play_heal']);
   const IMPLEMENTED = new Set(IMPLEMENTED_EFFECTS);
   const REASON_TEXT = Object.freeze({
     summoning_sickness: '刚上场，本回合不能攻击',
@@ -30,7 +30,10 @@
     chain_slot_full: '这台主控的 Chain 口已经占用',
     need_to_chain: 'Atom 要先装上接上串，才能接 Chain',
     bad_index: '插入位置不对',
-    game_over: '终局已锁定'
+    game_over: '终局已锁定',
+    board_full: '战场已满，最多同时部署 7 台主控',
+    frozen: '已停机，下一次己方回合结束后恢复',
+    attack_too_low: '只能关闭攻击至少 5 的敌方主控'
   });
 
   class ClashError extends Error {
@@ -262,7 +265,7 @@
     applySeries(seat) {
       for (const unit of this.units(seat)) {
         const [left, right] = this.lineNeighbors(seat, unit);
-        const bonus = left + right;
+        const bonus = Math.min(this.rules.adjacencyCap == null ? 2 : this.rules.adjacencyCap, left + right);
         const old = unit.line_durability || 0;
         unit.line_durability = bonus;
         unit.durability = unit.durability + bonus - old;
@@ -281,13 +284,15 @@
       if (raw > 0) {
         attack = raw;
         const [left, right] = this.lineNeighbors(seat, unit);
+        const lineAttack = this.rules.adjacencyAttack == null ? 1 : this.rules.adjacencyAttack;
+        const lineCap = this.rules.adjacencyCap == null ? 2 : this.rules.adjacencyCap;
         if (left) {
-          attack += 1;
-          parts.push(['左邻同系', 1, 1]);
+          attack += lineAttack;
+          parts.push(['左邻同系', lineAttack, 1]);
         }
-        if (right) {
-          attack += 1;
-          parts.push(['右邻同系', 1, 1]);
+        if (right && (!left || lineCap > 1)) {
+          attack += lineAttack;
+          parts.push(['右邻同系', lineAttack, 1]);
         }
         if (this.upper_links[seat].some(item => item.target === unit.iid)) {
           attack += 1;
@@ -549,6 +554,9 @@
     }
 
     insertUnit(seat, cardId, index, sick, durability = null) {
+      if (this.rules.boardLimit != null && this.aliveCount(seat) >= this.rules.boardLimit) {
+        throw new ClashError('战场已满', 'board_full');
+      }
       const row = this.boards[seat];
       if (!Number.isInteger(index) || index < 0 || index > row.length) {
         throw new ClashError('插入位置越界', 'bad_index');
@@ -580,6 +588,7 @@
       let host = null;
       let at = null;
       if (card.kind === 'main') {
+        if (this.rules.boardLimit != null && this.aliveCount(seat) >= this.rules.boardLimit) throw new ClashError('战场已满', 'board_full');
         at = index == null ? this.boards[seat].length : index;
         if (!Number.isInteger(at) || at < 0 || at > this.boards[seat].length) {
           throw new ClashError('插入位置越界', 'bad_index');
@@ -608,6 +617,10 @@
       if (card.kind === 'main') {
         this.insertUnit(seat, cardId, at, !card.rush);
         if (card.effect === 'play_draw') this.draw(seat);
+        else if (card.effect === 'play_heal') {
+          this.bases[seat] = Math.min(this.rules.baseLife, this.bases[seat] + (card.effect_amount || 3));
+          this.event(`${card.name}入场修复核心`);
+        }
         else if (card.effect === 'play_damage' && target != null) {
           const foe = this.find(this.resolveIid(1 - seat, target))[2];
           const amount = card.effect_amount || card.amount || 1;
@@ -633,12 +646,22 @@
 
     prepareSpell(seat, card, target, mode) {
       const effect = card.effect;
-      if (effect === 'supply' || effect === 'heal_base' || effect === 'draw_one' || effect === 'retrieve_grave') return;
+      if (effect === 'supply' || effect === 'heal_base' || effect === 'draw_one' || effect === 'retrieve_grave' || effect === 'damage_all') return;
+      if (['freeze', 'bounce', 'execute', 'overclock'].includes(effect)) {
+        if (target == null || target === 'base') throw new ClashError('请选择主控目标', 'bad_target');
+        const targetSeat = effect === 'overclock' ? seat : 1 - seat;
+        const found = this.find(this.resolveIid(targetSeat, target));
+        if (found[0] !== targetSeat || found[2].link) throw new ClashError('目标不符合技能要求', 'bad_target');
+        if (effect === 'execute' && this.profile(targetSeat, found[2], false).attack < (card.threshold || 5)) throw new ClashError('目标攻击不足 5', 'attack_too_low');
+        if (effect === 'freeze' && found[2].frozen) throw new ClashError('这台已经停机', 'frozen');
+        return;
+      }
       if (effect === 'arm_aiflow') {
         if (this.aiflow_armed[seat]) throw new ClashError('说人话还没用掉', 'already_used_ability');
         return;
       }
       if (effect === 'seize') {
+        if (this.rules.boardLimit != null && this.aliveCount(seat) >= this.rules.boardLimit) throw new ClashError('战场已满', 'board_full');
         if (target == null || target === 'base') throw new ClashError('夺舍只能指定敌方场上的主控', 'bad_target');
         const foeFound = this.find(this.resolveIid(1 - seat, target));
         const foe = foeFound[2];
@@ -672,6 +695,32 @@
         const before = this.bases[seat];
         this.bases[seat] = Math.min(this.rules.baseLife, this.bases[seat] + card.amount);
         this.event(`座位${seat}基地从${before}变为${this.bases[seat]}`);
+        if (card.draw) this.draw(seat);
+      } else if (effect === 'damage_all') {
+        for (const unit of this.units(1 - seat)) unit.durability = Math.max(0, unit.durability - card.amount);
+        this.event(`${card.name}对所有敌方主控造成 ${card.amount} 点伤害，同时结算`);
+      } else if (effect === 'freeze') {
+        const unit = this.find(this.resolveIid(1 - seat, target))[2];
+        unit.frozen = true;
+        this.event(`${this.cards[unit.card_id].name}停机，下一个己方回合不能攻击`);
+        if (card.draw) this.draw(seat);
+      } else if (effect === 'execute') {
+        this.find(this.resolveIid(1 - seat, target))[2].durability = 0;
+        this.event(`${card.name}关闭目标主控`);
+      } else if (effect === 'overclock') {
+        const unit = this.find(this.resolveIid(seat, target))[2];
+        unit.temp_attack += card.amount;
+        this.event(`${this.cards[unit.card_id].name}本回合攻击 +${card.amount}`);
+      } else if (effect === 'bounce') {
+        const unit = this.find(this.resolveIid(1 - seat, target))[2];
+        const owner = unit.seat;
+        this.graves[owner].push(...unit.attachments);
+        this.dropUpperLinks(unit.iid);
+        this.boards[owner] = this.boards[owner].filter(item => item !== unit && item.host_iid !== unit.iid);
+        this.reindex(owner);
+        if (this.hands[owner].length < this.rules.handLimit) this.hands[owner].push(unit.card_id);
+        else this.graves[owner].push(unit.card_id);
+        this.event(`${this.cards[unit.card_id].name}重启回手，配件进入墓地，场上强化清除`);
       } else if (effect === 'damage') {
         const host = this.find(this.resolveIid(1 - seat, target))[2];
         host.durability = Math.max(0, host.durability - card.amount);
@@ -691,7 +740,7 @@
           throw new ClashError('补给要选择修复或临时强化', 'bad_target');
         }
       } else if (effect === 'draw_one') {
-        this.draw(seat);
+        for (let i = 0; i < (card.amount || 1) && this.winner == null; i++) this.draw(seat);
       } else if (effect === 'retrieve_grave') {
         if (!this.graves[seat].length) this.event('墓地是空的，记一笔没有取回');
         else {
@@ -706,7 +755,7 @@
         }
       } else if (effect === 'arm_aiflow') {
         this.aiflow_armed[seat] = true;
-        this.event('说人话：本回合下一次打击在百分比之前攻击+2');
+        this.event('说人话：本回合下一次打击 +2');
       } else if (effect === 'seize') {
         const foe = this.find(this.resolveIid(1 - seat, target))[2];
         this.seizeUnit(seat, foe);
@@ -725,6 +774,7 @@
         throw new ClashError('场上要有一台小印才能支援', 'no_stamp_on_board');
       }
       if (this.ability_used[seat].support) throw new ClashError('本回合已经支援过', 'already_used_ability');
+      if (this.rules.boardLimit != null && this.aliveCount(seat) >= this.rules.boardLimit) throw new ClashError('战场已满', 'board_full');
       if (!this.graves[seat].includes(reviveId) || this.promoteBan[seat].includes(reviveId)) {
         throw new ClashError('墓地里没有可支援的厚壳工控', 'no_shell_in_grave');
       }
@@ -824,6 +874,7 @@
       const attacker = atkFound[2];
       if (attacker.link) throw new ClashError('链节标记不能攻击', 'bad_target');
       if (attacker.sick) throw new ClashError('新入场的单位本回合不能攻击', 'summoning_sickness');
+      if (attacker.frozen) throw new ClashError('停机中，不能攻击', 'frozen');
       if (attacker.attacked) throw new ClashError('这台单位本回合已经攻击过', 'already_attacked');
       const guards = this.units(1 - seat).filter(unit => hasGuard(this.cards, unit));
       if (target === 'base') {
@@ -918,6 +969,7 @@
       for (const unit of this.units(seat)) {
         unit.temp_attack = 0;
         unit.attacked = false;
+        unit.frozen = false;
       }
         this.supply[seat] = 0;
         this.aiflow_armed[seat] = false;
@@ -990,117 +1042,97 @@
     game.start_turn();
   }
 
-  function aiView(game) {
-    const seat = 1;
+  function aiView(game, seat = 1) {
     const show = unit => ({
-      iid: unit.iid,
-      card_id: unit.card_id,
-      attack: attackOf(game.cards, unit),
-      durability: unit.durability,
-      sick: !!unit.sick,
-      attacked: !!unit.attacked,
-      guard: hasGuard(game.cards, unit),
+      iid: unit.iid, card_id: unit.card_id,
+      attack: game.profile ? game.profile(unit.seat, unit, false).attack : attackOf(game.cards, unit),
+      durability: unit.durability, cost: game.cards[unit.card_id].cost,
+      sick: !!unit.sick, attacked: !!unit.attacked, frozen: !!unit.frozen,
+      guard: hasGuard(game.cards, unit), bypass: bypassGuard(game.cards, unit),
       host_family: game.cards[unit.card_id].host_family || 'other',
-      mounts: unit.attachments.map(id => ({
-        mount_class: game.cards[id].mount_class,
-        atom_bus: game.cards[id].atom_bus,
-        grants_guard: !!game.cards[id].grants_guard
-      })),
-      attached: unit.attachments.length > 0,
-      effect: game.cards[unit.card_id].effect || null,
-      amount: game.cards[unit.card_id].amount || 0,
-      lock: !!unit.ability_lock
+      mounts: unit.attachments.map(id => ({ mount_class: game.cards[id].mount_class, atom_bus: game.cards[id].atom_bus, grants_guard: !!game.cards[id].grants_guard })),
+      attached: unit.attachments.length > 0, effect: game.cards[unit.card_id].effect || null,
+      amount: game.cards[unit.card_id].amount || 0, lock: !!unit.ability_lock
     });
     return {
-      supply: game.supply[seat],
-      baseSelf: game.bases[seat],
-      hand: game.hands[seat].map(id => {
-        const card = game.cards[id];
-        return {
-          id, cost: card.cost, kind: card.kind, effect: card.effect || null,
-          amount: card.amount || 0, grants_guard: !!card.grants_guard,
-          attack: card.attack || 0, durability: card.durability || 0,
-          mount_class: card.mount_class || null, atom_bus: card.atom_bus || null
-        };
-      }),
-      own: game.units(seat).map(show),
-      opp: game.units(0).map(show),
-      ownGrave: game.graves[seat].slice(),
-      usedSupport: !!game.ability_used[seat].support
+      seat, supply: game.supply[seat], baseSelf: game.bases[seat], baseEnemy: game.bases[1 - seat],
+      baseLife: game.rules ? game.rules.baseLife : 20, boardLimit: game.rules ? game.rules.boardLimit : null,
+      armed: !!(game.aiflow_armed && game.aiflow_armed[seat]),
+      hand: game.hands[seat].map(id => ({ ...game.cards[id], id })),
+      own: game.units(seat).map(show), opp: game.units(1 - seat).map(show),
+      ownGrave: game.graves[seat].slice(), usedSupport: !!game.ability_used[seat].support,
+      usedKnob: !!game.ability_used[seat].knob
     };
   }
 
   function planAi(view, failed) {
-    const blocked = key => failed && failed.has(key);
+    const options = [];
+    const add = (score, action) => {
+      action.key = [action.type, action.card || action.iid || '', action.target || '', action.mode || ''].join(':');
+      if (!(failed && failed.has(action.key))) options.push({ score, action });
+    };
+    const ready = view.own.filter(unit => !unit.sick && !unit.attacked && !unit.frozen && !unit.lock);
+    const guards = view.opp.filter(unit => unit.guard);
+    const space = view.boardLimit == null || view.own.length < view.boardLimit;
+    const danger = view.opp.filter(unit => !unit.frozen).reduce((n, unit) => n + unit.attack, 0);
+    const faceDamage = ready.reduce((n, unit) => n + unit.attack, 0);
     const support = view.own.find(unit => unit.effect === 'support' && !unit.lock);
-    if (support && !view.usedSupport && view.ownGrave.includes('hou_ke') && view.supply >= support.amount) {
-      const key = 'support';
-      if (!blocked(key)) return { type: 'support', key };
+    if (space && support && !view.usedSupport && view.ownGrave.includes('hou_ke') && view.supply >= support.amount) add(35, { type: 'support' });
+    const knob = view.own.find(unit => unit.effect === 'knob' && !unit.lock);
+    if (knob && !view.usedKnob && view.supply >= knob.amount && ready.length) {
+      const target = ready.slice().sort((a, b) => b.attack - a.attack)[0];
+      add(12, { type: 'knob', card: knob.card_id, target: target.iid });
     }
-    const body = card => (card.attack || 0) + (card.durability || 0);
-    const mains = view.hand.filter(card => card.kind === 'main' && card.cost <= view.supply);
-    mains.sort((a, b) => b.cost - a.cost || body(b) - body(a) || (b.attack || 0) - (a.attack || 0) || a.id.localeCompare(b.id));
-    for (const card of mains) {
-      const key = 'play:' + card.id;
-      if (!blocked(key)) return { type: 'play', card: card.id, target: null, key };
-    }
-    const seize = view.hand.find(card => card.effect === 'seize' && card.cost <= view.supply);
-    if (seize && view.opp.length) {
-      const target = view.opp.slice().sort((a, b) => ((b.attack || 0) + b.durability) - ((a.attack || 0) + a.durability) || b.durability - a.durability || a.iid.localeCompare(b.iid))[0];
-      const key = 'play:' + seize.id + ':' + target.iid;
-      if (!blocked(key)) return { type: 'play', card: seize.id, target: target.iid, key };
-    }
-    const damage = view.hand.find(card => card.effect === 'damage' && card.cost <= view.supply);
-    if (damage && view.opp.length) {
-      const target = view.opp.slice().sort((a, b) => a.durability - b.durability || a.iid.localeCompare(b.iid))[0];
-      const key = 'play:' + damage.id + ':' + target.iid;
-      if (!blocked(key)) return { type: 'play', card: damage.id, target: target.iid, key };
-    }
-    const coin = view.hand.find(card => card.effect === 'supply' && card.cost <= view.supply);
-    if (coin && !blocked('play:' + coin.id)) return { type: 'play', card: coin.id, target: null, key: 'play:' + coin.id };
-    const heal = view.hand.find(card => card.effect === 'heal_base' && card.cost <= view.supply);
-    if (heal && view.baseSelf < 20 && !blocked('play:' + heal.id)) return { type: 'play', card: heal.id, target: null, key: 'play:' + heal.id };
     const mountFits = (card, unit) => {
-      const family = unit.host_family || 'other';
-      const mounted = unit.mounts || [];
-      const mount = card.mount_class;
+      const family = unit.host_family || 'other', mounted = unit.mounts || [], mount = card.mount_class;
       if (mount === 'hat') return family === 'stick' && !mounted.some(item => item.mount_class === 'hat');
       if (mount === 'module') return family === 'core' && !mounted.some(item => item.mount_class === 'module');
       if (mount === 'base') return family === 'atom' && !mounted.some(item => item.mount_class === 'base');
-      if (mount === 'unit') {
-        if (family !== 'atom') return false;
-        const cap = mounted.some(item => item.atom_bus === 'to_unit') ? 2 : 1;
-        return mounted.filter(item => item.mount_class === 'unit').length < cap;
-      }
-      if (mount === 'chain') {
-        if (family === 'atom') return mounted.some(item => item.atom_bus === 'to_chain');
-        return !mounted.some(item => item.mount_class === 'chain');
-      }
-      return false;
+      if (mount === 'unit') return family === 'atom' && mounted.filter(item => item.mount_class === 'unit').length < (mounted.some(item => item.atom_bus === 'to_unit') ? 2 : 1);
+      if (mount === 'chain') return family === 'atom' ? mounted.some(item => item.atom_bus === 'to_chain') : !mounted.some(item => item.mount_class === 'chain');
+      return !unit.attached;
     };
-    const part = view.hand.find(card => card.kind === 'attachment' && card.cost <= view.supply && view.own.some(unit => mountFits(card, unit) && !(card.grants_guard && unit.guard)));
-    const host = part && view.own.find(unit => mountFits(part, unit) && !(part.grants_guard && unit.guard));
-    if (part && host) {
-      const key = 'play:' + part.id + ':' + host.iid;
-      if (!blocked(key)) return { type: 'play', card: part.id, target: host.iid, key };
+    for (const card of view.hand) {
+      if (card.cost > view.supply) continue;
+      const play = (score, target = null, mode = null) => add(score - card.cost * .2, { type: 'play', card: card.id, target, mode });
+      if (card.kind === 'main' && space) {
+        const target = card.effect === 'play_damage' ? view.opp.slice().sort((a, b) => (a.durability <= (card.effect_amount || card.amount || 1) ? -100 : 0) - (b.durability <= (card.effect_amount || card.amount || 1) ? -100 : 0) || b.attack - a.attack)[0] : null;
+        play(10 + card.cost + (card.attack + card.durability) * .7 + (card.guard && danger >= view.baseSelf ? 25 : 0) + (target ? 6 : 0), target ? target.iid : null);
+      } else if (card.kind === 'attachment') {
+        for (const unit of view.own) if (mountFits(card, unit) && !(card.grants_guard && unit.guard)) play(8 + (card.attack_bonus || 0) + (card.grants_guard && danger >= view.baseSelf ? 25 : 0), unit.iid);
+      } else if (card.kind === 'spell') {
+        if (card.effect === 'damage') for (const unit of view.opp) play(12 + Math.min(card.amount, unit.durability) + (unit.durability <= card.amount ? 16 + unit.attack : 0), unit.iid);
+        if (card.effect === 'damage_all' && view.opp.length >= 2) play(10 + view.opp.reduce((n, unit) => n + Math.min(card.amount, unit.durability) * 2 + (unit.durability <= card.amount ? 8 : 0), 0));
+        if (card.effect === 'execute') for (const unit of view.opp) if (unit.attack >= (card.threshold || 5)) play(28 + unit.attack, unit.iid);
+        if (card.effect === 'seize' && space) for (const unit of view.opp) play(18 + unit.attack + unit.durability, unit.iid);
+        if (card.effect === 'freeze') for (const unit of view.opp) if (!unit.frozen && unit.attack >= 2) play((danger >= view.baseSelf ? 35 : 9) + unit.attack, unit.iid);
+        if (card.effect === 'bounce') for (const unit of view.opp) if (unit.cost >= 3 || unit.attached || danger >= view.baseSelf) play(12 + (unit.cost || 0) + (unit.attached ? 8 : 0) + (unit.guard && faceDamage >= view.baseEnemy ? 50 : 0), unit.iid);
+        if (card.effect === 'draw_one' && view.hand.length <= 6) play(view.hand.length <= 2 ? 24 : 8);
+        if (card.effect === 'retrieve_grave' && view.ownGrave.length && view.hand.length <= 6) play(view.hand.length <= 2 ? 20 : 7);
+        if (card.effect === 'heal_base' && view.baseSelf <= (view.baseLife || 20) - Math.min(3, card.amount)) play(danger >= view.baseSelf ? 40 : 12);
+        if (card.effect === 'arm_aiflow' && !view.armed && ready.length) play(!guards.length && faceDamage + 2 >= view.baseEnemy ? 100 : 14);
+        if (card.effect === 'overclock') for (const unit of ready) play(!guards.length && faceDamage + card.amount >= view.baseEnemy ? 100 : 14, unit.iid);
+        if (card.effect === 'mend') for (const unit of ready) play(10, unit.iid, 'temp');
+        if (card.effect === 'supply' && view.hand.some(item => item !== card && item.cost > view.supply && item.cost <= view.supply + card.amount)) play(30);
+      }
     }
-    const ready = view.own.filter(unit => !unit.sick && !unit.attacked && !unit.lock)
-      .slice().sort((a, b) => (b.attack || 0) - (a.attack || 0) || a.iid.localeCompare(b.iid));
     for (const unit of ready) {
-      const guards = view.opp.filter(enemy => enemy.guard);
-      const target = guards.length
-        ? guards.slice().sort((a, b) => a.durability - b.durability || a.iid.localeCompare(b.iid))[0].iid
-        : 'base';
-      const key = 'attack:' + unit.iid + ':' + target;
-      if (!blocked(key)) return { type: 'attack', iid: unit.iid, target, key };
+      if (!guards.length || unit.bypass) add(faceDamage >= view.baseEnemy ? 150 : 5 + unit.attack * .2, { type: 'attack', iid: unit.iid, target: 'base' });
+      for (const enemy of (guards.length && !unit.bypass ? guards : view.opp)) {
+        const kills = unit.attack >= enemy.durability, survives = unit.durability > enemy.attack;
+        const score = 5 + (kills ? 12 + enemy.attack : 0) + (survives ? 6 : -unit.attack) + (enemy.guard ? 5 : 0) + (danger >= view.baseSelf && kills ? 20 : 0);
+        if (kills || survives || enemy.guard) add(score, { type: 'attack', iid: unit.iid, target: enemy.iid });
+      }
     }
-    return null;
+    options.sort((a, b) => b.score - a.score || a.action.key.localeCompare(b.action.key));
+    return options.length ? options[0].action : null;
   }
 
-  function applyAi(game, action) {
-    if (action.type === 'support') game.support(1);
-    else if (action.type === 'attack') game.attack(1, action.iid, action.target);
-    else if (action.type === 'play') game.play(1, action.card, action.target == null ? null : action.target, null);
+  function applyAi(game, action, seat = 1) {
+    if (action.type === 'support') game.support(seat);
+    else if (action.type === 'knob') game.knob(seat, action.card, action.target);
+    else if (action.type === 'attack') game.attack(seat, action.iid, action.target);
+    else if (action.type === 'play') game.play(seat, action.card, action.target == null ? null : action.target, action.mode || null);
     else throw new ClashError('未知电脑行动', 'bad_target');
   }
 
@@ -1244,50 +1276,45 @@
   }
 
   function assembleSim(pool, rng) {
-    const byId = {};
-    pool.forEach(card => { byId[card.template_id] = card; });
+    const byId = Object.fromEntries(pool.map(card => [card.template_id, card]));
     const used = {};
-    const buckets = {
-      low: pool.filter(card => card.kind === 'main' && card.cost <= 2),
-      mid: pool.filter(card => card.kind === 'main' && card.cost >= 3 && card.cost <= 5),
-      high: pool.filter(card => card.kind === 'main' && card.cost >= 6),
-      main: pool.filter(card => card.kind === 'main'),
-      part: pool.filter(card => card.kind === 'attachment')
-    };
+    const mains = pool.filter(card => card.kind === 'main');
     let picked = [];
-    picked = picked.concat(takeLimited(rng, buckets.low, 5, used));
-    picked = picked.concat(takeLimited(rng, buckets.mid, 5, used));
-    picked = picked.concat(takeLimited(rng, buckets.high, 3, used));
-    const haveMains = picked.filter(card => card.kind === 'main').length;
-    if (haveMains < 21) picked = picked.concat(takeLimited(rng, buckets.main, 21 - haveMains, used));
-    ['uiflow_blocks', 'ezdata_note', 'aiflow_say'].forEach(id => {
-      if (byId[id] && !(used[id] > 0)) {
-        used[id] = 1;
-        picked.push(byId[id]);
-      }
-    });
-    const ids = () => picked.map(card => card.template_id);
-    picked = picked.concat(takeHosted(rng, buckets.part, 4, used, ids(), byId));
+    for (const [test, count] of [[card => card.cost <= 2, 5], [card => card.cost >= 3 && card.cost <= 5, 7], [card => card.cost >= 6, 2]]) {
+      picked.push(...takeLimited(rng, mains.filter(test), count, used));
+    }
+    while (picked.length < 16) {
+      const next = takeLimited(rng, mains, 1, used);
+      if (!next.length) break;
+      picked.push(...next);
+    }
+    const spells = pool.filter(card => card.kind === 'spell' && card.effect !== 'supply');
+    const mandatory = ['pulse_bolt', 'arc_wave', 'emergency_stop', 'cache_read', 'repair_protocol'];
+    for (const id of mandatory) if (byId[id]) { picked.push(byId[id]); used[id] = 1; }
+    let spellCount = picked.filter(card => card.kind === 'spell').length;
+    while (spellCount < 10) {
+      const next = takeLimited(rng, spells, 1, used);
+      if (!next.length) break;
+      picked.push(...next); spellCount++;
+    }
+    picked.push(...takeHosted(rng, pool.filter(card => card.kind === 'attachment'), 4, used, picked.map(card => card.template_id), byId));
     while (picked.length < 30) {
-      let added = takeLimited(rng, buckets.main, 1, used);
-      const partsNow = picked.filter(card => card.kind === 'attachment').length;
-      if (!added.length && partsNow < 6) added = takeHosted(rng, buckets.part, 1, used, ids(), byId);
-      if (!added.length) break;
-      picked = picked.concat(added);
+      const next = takeLimited(rng, mains, 1, used);
+      if (!next.length) break;
+      picked.push(...next);
     }
     return picked.slice(0, 30);
   }
 
   function openingWindow(deck) {
-    const byId = {};
-    deck.forEach(card => { byId[card.template_id] = card; });
-    const cheapCount = () => deck.slice(0, 4).filter(card => card.cost <= 2).length;
+    const cheapMain = card => card.kind === 'main' && card.cost <= 2;
+    const cheapCount = () => deck.slice(0, 4).filter(cheapMain).length;
     if (cheapCount() >= 2) return deck;
     const later = [];
     const early = [];
     deck.forEach((card, index) => {
-      if (index >= 4 && card.cost <= 2) later.push(index);
-      if (index < 4 && card.cost > 2) early.push(index);
+      if (index >= 4 && cheapMain(card)) later.push(index);
+      if (index < 4 && !cheapMain(card)) early.push(index);
     });
     later.forEach((late, nth) => {
       if (cheapCount() >= 2 || !early[nth] && early[nth] !== 0) return;
@@ -1304,7 +1331,7 @@
     const notes = [];
     let picked = assembleSim(pool, rng);
     if (picked.length !== 30) notes.push('牌池不足');
-    const ordered = openingWindow(picked);
+    const ordered = openingWindow(shuffle(picked, rng));
     const shape = deckShape(ordered);
     if (shape.topCheap < 2) notes.push('牌池不足');
     return { ids: ordered.map(card => card.template_id), notes, shape };

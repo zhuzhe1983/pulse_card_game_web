@@ -11,6 +11,10 @@
   h1 span { color: var(--accent); }
   .lead { max-width: 460px; color: #727973; }
   .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 28px; }
+  main {padding-top:72px;} .lead {max-width:590px;line-height:1.9;} .card {transition:transform .16s ease,border-color .16s ease;}
+  .card:first-child {background:#183a31;color:#e6eee5;border-color:#31594b;} .card:first-child p {color:#bad0c2;}
+  .primary-link {display:inline-flex;margin:24px 0 12px;padding:14px 26px;border-radius:8px;background:#173b30;color:#e8f0e6;text-decoration:none;font-weight:650;}
+  .rules {font-size:12px;color:#728478;letter-spacing:.04em;} footer {margin-top:48px;border-top:1px solid var(--line);padding-top:20px;font-size:12px;color:#7c897f;}
   .card { display: block; padding: 22px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; text-decoration: none; color: inherit; min-height: 160px; }
   .card:hover { transform: translateY(-3px); border-color: #aeb8a5; }
   .card h2 { margin: 8px 0; font-size: 18px; }
@@ -26,19 +30,20 @@
     <a href="./index.html" aria-current="page">大厅</a>
     <a href="dist/clash/index.html">回合战</a>
     <a href="wiki/index.html">图鉴</a>
-    <a href="dist/index.html">旧版点数</a>
   </nav>
 </header>
 <main>
-  <p class="eyebrow">PULSE</p>
-  <h1>同一套牌，<br><span>两处可去。</span></h1>
-  <p class="lead">回合战是炉石式的本地双人牌桌。图鉴收着 96 张待试玩设计和对应卡图。旧的点数对局和读卡仍然留着。</p>
+  <p class="eyebrow">PULSE · 脉冲对决</p>
+  <h1>读懂局面，<br><span>打出转机。</span></h1>
+  <p class="lead">部署主控守住核心，用技能拆解攻势。清场、停机、回手，或留住资源等待反攻——这一回合，由你决定。</p>
+  <a class="primary-link" href="dist/clash/">开始一局 →</a>
+  <p class="rules">30 点核心生命 · 7 个主控位 · 12 张战术技能</p>
   <div class="grid">
-    <a class="card" href="dist/clash/index.html"><p class="eyebrow">CLASH</p><h2>回合战</h2><p>基地、供电、手牌和升星。打开就是一局随机模拟战。</p></a>
-    <a class="card" href="wiki/index.html"><p class="eyebrow">WIKI</p><h2>卡牌图鉴</h2><p>96 张卡、搜索、星级和硬件资料。美术仍是待验收。</p></a>
-    <a class="card" href="dist/index.html"><p class="eyebrow">LEGACY</p><h2>旧版点数对局</h2><p>原来的三局点数、收藏和读卡器。数值不跟回合战混用。</p></a>
+    <a class="card" href="dist/clash/?scenario=versus"><p class="eyebrow">01 / LEARN</p><h2>从一场练习开始</h2><p>固定牌库，电脑陪练。熟悉供电、部署与攻击，再进入随机战。</p></a>
+    <a class="card" href="dist/clash/?scenario=tactics"><p class="eyebrow">02 / TACTICS</p><h2>试试改变局面的技能</h2><p>八张新技能，一张准备好的牌桌。亲手试验解场、恢复与超频。</p></a>
+    <a class="card" href="wiki/index.html"><p class="eyebrow">03 / COLLECTION</p><h2>认识每一张牌</h2><p>96 张设备卡与 12 张技能，查看费用、能力、成长和设备资料。</p></a>
   </div>
+  <footer>当前版本正在试玩调整中。也可以在牌桌菜单选择本地双人，与朋友轮流对战。</footer>
 </main>
-<p class="pulse-credit">这就是傻子 Grok Bot 做的网站</p>
 </body>
 </html>

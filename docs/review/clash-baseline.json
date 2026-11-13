@@ -1,0 +1,2109 @@
+{
+  "ruleset": "pcg.clash.v0",
+  "source_commit": "8a9acd2e221708835dab446d019a47dcd90896c6",
+  "methodology": "200 seeds (1..200), shipped planner mirrored at both seats; maximum 100 individual turns, 16 actions per turn. Diagnostic only. Not human win rates or fun evidence.",
+  "roster": {
+    "total": 96,
+    "kinds": {
+      "attachment": 48,
+      "main": 48
+    },
+    "mainEffectCount": 9,
+    "mainGuardCount": 9,
+    "mainWithoutEffectGuardOrUpperHost": 29
+  },
+  "deck": {
+    "example": {
+      "size": 30,
+      "mains": 23,
+      "lowMains": 9,
+      "mid": 12,
+      "high": 7,
+      "parts": 4,
+      "topCheap": 4,
+      "copiesOk": true
+    },
+    "serviceOneBasedPositions": {
+      "uiflow_blocks": {
+        "22": 400
+      },
+      "ezdata_note": {
+        "23": 400
+      },
+      "aiflow_say": {
+        "24": 400
+      }
+    }
+  },
+  "simulations": {
+    "count": 200,
+    "unfinished": 0,
+    "wins": {
+      "0": 99,
+      "1": 101
+    },
+    "individualTurns": {
+      "min": 6,
+      "median": 8,
+      "p90": 9,
+      "max": 14,
+      "mean": 7.93
+    },
+    "maxBoard": {
+      "min": 4,
+      "median": 5,
+      "p90": 6,
+      "max": 7,
+      "mean": 5.36
+    },
+    "largestBaseDamageInOneTurn": {
+      "min": 7,
+      "median": 10,
+      "p90": 12,
+      "max": 15,
+      "mean": 10.14
+    },
+    "attacksBase": 2511,
+    "attacksUnit": 217,
+    "nonBatterySpellPlays": 0,
+    "serviceHandTurnOccurrences": {},
+    "rejectedActions": {}
+  },
+  "playedCards": {
+    "xiao_yin": 112,
+    "art_h038b": 128,
+    "bei_yong_dian_chi": 200,
+    "art_h028": 124,
+    "art_h038a": 40,
+    "art_h029": 103,
+    "dian_zhen": 37,
+    "art_h039c": 101,
+    "art_h022": 45,
+    "art_h039f": 112,
+    "art_h029a": 37,
+    "art_h037a": 52,
+    "art_h036": 58,
+    "art_h036a": 55,
+    "art_h029b": 85,
+    "art_h039b": 98,
+    "art_h039a": 103,
+    "art_h029c": 88,
+    "art_h039e": 91,
+    "art_h003": 54,
+    "art_h016": 59,
+    "art_h037": 40,
+    "art_h023": 41,
+    "art_h024": 56,
+    "art_h017": 5,
+    "art_h030a": 74,
+    "art_h038c": 108,
+    "art_h025": 32,
+    "art_h027a": 64,
+    "art_h005": 7,
+    "art_h013": 1,
+    "art_h008": 11,
+    "art_h004": 6
+  },
+  "games": [
+    {
+      "seed": 1,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 11,
+      "attacksUnit": 1,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 11
+    },
+    {
+      "seed": 2,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 10,
+      "attacksUnit": 1,
+      "spells": 0,
+      "maxBoard": 4,
+      "maxBurst": 10
+    },
+    {
+      "seed": 3,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 12,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 11
+    },
+    {
+      "seed": 4,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 13,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 11
+    },
+    {
+      "seed": 5,
+      "winner": 0,
+      "halfTurns": 9,
+      "attacksBase": 11,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 11
+    },
+    {
+      "seed": 6,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 12,
+      "attacksUnit": 1,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 10
+    },
+    {
+      "seed": 7,
+      "winner": 0,
+      "halfTurns": 9,
+      "attacksBase": 16,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 12
+    },
+    {
+      "seed": 8,
+      "winner": 0,
+      "halfTurns": 9,
+      "attacksBase": 15,
+      "attacksUnit": 3,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 11
+    },
+    {
+      "seed": 9,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 15,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 9
+    },
+    {
+      "seed": 10,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 16,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 10
+    },
+    {
+      "seed": 11,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 16,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 9
+    },
+    {
+      "seed": 12,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 14,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 10
+    },
+    {
+      "seed": 13,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 11,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 10
+    },
+    {
+      "seed": 14,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 12,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 12
+    },
+    {
+      "seed": 15,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 12,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 10
+    },
+    {
+      "seed": 16,
+      "winner": 0,
+      "halfTurns": 9,
+      "attacksBase": 14,
+      "attacksUnit": 1,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 9
+    },
+    {
+      "seed": 17,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 14,
+      "attacksUnit": 1,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 10
+    },
+    {
+      "seed": 18,
+      "winner": 1,
+      "halfTurns": 14,
+      "attacksBase": 15,
+      "attacksUnit": 12,
+      "spells": 0,
+      "maxBoard": 4,
+      "maxBurst": 7
+    },
+    {
+      "seed": 19,
+      "winner": 1,
+      "halfTurns": 6,
+      "attacksBase": 8,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 4,
+      "maxBurst": 12
+    },
+    {
+      "seed": 20,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 8,
+      "attacksUnit": 3,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 8
+    },
+    {
+      "seed": 21,
+      "winner": 1,
+      "halfTurns": 10,
+      "attacksBase": 16,
+      "attacksUnit": 6,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 9
+    },
+    {
+      "seed": 22,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 12,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 12
+    },
+    {
+      "seed": 23,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 15,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 11
+    },
+    {
+      "seed": 24,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 11,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 10
+    },
+    {
+      "seed": 25,
+      "winner": 0,
+      "halfTurns": 9,
+      "attacksBase": 13,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 7
+    },
+    {
+      "seed": 26,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 9,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 4,
+      "maxBurst": 10
+    },
+    {
+      "seed": 27,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 9,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 4,
+      "maxBurst": 9
+    },
+    {
+      "seed": 28,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 10,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 9
+    },
+    {
+      "seed": 29,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 13,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 12
+    },
+    {
+      "seed": 30,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 13,
+      "attacksUnit": 4,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 9
+    },
+    {
+      "seed": 31,
+      "winner": 0,
+      "halfTurns": 9,
+      "attacksBase": 15,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 12
+    },
+    {
+      "seed": 32,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 14,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 10
+    },
+    {
+      "seed": 33,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 14,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 10
+    },
+    {
+      "seed": 34,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 12,
+      "attacksUnit": 3,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 11
+    },
+    {
+      "seed": 35,
+      "winner": 0,
+      "halfTurns": 9,
+      "attacksBase": 12,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 11
+    },
+    {
+      "seed": 36,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 10,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 10
+    },
+    {
+      "seed": 37,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 10,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 10
+    },
+    {
+      "seed": 38,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 13,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 4,
+      "maxBurst": 10
+    },
+    {
+      "seed": 39,
+      "winner": 0,
+      "halfTurns": 9,
+      "attacksBase": 14,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 7
+    },
+    {
+      "seed": 40,
+      "winner": 1,
+      "halfTurns": 12,
+      "attacksBase": 12,
+      "attacksUnit": 7,
+      "spells": 0,
+      "maxBoard": 4,
+      "maxBurst": 9
+    },
+    {
+      "seed": 41,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 13,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 9
+    },
+    {
+      "seed": 42,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 13,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 13
+    },
+    {
+      "seed": 43,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 14,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 11
+    },
+    {
+      "seed": 44,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 10,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 9
+    },
+    {
+      "seed": 45,
+      "winner": 0,
+      "halfTurns": 9,
+      "attacksBase": 10,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 10
+    },
+    {
+      "seed": 46,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 13,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 10
+    },
+    {
+      "seed": 47,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 11,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 11
+    },
+    {
+      "seed": 48,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 13,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 11
+    },
+    {
+      "seed": 49,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 10,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 10
+    },
+    {
+      "seed": 50,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 14,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 9
+    },
+    {
+      "seed": 51,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 14,
+      "attacksUnit": 1,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 9
+    },
+    {
+      "seed": 52,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 12,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 12
+    },
+    {
+      "seed": 53,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 16,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 9
+    },
+    {
+      "seed": 54,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 12,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 11
+    },
+    {
+      "seed": 55,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 12,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 9
+    },
+    {
+      "seed": 56,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 14,
+      "attacksUnit": 1,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 9
+    },
+    {
+      "seed": 57,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 12,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 11
+    },
+    {
+      "seed": 58,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 13,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 9
+    },
+    {
+      "seed": 59,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 12,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 10
+    },
+    {
+      "seed": 60,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 11,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 12
+    },
+    {
+      "seed": 61,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 11,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 10
+    },
+    {
+      "seed": 62,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 14,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 11
+    },
+    {
+      "seed": 63,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 14,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 8
+    },
+    {
+      "seed": 64,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 14,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 14
+    },
+    {
+      "seed": 65,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 13,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 10
+    },
+    {
+      "seed": 66,
+      "winner": 0,
+      "halfTurns": 9,
+      "attacksBase": 15,
+      "attacksUnit": 3,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 7
+    },
+    {
+      "seed": 67,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 13,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 12
+    },
+    {
+      "seed": 68,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 11,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 12
+    },
+    {
+      "seed": 69,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 15,
+      "attacksUnit": 1,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 9
+    },
+    {
+      "seed": 70,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 13,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 11
+    },
+    {
+      "seed": 71,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 11,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 10
+    },
+    {
+      "seed": 72,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 10,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 9
+    },
+    {
+      "seed": 73,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 8,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 10
+    },
+    {
+      "seed": 74,
+      "winner": 0,
+      "halfTurns": 9,
+      "attacksBase": 14,
+      "attacksUnit": 3,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 9
+    },
+    {
+      "seed": 75,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 13,
+      "attacksUnit": 1,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 11
+    },
+    {
+      "seed": 76,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 11,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 10
+    },
+    {
+      "seed": 77,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 14,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 11
+    },
+    {
+      "seed": 78,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 16,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 11
+    },
+    {
+      "seed": 79,
+      "winner": 0,
+      "halfTurns": 9,
+      "attacksBase": 17,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 7,
+      "maxBurst": 12
+    },
+    {
+      "seed": 80,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 14,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 12
+    },
+    {
+      "seed": 81,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 9,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 10
+    },
+    {
+      "seed": 82,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 13,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 12
+    },
+    {
+      "seed": 83,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 15,
+      "attacksUnit": 1,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 9
+    },
+    {
+      "seed": 84,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 15,
+      "attacksUnit": 1,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 7
+    },
+    {
+      "seed": 85,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 13,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 10
+    },
+    {
+      "seed": 86,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 12,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 12
+    },
+    {
+      "seed": 87,
+      "winner": 0,
+      "halfTurns": 11,
+      "attacksBase": 19,
+      "attacksUnit": 3,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 9
+    },
+    {
+      "seed": 88,
+      "winner": 0,
+      "halfTurns": 11,
+      "attacksBase": 12,
+      "attacksUnit": 5,
+      "spells": 0,
+      "maxBoard": 7,
+      "maxBurst": 9
+    },
+    {
+      "seed": 89,
+      "winner": 0,
+      "halfTurns": 9,
+      "attacksBase": 16,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 9
+    },
+    {
+      "seed": 90,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 14,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 11
+    },
+    {
+      "seed": 91,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 14,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 13
+    },
+    {
+      "seed": 92,
+      "winner": 0,
+      "halfTurns": 9,
+      "attacksBase": 17,
+      "attacksUnit": 1,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 10
+    },
+    {
+      "seed": 93,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 16,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 10
+    },
+    {
+      "seed": 94,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 14,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 10
+    },
+    {
+      "seed": 95,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 16,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 10
+    },
+    {
+      "seed": 96,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 14,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 9
+    },
+    {
+      "seed": 97,
+      "winner": 1,
+      "halfTurns": 6,
+      "attacksBase": 8,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 4,
+      "maxBurst": 12
+    },
+    {
+      "seed": 98,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 12,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 12
+    },
+    {
+      "seed": 99,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 12,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 11
+    },
+    {
+      "seed": 100,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 11,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 11
+    },
+    {
+      "seed": 101,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 11,
+      "attacksUnit": 1,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 8
+    },
+    {
+      "seed": 102,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 9,
+      "attacksUnit": 1,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 10
+    },
+    {
+      "seed": 103,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 15,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 12
+    },
+    {
+      "seed": 104,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 14,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 10
+    },
+    {
+      "seed": 105,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 13,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 12
+    },
+    {
+      "seed": 106,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 13,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 11
+    },
+    {
+      "seed": 107,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 11,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 10
+    },
+    {
+      "seed": 108,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 15,
+      "attacksUnit": 1,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 9
+    },
+    {
+      "seed": 109,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 12,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 10
+    },
+    {
+      "seed": 110,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 10,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 11
+    },
+    {
+      "seed": 111,
+      "winner": 0,
+      "halfTurns": 9,
+      "attacksBase": 14,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 9
+    },
+    {
+      "seed": 112,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 13,
+      "attacksUnit": 1,
+      "spells": 0,
+      "maxBoard": 4,
+      "maxBurst": 8
+    },
+    {
+      "seed": 113,
+      "winner": 0,
+      "halfTurns": 9,
+      "attacksBase": 11,
+      "attacksUnit": 5,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 9
+    },
+    {
+      "seed": 114,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 13,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 9
+    },
+    {
+      "seed": 115,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 12,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 12
+    },
+    {
+      "seed": 116,
+      "winner": 0,
+      "halfTurns": 9,
+      "attacksBase": 15,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 11
+    },
+    {
+      "seed": 117,
+      "winner": 0,
+      "halfTurns": 9,
+      "attacksBase": 15,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 9
+    },
+    {
+      "seed": 118,
+      "winner": 0,
+      "halfTurns": 9,
+      "attacksBase": 15,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 7,
+      "maxBurst": 9
+    },
+    {
+      "seed": 119,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 13,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 10
+    },
+    {
+      "seed": 120,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 14,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 15
+    },
+    {
+      "seed": 121,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 9,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 9
+    },
+    {
+      "seed": 122,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 16,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 12
+    },
+    {
+      "seed": 123,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 12,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 10
+    },
+    {
+      "seed": 124,
+      "winner": 0,
+      "halfTurns": 9,
+      "attacksBase": 14,
+      "attacksUnit": 4,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 9
+    },
+    {
+      "seed": 125,
+      "winner": 0,
+      "halfTurns": 9,
+      "attacksBase": 13,
+      "attacksUnit": 1,
+      "spells": 0,
+      "maxBoard": 7,
+      "maxBurst": 7
+    },
+    {
+      "seed": 126,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 11,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 12
+    },
+    {
+      "seed": 127,
+      "winner": 0,
+      "halfTurns": 9,
+      "attacksBase": 13,
+      "attacksUnit": 4,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 9
+    },
+    {
+      "seed": 128,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 13,
+      "attacksUnit": 1,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 10
+    },
+    {
+      "seed": 129,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 12,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 12
+    },
+    {
+      "seed": 130,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 13,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 12
+    },
+    {
+      "seed": 131,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 16,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 11
+    },
+    {
+      "seed": 132,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 14,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 11
+    },
+    {
+      "seed": 133,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 14,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 12
+    },
+    {
+      "seed": 134,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 13,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 12
+    },
+    {
+      "seed": 135,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 11,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 11
+    },
+    {
+      "seed": 136,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 11,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 13
+    },
+    {
+      "seed": 137,
+      "winner": 0,
+      "halfTurns": 11,
+      "attacksBase": 14,
+      "attacksUnit": 4,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 7
+    },
+    {
+      "seed": 138,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 12,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 12
+    },
+    {
+      "seed": 139,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 11,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 13
+    },
+    {
+      "seed": 140,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 12,
+      "attacksUnit": 1,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 10
+    },
+    {
+      "seed": 141,
+      "winner": 0,
+      "halfTurns": 9,
+      "attacksBase": 11,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 7
+    },
+    {
+      "seed": 142,
+      "winner": 0,
+      "halfTurns": 9,
+      "attacksBase": 14,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 9
+    },
+    {
+      "seed": 143,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 11,
+      "attacksUnit": 1,
+      "spells": 0,
+      "maxBoard": 4,
+      "maxBurst": 8
+    },
+    {
+      "seed": 144,
+      "winner": 0,
+      "halfTurns": 9,
+      "attacksBase": 13,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 11
+    },
+    {
+      "seed": 145,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 12,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 10
+    },
+    {
+      "seed": 146,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 11,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 8
+    },
+    {
+      "seed": 147,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 13,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 11
+    },
+    {
+      "seed": 148,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 15,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 9
+    },
+    {
+      "seed": 149,
+      "winner": 0,
+      "halfTurns": 9,
+      "attacksBase": 11,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 7
+    },
+    {
+      "seed": 150,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 13,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 10
+    },
+    {
+      "seed": 151,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 14,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 10
+    },
+    {
+      "seed": 152,
+      "winner": 0,
+      "halfTurns": 9,
+      "attacksBase": 9,
+      "attacksUnit": 4,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 7
+    },
+    {
+      "seed": 153,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 10,
+      "attacksUnit": 4,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 11
+    },
+    {
+      "seed": 154,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 11,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 10
+    },
+    {
+      "seed": 155,
+      "winner": 0,
+      "halfTurns": 9,
+      "attacksBase": 13,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 7
+    },
+    {
+      "seed": 156,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 14,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 10
+    },
+    {
+      "seed": 157,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 13,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 9
+    },
+    {
+      "seed": 158,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 11,
+      "attacksUnit": 3,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 11
+    },
+    {
+      "seed": 159,
+      "winner": 0,
+      "halfTurns": 9,
+      "attacksBase": 11,
+      "attacksUnit": 4,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 9
+    },
+    {
+      "seed": 160,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 11,
+      "attacksUnit": 1,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 10
+    },
+    {
+      "seed": 161,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 12,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 12
+    },
+    {
+      "seed": 162,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 14,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 11
+    },
+    {
+      "seed": 163,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 12,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 12
+    },
+    {
+      "seed": 164,
+      "winner": 0,
+      "halfTurns": 9,
+      "attacksBase": 15,
+      "attacksUnit": 4,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 11
+    },
+    {
+      "seed": 165,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 13,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 11
+    },
+    {
+      "seed": 166,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 14,
+      "attacksUnit": 1,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 9
+    },
+    {
+      "seed": 167,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 13,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 11
+    },
+    {
+      "seed": 168,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 10,
+      "attacksUnit": 1,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 11
+    },
+    {
+      "seed": 169,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 11,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 4,
+      "maxBurst": 8
+    },
+    {
+      "seed": 170,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 10,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 12
+    },
+    {
+      "seed": 171,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 9,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 4,
+      "maxBurst": 10
+    },
+    {
+      "seed": 172,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 13,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 9
+    },
+    {
+      "seed": 173,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 11,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 11
+    },
+    {
+      "seed": 174,
+      "winner": 0,
+      "halfTurns": 9,
+      "attacksBase": 9,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 4,
+      "maxBurst": 9
+    },
+    {
+      "seed": 175,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 10,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 10
+    },
+    {
+      "seed": 176,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 16,
+      "attacksUnit": 1,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 13
+    },
+    {
+      "seed": 177,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 13,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 9
+    },
+    {
+      "seed": 178,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 12,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 12
+    },
+    {
+      "seed": 179,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 12,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 12
+    },
+    {
+      "seed": 180,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 10,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 12
+    },
+    {
+      "seed": 181,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 11,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 10
+    },
+    {
+      "seed": 182,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 10,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 12
+    },
+    {
+      "seed": 183,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 9,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 4,
+      "maxBurst": 8
+    },
+    {
+      "seed": 184,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 12,
+      "attacksUnit": 3,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 10
+    },
+    {
+      "seed": 185,
+      "winner": 0,
+      "halfTurns": 9,
+      "attacksBase": 14,
+      "attacksUnit": 4,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 9
+    },
+    {
+      "seed": 186,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 14,
+      "attacksUnit": 3,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 8
+    },
+    {
+      "seed": 187,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 14,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 12
+    },
+    {
+      "seed": 188,
+      "winner": 1,
+      "halfTurns": 6,
+      "attacksBase": 8,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 12
+    },
+    {
+      "seed": 189,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 6,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 4,
+      "maxBurst": 8
+    },
+    {
+      "seed": 190,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 13,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 4,
+      "maxBurst": 7
+    },
+    {
+      "seed": 191,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 14,
+      "attacksUnit": 3,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 9
+    },
+    {
+      "seed": 192,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 12,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 12
+    },
+    {
+      "seed": 193,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 13,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 11
+    },
+    {
+      "seed": 194,
+      "winner": 0,
+      "halfTurns": 9,
+      "attacksBase": 15,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 8
+    },
+    {
+      "seed": 195,
+      "winner": 0,
+      "halfTurns": 9,
+      "attacksBase": 11,
+      "attacksUnit": 2,
+      "spells": 0,
+      "maxBoard": 4,
+      "maxBurst": 10
+    },
+    {
+      "seed": 196,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 14,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 9
+    },
+    {
+      "seed": 197,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 11,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 8
+    },
+    {
+      "seed": 198,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 13,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 6,
+      "maxBurst": 12
+    },
+    {
+      "seed": 199,
+      "winner": 0,
+      "halfTurns": 7,
+      "attacksBase": 8,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 8
+    },
+    {
+      "seed": 200,
+      "winner": 1,
+      "halfTurns": 8,
+      "attacksBase": 13,
+      "attacksUnit": 0,
+      "spells": 0,
+      "maxBoard": 5,
+      "maxBurst": 9
+    }
+  ]
+}

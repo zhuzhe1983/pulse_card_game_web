@@ -6,7 +6,9 @@
   const roster = root.PCGClashRoster;
   const $ = document.querySelector.bind(document);
   const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
-  const rules = pack.rules;
+  const balance = root.PCGClashBalance;
+  const tactics = root.PCGClashTactics;
+  const rules = Object.assign({}, pack.rules, balance.rules);
   const tokenId = pack.tokenId;
   const batteryId = 'bei_yong_dian_chi';
   const cards = Object.create(null);
@@ -18,11 +20,15 @@
     template_id: batteryId, name: '备用电池', kind: 'spell', cost: 0, attack: 0, durability: 0,
     attack_bonus: 0, grants_guard: false, bypass_guard: false, guard: false, effect: 'supply', amount: 1
   };
+  tactics.cards.forEach(card => { cards[card.template_id] = card; });
+  Object.entries(balance.card_overrides).forEach(([id, patch]) => { if (cards[id]) cards[id] = Object.assign({}, cards[id], patch); });
+  const enemyEffects = ['damage', 'play_damage', 'seize', 'freeze', 'bounce', 'execute'];
   const presetFirst = ['art_h039a', 'xiao_yin', 'art_h038a', 'hou_ke', 'dian_zhen', 'art_h027a', 'xuan_niu', 'art_h003', 'art_h025', 'lian_jie'];
   const presetSecond = ['art_h005', 'art_h007', 'qiao_jian', 'art_h032', 'art_h036', 'art_h036a', 'art_c004c', 'art_c004d', 'gan_rao', 'hu_zhao'];
   const seatName = seat => seat === 0 ? '先手' : '后手';
   const kindName = kind => kind === 'main' ? '主控' : kind === 'attachment' ? '配件' : '战术';
   function blurb(card) {
+    if (card.kind === 'spell' && card.role_note) return card.role_note;
     let text = kindName(card.kind);
     if (card.kind === 'main') text = `主控 · 攻${card.attack} 耐${card.durability}${card.guard ? ' · 护卫' : ''}${card.upper_host ? ' · 上位机' : ''}`;
     else if (card.effect === 'draw_one') text = '服务 · 抽 1 张';
@@ -37,6 +43,11 @@
     else if (card.effect === 'heal_base') text = `战术 · 基地 +${card.amount}`;
     else if (card.effect === 'damage') text = `战术 · 敌方 -${card.amount} 耐久`;
     else if (card.effect === 'mend') text = `战术 · 修复 ${card.amount} 或攻击 +1`;
+    if (card.effect === 'play_draw') text += ' · 入场抽1张';
+    if (card.effect === 'play_damage') text += ` · 入场打${card.effect_amount || card.amount || 1}`;
+    if (card.effect === 'play_heal') text += ` · 入场恢复核心${card.effect_amount || 3}`;
+    if (card.effect === 'support') text += ` · ${card.amount}电复活厚壳`;
+    if (card.effect === 'knob') text += ` · ${card.amount}电攻击+1`;
     const star = C.starOf(card);
     if (star != null) text += ` · ${star}星`;
     return text;
@@ -87,7 +98,7 @@
   }
 
   function viewerBottom() {
-    return 0;
+    return ui.mode === 'hotseat' && game ? game.seat : 0;
   }
 
   function sideLabel(seat) {
@@ -103,10 +114,8 @@
   }
 
   function simPool() {
-    const book = C.simCatalog(roster.cards, Object.keys(artbook));
-    services.cards.filter(card => card.template_id === 'uiflow_blocks' || card.template_id === 'ezdata_note' || card.template_id === 'aiflow_say').forEach(card => {
-      book.included.push(card);
-    });
+    const book = C.simCatalog(roster.cards.map(card => cards[card.template_id]), Object.keys(artbook));
+    tactics.cards.forEach(card => { if (card.simulated_pool) book.included.push(cards[card.template_id]); });
     return book;
   }
 
@@ -118,6 +127,7 @@
 
   function begin(scenario, seed) {
     stopAi();
+    document.body.dataset.animating = '0';
     const keepReveal = ui.reveal;
     ui = blankUi(scenario);
     ui.reveal = keepReveal;
@@ -126,8 +136,8 @@
     ui.aiBusy = false;
     ui.handoff = false;
     if (scenario === 'lesson' || scenario === 'versus' || scenario === 'sim') {
-      let first = content.decks.first.slice();
-      let second = content.decks.second.slice();
+      let first = ['xiao_yin','pulse_bolt','dian_zhen','arc_wave','art_h024','cache_read','emergency_stop','hou_ke'];
+      let second = ['art_h039b','art_h028','repair_protocol','dian_zhen','factory_reset','xuan_niu','overclock','art_h012'];
       if (scenario === 'sim') {
         const catalog = simPool();
         const built = C.buildSimDecks(catalog.included, seed == null ? freshSeed() : ((seed >>> 0) || 1));
@@ -142,7 +152,7 @@
         ui.seed = 0;
         ui.built = null;
       }
-      const matchRules = scenario === 'sim' ? Object.assign({}, rules, { handLimit: 10 }) : rules;
+      const matchRules = rules;
       const matchToken = scenario === 'sim' ? batteryId : tokenId;
       game = new C.Game(cards, first, second, matchRules, matchToken, pack.capabilities);
       game.start_turn();
@@ -153,6 +163,15 @@
       } else {
         push('本地双人。两人轮流，共用这一块屏幕。座位 0 在下方，座位 1 在上方。换人前要确认。');
       }
+    } else if (scenario === 'tactics') {
+      game = C.Game.empty(cards, rules, pack.capabilities);
+      game.supply = [10, 10]; game.max_supply = [10, 10];
+      game.hands = [['pulse_bolt', 'arc_wave', 'emergency_stop', 'factory_reset', 'safe_shutdown', 'repair_protocol', 'overclock', 'cache_read'], []];
+      game.decks = [['xiao_yin','dian_zhen','art_h024'],['xiao_yin','dian_zhen','art_h024']];
+      game.bases = [22,30];
+      game.spawn(0, 'art_h024'); game.spawn(0, 'dian_zhen');
+      game.spawn(1, 'art_h028'); game.spawn(1, 'art_h039b'); game.spawn(1, 'art_h015');
+      push('技能演练：解场、停机、重启、恢复与超频。每次重开都会恢复局面。');
     } else if (scenario === 'support-present') {
       game = C.Game.empty(cards, rules, pack.capabilities);
       game.supply = [6, 6];
@@ -224,7 +243,7 @@
       game.spawn(0, 'art_h050', 0, null, false).sick = false;
       game.spawn(0, 'qiao_jian', 1, null, false).sick = false;
       game.spawn(1, 'hou_ke', 0, 4, false);
-      push('协同：零键可以连敲键。链节紧挨领队是 15%。手牌里有三张服务牌和夺舍。');
+      push('协同：零键可以连敲键，链节提供整数攻击加成。手牌里有三张服务牌和夺舍。');
     } else if (scenario === 'builder') {
       game = null;
       ui.decks = [presetFirst.slice(), presetSecond.slice()];
@@ -243,8 +262,9 @@
 
   function wantsTarget(card) {
     if (!card) return false;
+    if (card.effect === 'play_damage') return game.units(1 - game.seat).length > 0;
     if (card.kind === 'attachment') return true;
-    return card.effect === 'damage' || card.effect === 'mend' || card.effect === 'play_damage' || card.effect === 'seize';
+    return enemyEffects.includes(card.effect) || card.effect === 'mend' || card.effect === 'overclock';
   }
 
   function directPlay(card) {
@@ -315,6 +335,7 @@
     if (ui.knob) return '旋钮已准备。点一台己方单位，本回合攻击 +1。可以点旋钮台自己。新入场也能用。';
     const card = selectedCard();
     if (card && wantsTarget(card)) {
+      if (['freeze', 'bounce', 'execute', 'overclock'].includes(card.effect)) return card.role_note + ' 点选亮起的目标。';
       if (card.effect === 'mend' && ui.target) return '选择修复 2 点耐久（不超过卡面），或本回合攻击 +1。';
       if (card.kind === 'attachment') return `请选择目标：点一台己方主控，装上${card.name}。一台只能挂一个。`;
       if (card.effect === 'damage') return '请选择目标：点一台敌方单位。护卫拦不住，也没有反击。';
@@ -329,13 +350,13 @@
     if (card && card.effect === 'heal_base') return '打出后己方基地恢复 4，不超过 20。';
     if (card && card.effect === 'draw_one') return '积木开工：抽 1 张。手牌满了就亮出进墓地。';
     if (card && card.effect === 'retrieve_grave') return '记一笔：取回自己墓地最上面一张。墓地是空的也会消耗这张牌。';
-    if (card && card.effect === 'arm_aiflow') return '说人话：本回合下一次打击在百分比之前攻击 +2。已经武装时不能再打。';
+    if (card && card.effect === 'arm_aiflow') return '说人话：本回合下一次打击 +2。已经武装时不能再打。';
     if (card && card.effect === 'play_draw') return '打出后额外抽 1 张。手牌满了会亮出进墓地。';
     if (card && card.rush) return '这张有冲锋，打出后本回合可以攻击。升星进来的仍不能攻击。';
     if (card && card.effect === 'mend' && !ui.target) return '点一台己方单位。可以修复耐久，或让它本回合攻击 +1。不能治疗基地。';
     if (card && card.effect === 'mend') return '选择修复 2 点耐久（不超过卡面），或本回合攻击 +1。';
     if (ui.attacker) return '点敌方单位，或按“攻击核心”。新入场不能攻击。对方有护卫时，没有千里眼就只能打护卫。';
-    return '点手牌出牌，点己方单位后再选攻击目标。场上的小印可以支援自己墓地里的厚壳，小印不会离场。';
+    return '先部署，或留电施放技能。选中己方主控，再选择攻击目标。';
   }
 
   const artbook = root.PCGClashArt || {};
@@ -361,7 +382,11 @@
     if (shot) return `<img src="${esc(kind === 'board' ? shot.char : shot.card)}" alt="" draggable="false">`;
     const paintedSrc = card && painted[card.template_id];
     if (paintedSrc) return `<img src="${esc(paintedSrc)}" alt="" draggable="false">`;
-    return `<img src="scene/cardback/pulse-cardback-192x256.webp" alt="" draggable="false">`;
+    if (card && card.kind === 'spell') {
+      const symbols = { damage:'ϟ', damage_all:'◎', freeze:'Ⅱ', bounce:'↶', execute:'×', heal_base:'+', overclock:'↟', draw_one:'≡' };
+      return `<span class="spell-sigil" data-effect="${esc(card.effect)}"><svg viewBox="0 0 120 100" aria-hidden="true"><path d="M5 50h20l10-20h15M115 50H95L85 70H70M60 5v15M60 80v15"/><circle cx="60" cy="50" r="28"/><circle cx="60" cy="50" r="37"/></svg><b>${symbols[card.effect] || '◇'}</b></span>`;
+    }
+    return `<span class="spell-sigil"><b>+</b></span>`;
   }
   function mana(seat) {
     const max = Math.max(0, Math.min(10, game.max_supply[seat]));
@@ -394,8 +419,8 @@
       const coin = id === tokenId || id === batteryId ? ' coin' : '';
       const body = `<span class="cost">${card.cost}</span>${star ? `<span class="star">${star}星</span>` : ''}<span class="art">${picture(card, 'board')}</span><span class="cname">${esc(card.name)}</span>${nums}<span class="detail">${esc(blurb(card))}</span>`;
       const fan = ` style="--i:${index};--n:${count}"`;
-      if (seat !== game.seat) return `<div class="playcard${coin}" ${sceneAttr('hand_frame')} data-card="${esc(id)}"${fan}>${body}<span class="statsline">教学明牌</span></div>`;
-      return `<button type="button" class="playcard${coin}${selected ? ' selected' : ''}${ready ? ' ready' : ''}" ${sceneAttr('hand_frame')} data-action="select-hand" data-hand-index="${index}" data-card="${esc(id)}"${fan}>${body}</button>`;
+      if (seat !== game.seat) return `<div class="playcard kind-${card.kind}${coin}" ${sceneAttr('hand_frame')} data-card="${esc(id)}"${fan}>${body}<span class="statsline">教学明牌</span></div>`;
+      return `<button type="button" class="playcard kind-${card.kind}${coin}${selected ? ' selected' : ''}${ready ? ' ready' : ''}" ${sceneAttr('hand_frame')} data-action="select-hand" data-hand-index="${index}" data-card="${esc(id)}"${fan}>${body}</button>`;
     }).join('');
     return `<div class="${dock ? 'hands fan' : 'opp-hand'}" data-hand-seat="${seat}" data-hidden="0">${open || '<span class="silk">没有手牌</span>'}</div>`;
   }
@@ -491,6 +516,7 @@
     const hot = false;
     const linked = game.upper_links[seat].some(item => item.source === unit.iid || item.target === unit.iid);
     const ribbons = [
+      unit.frozen ? '停机' : '',
       unit.sick ? '新入场' : '',
       unit.ability_lock ? '本回合锁定' : '',
       unit.attacked ? '已攻击' : '',
@@ -501,13 +527,13 @@
     const arrive = !(ui.seen && ui.seen.has(unit.iid));
     const lunge = ui.fx && ui.fx.attacker === unit.iid;
     const hit = ui.fx && ui.fx.target === unit.iid;
-    const canAttack = seat === game.seat && game.phase === 'main' && game.winner == null && !unit.sick && !unit.attacked;
+    const canAttack = seat === game.seat && game.phase === 'main' && game.winner == null && !unit.sick && !unit.attacked && !unit.frozen;
     const blow = strikeParts(seat, unit);
     const nag = !!(ui.idleIds && ui.idleIds.indexOf(unit.iid) >= 0);
     if (unit.link) {
       return `<button type="button" class="link-mark${arrive ? ' arrive' : ''}" data-action="select-unit" data-link="1" data-board-seat="${seat}" data-slot="${slot}" data-seat="${seat}" data-iid="${esc(unit.iid)}" data-card="${esc(unit.card_id)}" data-host="${esc(unit.host_iid)}"><span class="mname">链</span><span class="ribbon">${esc(card.name)}</span></button>`;
     }
-    return `<button type="button" class="minion${selected ? ' selected' : ''}${hot ? ' hot' : ''}${canAttack ? ' can-attack' : ''}${arrive ? ' arrive' : ''}${lunge ? ' lunge' : ''}${hit ? ' hit' : ''}${nag ? ' nag' : ''}${C.hasGuard(cards, unit) ? ' guard' : ''}${unit.sick ? ' sick' : ''}${unit.attacked ? ' spent' : ''}" ${sceneAttr('unit_frame')} data-action="select-unit" data-board-seat="${seat}" data-slot="${slot}" data-seat="${seat}" data-iid="${esc(unit.iid)}" data-card="${esc(unit.card_id)}" data-sick="${unit.sick}" data-attacked="${unit.attacked}" data-guard="${C.hasGuard(cards, unit)}" data-attack="${blow.printed}" data-strike="${blow.damage}" data-nag="${nag ? '1' : '0'}" data-durability="${unit.durability}">
+    return `<button type="button" class="minion${selected ? ' selected' : ''}${hot ? ' hot' : ''}${canAttack ? ' can-attack' : ''}${arrive ? ' arrive' : ''}${lunge ? ' lunge' : ''}${hit ? ' hit' : ''}${nag ? ' nag' : ''}${C.hasGuard(cards, unit) ? ' guard' : ''}${unit.sick ? ' sick' : ''}${unit.frozen ? ' frozen' : ''}${unit.attacked ? ' spent' : ''}" ${sceneAttr('unit_frame')} data-action="select-unit" data-board-seat="${seat}" data-slot="${slot}" data-seat="${seat}" data-iid="${esc(unit.iid)}" data-card="${esc(unit.card_id)}" data-sick="${unit.sick}" data-attacked="${unit.attacked}" data-guard="${C.hasGuard(cards, unit)}" data-attack="${blow.printed}" data-strike="${blow.damage}" data-nag="${nag ? '1' : '0'}" data-durability="${unit.durability}">
       <span class="portrait">${picture(card, 'board')}</span>
       <span class="atk tone-${blow.attackTone || 'normal'}" title="${esc(blow.title)}">${blow.damage}</span>
       <span class="hp tone-${blow.durabilityTone || 'normal'}" title="${esc(blow.title)}">${unit.durability}</span>
@@ -522,7 +548,7 @@
   }
   function formationLine(seat) {
     const state = game.formationState(seat);
-    const head = state.leader ? '同系相邻 +1/+1' : '没有同系邻居';
+    const head = state.leader ? '同系相邻 · 耐久 +1，上限 +1' : '部署主控 · 技能控场 · 把握反攻';
     const extra = [];
     if (game.upper_links[seat].length) extra.push('上位+1');
     if (game.aiflow_armed[seat]) extra.push('说人话');
@@ -567,7 +593,7 @@
           return `<button type="button" class="chip${meta.ready === false ? ' cold' : ''}" data-action="select-unit" data-iid="${esc(meta.iid || '')}" data-host="${esc(unit.iid)}" data-seat="${seat}" data-card="${esc(id)}">+${bonus}</button>`;
         }).join('')}<i class="wire"></i></div>`
         : '<div class="row2"></div>';
-      const column = seat === 0 ? `${html}${chips}` : `${chips}${html}`;
+      const column = seat === viewerBottom() ? `${html}${chips}` : `${chips}${html}`;
       const detail = strikeParts(seat, unit).title;
       bits.push(`<div class="unit-col" data-wrap="${esc(unit.iid)}">${column}<span class="breakdown">${esc(detail)}</span></div>`);
     });
@@ -697,11 +723,11 @@
     }).sort((a, b) => a.name.localeCompare(b.name, 'zh'));
     $('#app').innerHTML = `<header class="top">
       <div class="brand"><b>PULSE</b><span>扩展组牌</span></div>
-      <nav class="pulse-nav" data-shared-entry="clash-home"><a href="../../index.html">大厅</a><a href="../../wiki/index.html">图鉴</a><a href="../index.html">旧版点数</a></nav>
+      <nav class="pulse-nav" data-shared-entry="clash-home"><a href="../../index.html">大厅</a><a href="../../wiki/index.html">图鉴</a><a href="./index.html">回合战</a></nav>
       <button type="button" class="btn" data-action="scenario" data-scenario="lesson">返回教学局</button>
     </header>
     <main class="builder" data-scenario="builder" data-ruleset="${esc(content.ruleset_id)}">
-      <p class="balance">96 张硬件图册，加 7 张没有对应图的基线牌，再加没有 SKU、没有图的软件服务和设计牌树莓台。每副 8 到 12 张，至少 4 张主控，同名 1 张。星级只认卡上的 star，不认版本号。数值待试玩。</p>
+      <p class="balance">组一副练习牌库：每副 8 到 12 张，至少 4 张主控，同名 1 张，按选牌顺序抽取。设备卡、12 张技能和基线练习牌均可选择。这里使用新版数值，随机战仍使用独立的 30 张牌组。</p>
       <div class="scenario-row">
         <button type="button" data-action="builder-seat" data-seat="0">先手 ${ui.decks[0].length} 张</button>
         <button type="button" data-action="builder-seat" data-seat="1">后手 ${ui.decks[1].length} 张</button>
@@ -831,8 +857,9 @@
         : '两人轮流，共用这一块屏幕。座位 0 在下方，座位 1 在上方。';
     const canEnd = canAct();
     ui.idleIds = ui.confirmEnd ? idleAttackers().map(unit => unit.iid) : [];
-    const scenarios = [['versus', '固定教学'], ['sim', '模拟战'], ['lesson', '本地双人'], ['support-present', '小印已在场'], ['support-deploy', '先打出小印'], ['support-again', '厚壳再死'], ['promote-stamp', '小印升星'], ['grow', '超过五台'], ['crowd', '两边七台'], ['synergy', '协同与夺舍'], ['builder', '扩展组牌']];
+    const scenarios = [['versus', '固定教学'], ['sim', '模拟战'], ['lesson', '本地双人'], ['support-present', '小印已在场'], ['support-deploy', '先打出小印'], ['support-again', '厚壳再死'], ['promote-stamp', '小印升星'], ['grow', '超过五台'], ['crowd', '两边七台'], ['synergy', '协同与夺舍'], ['tactics', '技能演练'], ['builder', '扩展组牌']];
     $('#app').innerHTML = `<div class="table-page">
+    <div class="match-brand"><b>P</b><span>PULSE<small>脉冲对决</small></span></div>
     <button type="button" class="menu-toggle" data-action="toggle-menu" aria-expanded="${ui.menu ? 'true' : 'false'}">菜单</button>
     <div class="menu-pop"${ui.menu ? '' : ' hidden'}>
       <a class="pulse-brand" data-nav="lobby" href="../../index.html"><span class="pulse-mark">P</span><span class="pulse-name">PULSE</span></a>
@@ -840,11 +867,12 @@
         <a data-nav="lobby" href="../../index.html">大厅</a>
         <a data-nav="clash" href="./index.html" aria-current="page">回合战</a>
         <a data-nav="wiki" href="../../wiki/index.html">图鉴</a>
-        <a data-nav="legacy" href="../index.html">旧版点数</a>
       </nav>
       <button type="button" data-action="toggle-reveal" aria-pressed="${ui.reveal}">${ui.reveal ? '遮住对方手牌' : '教学明牌'}</button>
       <button type="button" data-action="restart">重新开局</button>
+      <p class="menu-note">核心 30 · 7 个主控位 · 16 主控 / 10 技能 / 4 配件</p>
       <div class="scenario-row">${scenarios.map(([id, label]) => `<button type="button" data-action="scenario" data-scenario="${id}">${label}</button>`).join('')}</div>
+      <div class="nfc-dock">${nfcControl()}${nfcPanel()}</div>
     </div>
     ${ui.reveal ? '<div class="banner" id="reveal-banner">教学明牌 · 双方手牌都看得见 · 牌库仍只显示张数</div>' : '<div id="reveal-banner" hidden></div>'}
     <main class="arena table${ui.attacker ? ' aiming' : ''}${canDeploy() ? ' holding' : ''}${ui.aiBusy ? ' ai-run' : ''}" data-scene-status="${esc(scenebook.status || 'awaiting_generated_assets')}" data-scenario="${esc(ui.scenario)}" data-ruleset="${esc(content.ruleset_id)}" data-source-commit="${esc(C.SOURCE_COMMIT)}" data-mode="${ui.mode}" data-opening="${esc(ui.opening)}" data-ai="${ui.aiBusy ? 'run' : 'idle'}" data-handoff="${ui.handoff ? '1' : '0'}" data-seed="${ui.seed || ''}" data-sim-pool="${ui.simPool || ''}" data-sim-excluded="${esc(ui.simExcluded || '')}" data-deck0="${esc(ui.built ? ui.built[0].join(',') : '')}" data-deck1="${esc(ui.built ? ui.built[1].join(',') : '')}">
@@ -862,7 +890,9 @@
         <p class="mode-note">${esc(modeNote)}</p>
       </div>
       <div class="core-slot foe${ui.attacker && other !== game.seat ? ' aim-target' : ''}">${core(other)}</div>
+      <p class="lane-label foe">对方战场 <span>${game.units(other).length} / 7</span></p>
       <div class="slots foe" style="--n:${Math.max(1, game.units(other).length)}">${lane(other)}</div>
+      <div class="round-readout">第 ${Math.max(...game.turns_started)} 回合 <span>策略回合战</span></div>
       <div class="midline">
         <h3 id="turn-label" data-seat="${game.seat}">${esc(turnText)}</h3>
         <p class="formation" data-formation="${game.formationState(active).leader_attack}">${esc(formationLine(active))}</p>
@@ -873,16 +903,17 @@
       </div>
       ${ui.aiBusy ? '<p class="ai-banner">对方正在行动</p>' : ''}
       ${ui.handoff ? `<div class="handoff-mask" data-handoff="1"><div class="handoff-card"><p>轮到座位 ${game.seat}，请交给对方</p><p>两人轮流，共用这一块屏幕。确认之前不能替对方行动。</p><button type="button" data-action="handoff-confirm">交给座位 ${game.seat}</button></div></div>` : ''}
+      <p class="lane-label mine">你的战场 <span>${game.units(bottom).length} / 7</span></p>
       <div class="slots mine" style="--n:${Math.max(1, game.units(bottom).length)}">${lane(bottom)}</div>
       <div class="core-slot mine${ui.attacker && bottom !== game.seat ? ' aim-target' : ''}">${core(bottom)}</div>
       ${skillBar()}
-      <section class="hand-dock" aria-label="当前手牌">${handHtml(bottom, true)}</section>
+      <section class="hand-dock" aria-label="当前手牌"><span class="hand-heading">手牌 <b>${game.hands[bottom].length}</b><small>点选出牌 · 长按查看</small></span>${handHtml(bottom, true)}</section>
+      ${game.winner != null ? `<div class="result-layer"><div><p>对局结束</p><h2>${game.winner === 'draw' ? '势均力敌' : game.winner === 0 ? '核心守住了' : '核心已失守'}</h2><p>${game.bases[0]} : ${game.bases[1]} · ${Math.max(...game.turns_started)} 回合</p><button data-action="restart">再来一局</button><a href="../../index.html">返回大厅</a></div></div>` : ''}
       ${ui.confirmEnd ? endPrompt() : ''}
       <aside class="rail tools">
         <button type="button" class="end-turn${canEnd && !ui.aiBusy && (ui.mode !== 'ai' || game.seat === 0) ? ' hot' : ' wait'}" ${sceneAttr('end_turn')} data-action="end-turn">结束回合</button>
         <div class="pads">${actions()}</div>
       </aside>
-      <div class="nfc-dock">${nfcControl()}${nfcPanel()}</div>
       <button type="button" class="log-toggle" data-action="toggle-log" aria-expanded="${ui.logOpen ? 'true' : 'false'}">记录</button>
       <aside class="log-panel"${ui.logOpen ? '' : ' hidden'}>
         <h3>对战记录</h3>
@@ -927,12 +958,15 @@
       render();
     };
     if (target != null) {
+      const playingGame = game;
       const from = document.querySelector('.playcard.selected') || document.querySelector('.slots.mine');
       const to = document.querySelector(`[data-iid="${target}"]`) || document.querySelector('.slots.foe');
       lockAnim(true);
       showBeam(card.name, from, to).then(() => {
+        if (game !== playingGame) return;
         commit();
         lockAnim(false);
+        render();
       });
       return;
     }
@@ -943,7 +977,7 @@
     const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     return reduce
       ? { lift: 40, lunge: 50, back: 40, hold: 220, pause: 80, show: 120, die: 180 }
-      : { lift: 200, lunge: 280, back: 180, hold: 600, pause: 700, show: 800, die: 420 };
+      : { lift: 100, lunge: 180, back: 100, hold: 240, pause: 240, show: 360, die: 240 };
   }
 
   function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
@@ -976,6 +1010,7 @@
   }
 
   async function presentAttack(seat, attackerId, target) {
+    const attackingGame = game;
     const preview = attackNames(attackerId, target);
     const beforeTarget = target === 'base' ? game.bases[1 - seat] : unitHp(target);
     const beforeAttacker = unitHp(attackerId);
@@ -1004,6 +1039,7 @@
         if (tgtNode) tgtNode.classList.add('combat-hit');
         await sleep(timing.lunge);
       }
+      if (game !== attackingGame) return;
       const bases = game.bases.slice();
       try {
         game.attack(seat, attackerId, target);
@@ -1024,7 +1060,7 @@
       if (back) spawnFloater(attackerPoint, '-' + back);
       await sleep(timing.hold);
     } finally {
-      lockAnim(false);
+      if (game === attackingGame) { lockAnim(false); render(); }
     }
   }
 
@@ -1080,6 +1116,7 @@
     const unit = game.find(iid)[2];
     if (unit.link) return note(new C.ClashError('链节标记不能被选中', 'bad_target'));
     const card = selectedCard();
+    if (card && card.effect === 'damage_all' && seat !== game.seat) return play(null);
     if (ui.linking) {
       if (seat !== game.seat) return note(new C.ClashError('来自上位的爱只能连己方单位', 'bad_target'));
       if (!ui.linkSource) {
@@ -1113,7 +1150,7 @@
       if (seat === game.seat) return note(new C.ClashError('入场伤害只能指定敌方单位', 'bad_target'));
       return play(iid);
     }
-    if (card && card.effect === 'damage') return play(iid);
+    if (card && (enemyEffects.includes(card.effect) || card.effect === 'overclock')) return play(iid);
     if (card && card.effect === 'mend') {
       ui.target = iid;
       ui.error = null;
@@ -1131,19 +1168,21 @@
 
   function describeAi(action) {
     if (action.type === 'support') return '对方发动复活厚壳。';
+    if (action.type === 'knob') return '对方使用旋钮强化攻击。';
     if (action.type === 'attack') return action.target === 'base' ? '对方攻击你的核心。' : '对方攻击你场上的单位。';
     return `对方打出${cards[action.card].name}。`;
   }
 
   function startAi() {
     stopAi();
+    const aiGame = game, aiUi = ui;
     ui.aiBusy = true;
     ui.aiSteps = 0;
     const failed = new Set();
     push('对方正在行动。');
     render();
     const step = async () => {
-      if (!ui.aiBusy || !game || ui.mode !== 'ai') return;
+      if (game !== aiGame || ui !== aiUi || !ui.aiBusy || !game || ui.mode !== 'ai') return;
       if (game.winner != null || game.seat !== 1 || game.phase !== 'main' || ui.aiSteps >= 16) {
         if (game && game.winner == null && game.seat === 1 && game.phase === 'main') {
           try { C.finishTurn(game); } catch (error) { note(error); }
@@ -1167,17 +1206,19 @@
         else {
           if (action.type === 'play') await showAiCard(cards[action.card]);
           else await showBeam(describeAi(action));
+          if (game !== aiGame || ui !== aiUi || !ui.aiBusy) return;
           C.applyAi(game, action);
           push(describeAi(action));
           render();
         }
       } catch (error) {
+        if (game !== aiGame || ui !== aiUi) return;
         failed.add(action.key);
         aiTimer = setTimeout(step, 160);
         return;
       }
       await sleep(motion().pause);
-      if (ui.aiBusy) step();
+      if (game === aiGame && ui === aiUi && ui.aiBusy) step();
     };
     aiTimer = setTimeout(step, motion().pause);
   }
@@ -1235,6 +1276,18 @@
     if (ui.mode === 'ai' && game.winner == null && game.seat === 1 && !ui.handoff) startAi();
   }
 
+  function startPractice(decks) {
+    const built = decks.map(deck => deck.slice());
+    stopAi();
+    document.body.dataset.animating = '0';
+    ui = blankUi('free');
+    ui.mode = 'hotseat'; ui.opening = 'free'; ui.built = built;
+    game = new C.Game(cards, built[0], built[1], rules, tokenId, pack.capabilities);
+    game.start_turn();
+    push('扩展对局开始。牌序按组牌时的点选顺序，不洗牌。');
+    render();
+  }
+
   function act(action, el, event) {
     if (ui.animating) return;
     if (el && el.dataset && el.dataset.block) {
@@ -1289,6 +1342,7 @@
     if (action === 'toggle-log') { ui.logOpen = !ui.logOpen; return render(); }
     if (action === 'toggle-reveal') { ui.reveal = !ui.reveal; return render(); }
     if (action === 'toggle-catalog') { ui.catalog = !ui.catalog; return render(); }
+    if (action === 'restart' && ui.scenario === 'free') return startPractice(ui.built);
     if (action === 'restart' || action === 'scenario') return begin(action === 'restart' ? ui.scenario : el.dataset.scenario);
     if (action === 'select-hand') {
       const index = Number(el.dataset.handIndex);
@@ -1375,11 +1429,7 @@
     if (action === 'start-free') {
       if (!deckOk(ui.decks[0]) || !deckOk(ui.decks[1])) return note(new C.ClashError('两副都要 8 到 12 张，且至少 4 张主控', 'bad_card'));
       const decks = ui.decks.map(deck => deck.slice());
-      ui = blankUi('free');
-      game = new C.Game(cards, decks[0], decks[1], rules, tokenId, pack.capabilities);
-      game.start_turn();
-      push('扩展对局开始。牌序按组牌时的点选顺序，不洗牌。');
-      return render();
+      return startPractice(decks);
     }
     if (action === 'end-turn') return endTurn();
   }
@@ -1424,8 +1474,8 @@
     const card = selectedCard();
     if (card) {
       if (card.effect === 'seize') return 'seize';
-      if (card.effect === 'damage' || card.effect === 'play_damage') return 'damage';
-      if (card.effect === 'mend' || card.kind === 'attachment') return 'ally';
+      if (enemyEffects.includes(card.effect)) return 'damage';
+      if (card.effect === 'mend' || card.effect === 'overclock' || card.kind === 'attachment') return 'ally';
       if (card.kind === 'main' || card.kind === 'spell') return 'deploy';
     }
     if (ui.knob || (ui.linking && ui.linkSource)) return 'ally';
@@ -1461,11 +1511,14 @@
     }
     if (card && card.kind === 'spell' && !wantsTarget(card)) {
       const result = tryPlay(null, null, null);
-      if (result.ok) legal.add('half:' + seat);
+      if (result.ok) {
+        legal.add('half:' + (card.effect === 'damage_all' ? 1 - seat : seat));
+        if (card.effect === 'damage_all') game.units(1 - seat).forEach(unit => legal.add('unit:' + unit.iid));
+      }
       else reason = { code: result.code, text: C.reasonText(result.code) };
       return { legal, reason };
     }
-    if (card && (card.effect === 'seize' || card.effect === 'damage' || card.effect === 'play_damage')) {
+    if (card && enemyEffects.includes(card.effect)) {
       game.units(1 - seat).forEach(unit => {
         if (tryPlay(unit.iid, null, null).ok) legal.add('unit:' + unit.iid);
       });
@@ -1485,7 +1538,7 @@
       if (!legal.size) reason = { code: 'bad_target', text: C.reasonText('bad_target') };
       return { legal, reason };
     }
-    if (card && card.kind === 'attachment') {
+    if (card && (card.kind === 'attachment' || card.effect === 'overclock')) {
       let host = false;
       game.units(seat).forEach(unit => {
         const result = tryPlay(unit.iid, null, null);
@@ -1649,10 +1702,10 @@
       const card = selectedCard();
       if (!card) return false;
       if (card.kind === 'main' && hit.key.startsWith('seam:')) return play(null, null, Number(hit.key.slice(5))) || true;
-      if ((card.kind === 'spell' && !wantsTarget(card) && hit.key === 'half:' + game.seat) || (card.kind === 'main' && card.effect === 'play_draw' && hit.key.startsWith('seam:'))) {
+      if ((card.kind === 'spell' && !wantsTarget(card) && (hit.key.startsWith('half:') || card.effect === 'damage_all')) || (card.kind === 'main' && card.effect === 'play_draw' && hit.key.startsWith('seam:'))) {
         return play(null) || true;
       }
-      if (card.kind === 'attachment' && hit.key.startsWith('unit:')) {
+      if ((card.kind === 'attachment' || card.effect === 'overclock') && hit.key.startsWith('unit:')) {
         return play(hit.key.slice(5), null, card.chain_piece ? 0 : null) || true;
       }
       if (card.chain_piece && hit.key.startsWith('seam:')) {
@@ -1660,7 +1713,7 @@
         if (!host) return false;
         return play(host.iid, null, Number(hit.key.slice(5))) || true;
       }
-      if ((card.effect === 'seize' || card.effect === 'damage' || card.effect === 'play_damage') && hit.key.startsWith('unit:')) {
+      if (enemyEffects.includes(card.effect) && hit.key.startsWith('unit:')) {
         return play(hit.key.slice(5)) || true;
       }
       if (card.effect === 'mend' && hit.key.startsWith('unit:')) {
@@ -1892,9 +1945,9 @@
     finishGesture(true);
   });
   document.addEventListener('keydown', event => {
-    if (event.key === 'Escape' && gesture) {
-      gesture.dead = true;
-      finishGesture(true);
+    if (event.key === 'Escape') {
+      if (gesture) { gesture.dead = true; finishGesture(true); }
+      if (!ui.animating) { clearChoice(); ui.confirmEnd = false; render(); }
     }
   });
   document.addEventListener('contextmenu', event => {
@@ -1935,7 +1988,7 @@
   function startScenario() {
     const params = new URLSearchParams(globalThis.location ? globalThis.location.search : '');
     const scenario = params.get('scenario');
-    const known = ['versus', 'sim', 'lesson', 'support-present', 'support-deploy', 'support-again', 'promote-stamp', 'grow', 'crowd', 'synergy', 'builder'];
+    const known = ['versus', 'sim', 'lesson', 'support-present', 'support-deploy', 'support-again', 'promote-stamp', 'grow', 'crowd', 'synergy', 'tactics', 'builder'];
     if (known.includes(scenario)) return scenario;
     const mode = params.get('mode');
     if (mode === 'sim') return 'sim';
@@ -1944,5 +1997,16 @@
     return 'sim';
   }
 
+  root.render_game_to_text = () => JSON.stringify(!game ? { mode: 'builder', scenario: ui.scenario } : {
+    coordinateSystem: 'DOM pixels, origin top-left', mode: ui.mode, scenario: ui.scenario,
+    turn: game.turns_started, seat: game.seat, bases: game.bases, supply: game.supply,
+    hand: ui.handoff ? [] : game.hands[viewerBottom()].map(id => ({ id, name: cards[id].name, cost: cards[id].cost, effect: cards[id].effect })),
+    opponentHandCount: game.hands[ui.mode === 'ai' ? 1 : 1 - game.seat].length,
+    boards: game.view().boards.map(row => row.map(unit => ({ ...unit, frozen: !!game.find(unit.iid)[2].frozen, attacked: !!game.find(unit.iid)[2].attacked }))),
+    winner: game.winner, selected: selectedCard() && selectedCard().template_id,
+    balanceVersion: balance.balance_version,
+    error: ui.error, animating: !!ui.animating
+  });
+  root.advanceTime = ms => new Promise(resolve => setTimeout(resolve, Math.min(ms, 1000)));
   begin(startScenario());
 })(globalThis);

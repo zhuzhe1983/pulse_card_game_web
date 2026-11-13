@@ -4,10 +4,10 @@
   "status": "integrated",
   "design_status": "playtest_draft",
   "balance": "playtest_unverified",
-  "label": "首版设计 · 待试玩",
+  "label": "战术改版 · 待试玩",
   "source_commit": "8a9acd2e221708835dab446d019a47dcd90896c6",
   "source_repo": "zhuzhe1983/pulse_card_game_prompt",
-  "note": "中文名、阵营、费用、技能和星级是 playtest_draft。不是官方规格，也不是网页里已经打完的 96 张实战。玩法正在接入，以实现的引擎版本为准。",
+  "note": "按当前战术配置结算。数字与技能是游戏设计，不是硬件规格。",
   "growth_rules": {
     "action": "promote",
     "deck": "每一星最多带 1 张。一条链可以都带，每张占牌库一张。也可以只带高星，直接付全费打出。",
@@ -2256,8 +2256,8 @@
       "design_status": "playtest_draft",
       "identity": {
         "game_name_zh": "火头",
-        "game_description": "冒火花的主机，上场就能打。",
-        "balance_intent": "用冲锋换耐久，不带护卫。",
+        "game_description": "主控单位；可部署、攻击或按卡面技能行动。",
+        "balance_intent": "战术改版：技能与费用见本页当前数值。",
         "faction": "叠层",
         "v8_game_name_zh": "火头",
         "v8_template_id": "fire_marshal",
@@ -2265,20 +2265,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 4,
+        "cost": 3,
         "attack": 3,
-        "durability": 2,
+        "durability": 3,
         "guard": false,
         "rush": true,
-        "effect": null,
-        "effect_amount": null,
+        "effect": "play_damage",
+        "effect_amount": 1,
         "attack_bonus": null,
         "grants_guard": null,
         "bypass_guard": null,
         "cost_band": "series_core",
         "cost_line": "core_body",
         "series_confidence": "official",
-        "cost_note": "Fire 属于 Core 初代。保留冲锋，费用从 3 升到 4。"
+        "cost_note": "战术改版数值，以对局职责定费。"
       },
       "growth": {
         "family": null,
@@ -2428,8 +2428,8 @@
       "design_status": "playtest_draft",
       "identity": {
         "game_name_zh": "云壳",
-        "game_description": "带云服务用途的壳，打得猛，自己脆。",
-        "balance_intent": "和二代壳同芯片不同用途，所以另开一条线。",
+        "game_description": "主控单位；可部署、攻击或按卡面技能行动。",
+        "balance_intent": "战术改版：技能与费用见本页当前数值。",
         "faction": "叠层",
         "v8_game_name_zh": null,
         "v8_template_id": null,
@@ -2437,12 +2437,12 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 5,
+        "cost": 4,
         "attack": 3,
         "durability": 4,
         "guard": false,
         "rush": false,
-        "effect": null,
+        "effect": "play_draw",
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
@@ -2450,7 +2450,7 @@
         "cost_band": "series_core",
         "cost_line": "core2_body",
         "series_confidence": "official",
-        "cost_note": "Core2 For AWS 仍是 Core2 产品线，不并进初代。"
+        "cost_note": "战术改版数值，以对局职责定费。"
       },
       "growth": {
         "family": "core2_aws",
@@ -2471,8 +2471,8 @@
       "design_status": "playtest_draft",
       "identity": {
         "game_name_zh": "云壳改",
-        "game_description": "云壳的修订版，攻击让一点，耐久补回来。",
-        "balance_intent": "费用更高，不是全面碾压。",
+        "game_description": "主控单位；可部署、攻击或按卡面技能行动。",
+        "balance_intent": "战术改版：技能与费用见本页当前数值。",
         "faction": "叠层",
         "v8_game_name_zh": null,
         "v8_template_id": null,
@@ -2480,12 +2480,12 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 6,
+        "cost": 5,
         "attack": 4,
         "durability": 5,
         "guard": false,
         "rush": false,
-        "effect": null,
+        "effect": "play_draw",
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
@@ -2493,7 +2493,7 @@
         "cost_band": "series_core",
         "cost_line": "core2_body",
         "series_confidence": "official",
-        "cost_note": "AWS 二星，基础档 +1。"
+        "cost_note": "战术改版数值，以对局职责定费。"
       },
       "growth": {
         "family": "core2_aws",
@@ -2514,8 +2514,8 @@
       "design_status": "playtest_draft",
       "identity": {
         "game_name_zh": "简配三",
-        "game_description": "去掉部分传感器的三代壳。",
-        "balance_intent": "SE、Lite、无线电是配置差异。",
+        "game_description": "主控单位；可部署、攻击或按卡面技能行动。",
+        "balance_intent": "战术改版：技能与费用见本页当前数值。",
         "faction": "叠层",
         "v8_game_name_zh": null,
         "v8_template_id": null,
@@ -2523,7 +2523,7 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 6,
+        "cost": 4,
         "attack": 4,
         "durability": 4,
         "guard": false,
@@ -2536,7 +2536,7 @@
         "cost_band": "series_core",
         "cost_line": "cores3_body",
         "series_confidence": "official",
-        "cost_note": "CoreS3-SE 是 CoreS3 本体。"
+        "cost_note": "战术改版数值，以对局职责定费。"
       },
       "growth": {
         "family": "cores3",
@@ -2557,8 +2557,8 @@
       "design_status": "playtest_draft",
       "identity": {
         "game_name_zh": "轻三",
-        "game_description": "更轻的三代，费用低，也更不抗打。",
-        "balance_intent": "便宜的横向选择。",
+        "game_description": "主控单位；可部署、攻击或按卡面技能行动。",
+        "balance_intent": "战术改版：技能与费用见本页当前数值。",
         "faction": "叠层",
         "v8_game_name_zh": null,
         "v8_template_id": null,
@@ -2566,20 +2566,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 6,
-        "attack": 4,
-        "durability": 4,
+        "cost": 4,
+        "attack": 3,
+        "durability": 5,
         "guard": false,
         "rush": false,
-        "effect": null,
-        "effect_amount": null,
+        "effect": "play_heal",
+        "effect_amount": 3,
         "attack_bonus": null,
         "grants_guard": null,
         "bypass_guard": null,
         "cost_band": "series_core",
         "cost_line": "cores3_body",
         "series_confidence": "official",
-        "cost_note": "CoreS3-Lite 仍是 CoreS3 产品线，不降回 Atom 或 Stick。"
+        "cost_note": "战术改版数值，以对局职责定费。"
       },
       "growth": {
         "family": "cores3",
@@ -2600,8 +2600,8 @@
       "design_status": "playtest_draft",
       "identity": {
         "game_name_zh": "线三",
-        "game_description": "带线程无线电，进场抽一张牌。",
-        "balance_intent": "贵，换一张牌，不是升星。",
+        "game_description": "主控单位；可部署、攻击或按卡面技能行动。",
+        "balance_intent": "战术改版：技能与费用见本页当前数值。",
         "faction": "叠层",
         "v8_game_name_zh": null,
         "v8_template_id": null,
@@ -2609,8 +2609,8 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 6,
-        "attack": 4,
+        "cost": 4,
+        "attack": 3,
         "durability": 3,
         "guard": false,
         "rush": false,
@@ -2622,7 +2622,7 @@
         "cost_band": "series_core",
         "cost_line": "cores3_body",
         "series_confidence": "official",
-        "cost_note": "Thread 款仍是 CoreS3。保留入场抽 1。"
+        "cost_note": "战术改版数值，以对局职责定费。"
       },
       "growth": {
         "family": "cores3",
@@ -2643,8 +2643,8 @@
       "design_status": "playtest_draft",
       "identity": {
         "game_name_zh": "硬壳",
-        "game_description": "特别结实的壳，攻击不高。",
-        "balance_intent": "坦克，不是二代壳的升级。",
+        "game_description": "主控单位；可部署、攻击或按卡面技能行动。",
+        "balance_intent": "战术改版：技能与费用见本页当前数值。",
         "faction": "叠层",
         "v8_game_name_zh": "硬壳",
         "v8_template_id": "tough_guard",
@@ -2652,8 +2652,8 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 7,
-        "attack": 2,
+        "cost": 6,
+        "attack": 4,
         "durability": 7,
         "guard": true,
         "rush": false,
@@ -2665,7 +2665,7 @@
         "cost_band": "series_core",
         "cost_line": "tough_body",
         "series_confidence": "official",
-        "cost_note": "Tough 本体。"
+        "cost_note": "战术改版数值，以对局职责定费。"
       },
       "growth": {
         "family": null,
@@ -2686,8 +2686,8 @@
       "design_status": "playtest_draft",
       "identity": {
         "game_name_zh": "硬壳远",
-        "game_description": "另一代射频的硬壳，更贵，攻击更好。",
-        "balance_intent": "C5 是另一代芯片，不接硬壳的星。",
+        "game_description": "主控单位；可部署、攻击或按卡面技能行动。",
+        "balance_intent": "战术改版：技能与费用见本页当前数值。",
         "faction": "叠层",
         "v8_game_name_zh": null,
         "v8_template_id": null,
@@ -2695,20 +2695,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 7,
-        "attack": 3,
-        "durability": 6,
+        "cost": 5,
+        "attack": 4,
+        "durability": 5,
         "guard": false,
         "rush": false,
-        "effect": null,
-        "effect_amount": null,
+        "effect": "play_damage",
+        "effect_amount": 2,
         "attack_bonus": null,
         "grants_guard": null,
         "bypass_guard": null,
         "cost_band": "series_core",
         "cost_line": "tough_body",
         "series_confidence": "official",
-        "cost_note": "ToughC5 仍是 Tough 产品线，不因为 C5 芯片另开一档。"
+        "cost_note": "战术改版数值，以对局职责定费。"
       },
       "growth": {
         "family": null,
@@ -2729,8 +2729,8 @@
       "design_status": "playtest_draft",
       "identity": {
         "game_name_zh": "大平板",
-        "game_description": "很大的平板。主体图用的是官方背面。进场抽一张牌。",
-        "balance_intent": "贵，换一张牌和耐久。",
+        "game_description": "主控单位；可部署、攻击或按卡面技能行动。",
+        "balance_intent": "战术改版：技能与费用见本页当前数值。",
         "faction": "大屏",
         "v8_game_name_zh": "大平板",
         "v8_template_id": "tab5_watcher",
@@ -2738,9 +2738,9 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 10,
+        "cost": 6,
         "attack": 5,
-        "durability": 4,
+        "durability": 6,
         "guard": false,
         "rush": false,
         "effect": "play_draw",
@@ -2751,7 +2751,7 @@
         "cost_band": "series_core",
         "cost_line": "tab_body",
         "series_confidence": "official",
-        "cost_note": "Tab5 是平板整机。芯片是 ESP32-P4 + C6，不是邮票模块。"
+        "cost_note": "战术改版数值，以对局职责定费。"
       },
       "growth": {
         "family": null,
@@ -2815,8 +2815,8 @@
       "design_status": "playtest_draft",
       "identity": {
         "game_name_zh": "电枢纽",
-        "game_description": "管电源的主机。",
-        "balance_intent": "独立产品。",
+        "game_description": "主控单位；可部署、攻击或按卡面技能行动。",
+        "balance_intent": "战术改版：技能与费用见本页当前数值。",
         "faction": "工位",
         "v8_game_name_zh": null,
         "v8_template_id": null,
@@ -2824,20 +2824,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 5,
-        "attack": 3,
+        "cost": 6,
+        "attack": 4,
         "durability": 7,
         "guard": true,
         "rush": false,
-        "effect": null,
-        "effect_amount": null,
+        "effect": "play_heal",
+        "effect_amount": 4,
         "attack_bonus": null,
         "grants_guard": null,
         "bypass_guard": null,
         "cost_band": "series_machine",
         "cost_line": "core_form",
         "series_confidence": "uncertain",
-        "cost_note": "供电整机放在中段 5 费，做成护卫胖墙，不占用 Core 初代本体的 4 费。"
+        "cost_note": "战术改版数值，以对局职责定费。"
       },
       "growth": {
         "family": null,
@@ -2858,8 +2858,8 @@
       "design_status": "playtest_draft",
       "identity": {
         "game_name_zh": "另一块板",
-        "game_description": "跑另一套系统的板子，又贵又完整。",
-        "balance_intent": "不是 ESP 主机的升星。",
+        "game_description": "主控单位；可部署、攻击或按卡面技能行动。",
+        "balance_intent": "战术改版：技能与费用见本页当前数值。",
         "faction": "工位",
         "v8_game_name_zh": "另一块板",
         "v8_template_id": "workshop_lord",
@@ -2867,20 +2867,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 10,
-        "attack": 4,
-        "durability": 6,
+        "cost": 7,
+        "attack": 6,
+        "durability": 7,
         "guard": false,
         "rush": false,
-        "effect": null,
-        "effect_amount": null,
+        "effect": "play_damage",
+        "effect_amount": 3,
         "attack_bonus": null,
         "grants_guard": null,
         "bypass_guard": null,
         "cost_band": "series_machine",
         "cost_line": "upper_arm",
         "series_confidence": "uncertain",
-        "cost_note": "CoreMP135 是 Linux 整机，不是 ESP32，也不是已登记的上位机。费用放在最高档，仍不能发动来自上位的爱。"
+        "cost_note": "战术改版数值，以对局职责定费。"
       },
       "growth": {
         "family": null,
@@ -2901,8 +2901,8 @@
       "design_status": "playtest_draft",
       "identity": {
         "game_name_zh": "自带电",
-        "game_description": "自己带着电池的细条。",
-        "balance_intent": "电池、SE、S3、热成像是四种产品。",
+        "game_description": "主控单位；可部署、攻击或按卡面技能行动。",
+        "balance_intent": "战术改版：技能与费用见本页当前数值。",
         "faction": "细棍",
         "v8_game_name_zh": "自带电",
         "v8_template_id": "stick_plus2",
@@ -2915,15 +2915,15 @@
         "durability": 3,
         "guard": false,
         "rush": false,
-        "effect": null,
-        "effect_amount": null,
+        "effect": "play_heal",
+        "effect_amount": 3,
         "attack_bonus": null,
         "grants_guard": null,
         "bypass_guard": null,
         "cost_band": "series_core",
         "cost_line": "stick_core",
         "series_confidence": "official",
-        "cost_note": "StickC-Plus2 是 Stick 本体。"
+        "cost_note": "战术改版数值，以对局职责定费。"
       },
       "growth": {
         "family": "sticks",
@@ -2944,8 +2944,8 @@
       "design_status": "playtest_draft",
       "identity": {
         "game_name_zh": "省电条",
-        "game_description": "更省的细条，便宜，也更脆。",
-        "balance_intent": "不是自带电的下一星。",
+        "game_description": "主控单位；可部署、攻击或按卡面技能行动。",
+        "balance_intent": "战术改版：技能与费用见本页当前数值。",
         "faction": "细棍",
         "v8_game_name_zh": null,
         "v8_template_id": null,
@@ -2955,10 +2955,10 @@
         "role": "main",
         "cost": 3,
         "attack": 2,
-        "durability": 3,
+        "durability": 2,
         "guard": false,
         "rush": false,
-        "effect": null,
+        "effect": "play_draw",
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
@@ -2966,7 +2966,7 @@
         "cost_band": "series_core",
         "cost_line": "stick_core",
         "series_confidence": "official",
-        "cost_note": "StickC-Plus SE 是 Stick 本体。费用从 2 升到 3，耐久升到 3。"
+        "cost_note": "战术改版数值，以对局职责定费。"
       },
       "growth": {
         "family": "sticks",
@@ -2987,8 +2987,8 @@
       "design_status": "playtest_draft",
       "identity": {
         "game_name_zh": "新细条",
-        "game_description": "StickS3。教学局用的就是这一张。",
-        "balance_intent": "占位牌细条已退役，教学改用这个 id。",
+        "game_description": "主控单位；可部署、攻击或按卡面技能行动。",
+        "balance_intent": "战术改版：技能与费用见本页当前数值。",
         "faction": "细棍",
         "v8_game_name_zh": "新细条",
         "v8_template_id": "stick_s3",
@@ -2998,7 +2998,7 @@
         "role": "main",
         "cost": 3,
         "attack": 3,
-        "durability": 2,
+        "durability": 3,
         "guard": false,
         "rush": false,
         "effect": null,
@@ -3009,7 +3009,7 @@
         "cost_band": "series_core",
         "cost_line": "stick_core",
         "series_confidence": "official",
-        "cost_note": "StickS3 是 Stick 本体。占位牌细条已退役，教学局用 art_h024。"
+        "cost_note": "战术改版数值，以对局职责定费。"
       },
       "growth": {
         "family": "sticks",
@@ -3374,8 +3374,8 @@
       "design_status": "playtest_draft",
       "identity": {
         "game_name_zh": "小三话",
-        "game_description": "带语音座的方块，便宜一点。",
-        "balance_intent": "语音不是星级。",
+        "game_description": "主控单位；可部署、攻击或按卡面技能行动。",
+        "balance_intent": "战术改版：技能与费用见本页当前数值。",
         "faction": "小块",
         "v8_game_name_zh": null,
         "v8_template_id": null,
@@ -3384,11 +3384,11 @@
       "gameplay": {
         "role": "main",
         "cost": 2,
-        "attack": 3,
+        "attack": 2,
         "durability": 2,
         "guard": false,
         "rush": false,
-        "effect": null,
+        "effect": "play_draw",
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
@@ -3396,7 +3396,7 @@
         "cost_band": "series_core",
         "cost_line": "atom_core",
         "series_confidence": "official",
-        "cost_note": "Atom Voice 仍是 Atom 尺寸的核心，不是音箱整机。"
+        "cost_note": "战术改版数值，以对局职责定费。"
       },
       "growth": {
         "family": "atoms3",
@@ -3417,8 +3417,8 @@
       "design_status": "playtest_draft",
       "identity": {
         "game_name_zh": "敲键",
-        "game_description": "带键盘的掌机，打得疼。",
-        "balance_intent": "与教学基线同一张牌。",
+        "game_description": "主控单位；可部署、攻击或按卡面技能行动。",
+        "balance_intent": "战术改版：技能与费用见本页当前数值。",
         "faction": "键盘",
         "v8_game_name_zh": "敲键",
         "v8_template_id": "cardputer_hacker",
@@ -3426,12 +3426,12 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 9,
-        "attack": 5,
-        "durability": 4,
+        "cost": 5,
+        "attack": 4,
+        "durability": 5,
         "guard": false,
         "rush": false,
-        "effect": null,
+        "effect": "play_draw",
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
@@ -3439,7 +3439,7 @@
         "cost_band": "series_core",
         "cost_line": "cardputer_body",
         "series_confidence": "official",
-        "cost_note": "Cardputer 本体。壳里有邮票，但是掌机整机，不收 1 费。"
+        "cost_note": "战术改版数值，以对局职责定费。"
       },
       "growth": {
         "family": "cardputer",
@@ -3460,8 +3460,8 @@
       "design_status": "playtest_draft",
       "identity": {
         "game_name_zh": "敲键改",
-        "game_description": "修订版没那么爆，但更能站。",
-        "balance_intent": "用攻击换耐久。",
+        "game_description": "主控单位；可部署、攻击或按卡面技能行动。",
+        "balance_intent": "战术改版：技能与费用见本页当前数值。",
         "faction": "键盘",
         "v8_game_name_zh": null,
         "v8_template_id": null,
@@ -3469,12 +3469,12 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 10,
+        "cost": 6,
         "attack": 5,
-        "durability": 5,
+        "durability": 6,
         "guard": false,
         "rush": false,
-        "effect": null,
+        "effect": "play_draw",
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
@@ -3482,7 +3482,7 @@
         "cost_band": "series_core",
         "cost_line": "cardputer_body",
         "series_confidence": "official",
-        "cost_note": "Cardputer 二星，基础档 +1，封顶 10。"
+        "cost_note": "战术改版数值，以对局职责定费。"
       },
       "growth": {
         "family": "cardputer",
@@ -3503,8 +3503,8 @@
       "design_status": "playtest_draft",
       "identity": {
         "game_name_zh": "敲键进",
-        "game_description": "加强版键盘机，攻击很高，费用也高。",
-        "balance_intent": "Adv 不是 v1.1 的下一星。",
+        "game_description": "主控单位；可部署、攻击或按卡面技能行动。",
+        "balance_intent": "战术改版：技能与费用见本页当前数值。",
         "faction": "键盘",
         "v8_game_name_zh": null,
         "v8_template_id": null,
@@ -3512,20 +3512,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 9,
-        "attack": 5,
-        "durability": 4,
+        "cost": 5,
+        "attack": 4,
+        "durability": 5,
         "guard": false,
         "rush": false,
-        "effect": null,
-        "effect_amount": null,
+        "effect": "play_damage",
+        "effect_amount": 2,
         "attack_bonus": null,
         "grants_guard": null,
         "bypass_guard": null,
         "cost_band": "series_core",
         "cost_line": "cardputer_body",
         "series_confidence": "official",
-        "cost_note": "Cardputer-Adv 是同一掌机产品线的另一台整机，不是套件。"
+        "cost_note": "战术改版数值，以对局职责定费。"
       },
       "growth": {
         "family": "cardputer_side",
@@ -3546,8 +3546,8 @@
       "design_status": "playtest_draft",
       "identity": {
         "game_name_zh": "敲键组",
-        "game_description": "整套键盘机，进场抽一张。",
-        "balance_intent": "套装不是星级。",
+        "game_description": "主控单位；可部署、攻击或按卡面技能行动。",
+        "balance_intent": "战术改版：技能与费用见本页当前数值。",
         "faction": "键盘",
         "v8_game_name_zh": null,
         "v8_template_id": null,
@@ -3555,9 +3555,9 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 10,
+        "cost": 6,
         "attack": 5,
-        "durability": 4,
+        "durability": 6,
         "guard": false,
         "rush": false,
         "effect": "play_draw",
@@ -3568,7 +3568,7 @@
         "cost_band": "series_machine",
         "cost_line": "cardputer_kit",
         "series_confidence": "official",
-        "cost_note": "Cardputer Mesh Kit 是套件，比 Cardputer 本体高 1 费，封顶 10。保留入场抽 1。"
+        "cost_note": "战术改版数值，以对局职责定费。"
       },
       "growth": {
         "family": "cardputer_side",
@@ -3589,8 +3589,8 @@
       "design_status": "playtest_draft",
       "identity": {
         "game_name_zh": "旋钮台",
-        "game_description": "桌面旋钮主机，能给己方临时加攻击。",
-        "balance_intent": "与教学基线同一张牌。",
+        "game_description": "主控单位；可部署、攻击或按卡面技能行动。",
+        "balance_intent": "战术改版：技能与费用见本页当前数值。",
         "faction": "表壳",
         "v8_game_name_zh": "旋钮",
         "v8_template_id": "dial_router",
@@ -3598,9 +3598,9 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 8,
-        "attack": 4,
-        "durability": 5,
+        "cost": 4,
+        "attack": 3,
+        "durability": 4,
         "guard": false,
         "rush": false,
         "effect": "knob",
@@ -3611,7 +3611,7 @@
         "cost_band": "series_core",
         "cost_line": "dial_body",
         "series_confidence": "official",
-        "cost_note": "Dial 是点名的整机档，不是邮票模块。官方总览把它放在 Stamp 躯壳谱系，费用不按邮票模块收。"
+        "cost_note": "战术改版数值，以对局职责定费。"
       },
       "growth": {
         "family": "dial",
@@ -3632,8 +3632,8 @@
       "design_status": "playtest_draft",
       "identity": {
         "game_name_zh": "旋钮改",
-        "game_description": "旋钮更利，壳更薄。",
-        "balance_intent": "费用更高、耐久更低，攻击更高。",
+        "game_description": "主控单位；可部署、攻击或按卡面技能行动。",
+        "balance_intent": "战术改版：技能与费用见本页当前数值。",
         "faction": "表壳",
         "v8_game_name_zh": null,
         "v8_template_id": null,
@@ -3641,9 +3641,9 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 9,
-        "attack": 5,
-        "durability": 4,
+        "cost": 5,
+        "attack": 4,
+        "durability": 5,
         "guard": false,
         "rush": false,
         "effect": "knob",
@@ -3654,7 +3654,7 @@
         "cost_band": "series_core",
         "cost_line": "dial_body",
         "series_confidence": "official",
-        "cost_note": "Dial 二星，基础档 +1。"
+        "cost_note": "战术改版数值，以对局职责定费。"
       },
       "growth": {
         "family": "dial",
@@ -3847,8 +3847,8 @@
       "design_status": "playtest_draft",
       "identity": {
         "game_name_zh": "小印",
-        "game_description": "能独立跑起来的小邮票，可支援厚壳工控。",
-        "balance_intent": "与教学基线同一张牌，支援规则不变。",
+        "game_description": "主控单位；可部署、攻击或按卡面技能行动。",
+        "balance_intent": "战术改版：技能与费用见本页当前数值。",
         "faction": "邮票",
         "v8_game_name_zh": null,
         "v8_template_id": null,
@@ -3862,14 +3862,14 @@
         "guard": false,
         "rush": false,
         "effect": "support",
-        "effect_amount": 1,
+        "effect_amount": 2,
         "attack_bonus": null,
         "grants_guard": null,
         "bypass_guard": null,
         "cost_band": "series_core",
         "cost_line": "stamp_core",
         "series_confidence": "official",
-        "cost_note": "Stamp-S3 是邮票模块本体，费用留在 1。芯片是 ESP32-S3 中档，待试玩攻击 2、耐久 2。支援仍是 1。"
+        "cost_note": "战术改版数值，以对局职责定费。"
       },
       "growth": {
         "family": "stamp_s3",
@@ -3890,8 +3890,8 @@
       "design_status": "playtest_draft",
       "identity": {
         "game_name_zh": "小印改",
-        "game_description": "修订版更耐打，支援方式相同。",
-        "balance_intent": "直接打出要 3 费，升星只付差价 1。",
+        "game_description": "主控单位；可部署、攻击或按卡面技能行动。",
+        "balance_intent": "战术改版：技能与费用见本页当前数值。",
         "faction": "邮票",
         "v8_game_name_zh": null,
         "v8_template_id": null,
@@ -3905,14 +3905,14 @@
         "guard": false,
         "rush": false,
         "effect": "support",
-        "effect_amount": 1,
+        "effect_amount": 2,
         "attack_bonus": null,
         "grants_guard": null,
         "bypass_guard": null,
         "cost_band": "series_core",
         "cost_line": "stamp_core",
         "series_confidence": "official",
-        "cost_note": "同一邮票的二星，基础档 +1。支援仍是 1 费。"
+        "cost_note": "战术改版数值，以对局职责定费。"
       },
       "growth": {
         "family": "stamp_s3",
@@ -4148,8 +4148,8 @@
       "design_status": "playtest_draft",
       "identity": {
         "game_name_zh": "远印",
-        "game_description": "带远距无线电，进场可以啄一下敌人。",
-        "balance_intent": "无线电是用途差异。",
+        "game_description": "主控单位；可部署、攻击或按卡面技能行动。",
+        "balance_intent": "战术改版：技能与费用见本页当前数值。",
         "faction": "邮票",
         "v8_game_name_zh": null,
         "v8_template_id": null,
@@ -4157,20 +4157,20 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 1,
+        "cost": 2,
         "attack": 1,
-        "durability": 2,
+        "durability": 3,
         "guard": false,
         "rush": false,
-        "effect": null,
-        "effect_amount": null,
+        "effect": "play_heal",
+        "effect_amount": 3,
         "attack_bonus": null,
         "grants_guard": null,
         "bypass_guard": null,
         "cost_band": "series_core",
         "cost_line": "stamp_core",
         "series_confidence": "official",
-        "cost_note": "C6LoRa 仍是邮票模块。去掉入场伤害，避免 1 费再免费打 1 点。"
+        "cost_note": "战术改版数值，以对局职责定费。"
       },
       "growth": {
         "family": "stamp_cpu",
@@ -4234,8 +4234,8 @@
       "design_status": "playtest_draft",
       "identity": {
         "game_name_zh": "厚壳工控",
-        "game_description": "工控壳。自己不会叫回小印，但可以被场上的小印支援复活。",
-        "balance_intent": "与教学基线同一张牌。",
+        "game_description": "主控单位；可部署、攻击或按卡面技能行动。",
+        "balance_intent": "战术改版：技能与费用见本页当前数值。",
         "faction": "工位",
         "v8_game_name_zh": null,
         "v8_template_id": null,
@@ -4243,7 +4243,7 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 6,
+        "cost": 5,
         "attack": 3,
         "durability": 5,
         "guard": true,
@@ -4256,7 +4256,7 @@
         "cost_band": "series_machine",
         "cost_line": "stamp_machine",
         "series_confidence": "official",
-        "cost_note": "StamPLC 是工控整机，不是单独的邮票，费用留在 6。芯片是 ESP32-S3，护卫后待试玩攻击 3、耐久 5。"
+        "cost_note": "战术改版数值，以对局职责定费。"
       },
       "growth": {
         "family": null,
@@ -4277,8 +4277,8 @@
       "design_status": "playtest_draft",
       "identity": {
         "game_name_zh": "零键",
-        "game_description": "另一台掌上电脑，和敲键不是同一条成长线。",
-        "balance_intent": "芯片都不是同一类。",
+        "game_description": "主控单位；可部署、攻击或按卡面技能行动。",
+        "balance_intent": "战术改版：技能与费用见本页当前数值。",
         "faction": "键盘",
         "v8_game_name_zh": null,
         "v8_template_id": null,
@@ -4286,12 +4286,12 @@
       },
       "gameplay": {
         "role": "main",
-        "cost": 10,
-        "attack": 4,
-        "durability": 7,
+        "cost": 7,
+        "attack": 6,
+        "durability": 8,
         "guard": false,
         "rush": false,
-        "effect": null,
+        "effect": "play_draw",
         "effect_amount": null,
         "attack_bonus": null,
         "grants_guard": null,
@@ -4299,7 +4299,7 @@
         "cost_band": "series_core",
         "cost_line": "upper_arm",
         "series_confidence": "official",
-        "cost_note": "CardputerZero 官方 CPU 是 Cortex-A53。上位机资格不变，费用升到 10。"
+        "cost_note": "战术改版数值，以对局职责定费。"
       },
       "growth": {
         "family": "cardputer_side",
@@ -4400,5 +4400,6 @@
         "note": null
       }
     }
-  }
+  },
+  "balance_version": "tactical-v1"
 }

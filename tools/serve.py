@@ -5,9 +5,9 @@ from http.server import ThreadingHTTPServer,SimpleHTTPRequestHandler
 from pathlib import Path
 import argparse
 parser=argparse.ArgumentParser(description='Serve PULSE on localhost; no build dependencies.')
-parser.add_argument('--port',type=int,default=8000)
+parser.add_argument('--port',type=int,default=8002)
 args=parser.parse_args()
-root=Path(__file__).resolve().parents[1]/'dist'
+root=Path(__file__).resolve().parents[1]
 handler=partial(SimpleHTTPRequestHandler,directory=str(root))
 print(f'PULSE: http://localhost:{args.port} — Ctrl+C to stop',flush=True)
 ThreadingHTTPServer(('127.0.0.1',args.port),handler).serve_forever()

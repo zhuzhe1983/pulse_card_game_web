@@ -1,0 +1,167 @@
+{
+  "ruleset_id": "pcg.clash.v0",
+  "balance_version": "tactical-v1",
+  "status": "implemented_playtest",
+  "rules": {
+    "baseLife": 30,
+    "maxSupply": 10,
+    "handLimit": 10,
+    "boardLimit": 7,
+    "openingHand": [
+      3,
+      4
+    ],
+    "adjacencyAttack": 0,
+    "adjacencyCap": 1
+  },
+  "deck": {
+    "size": 30,
+    "mains": 16,
+    "spells": 10,
+    "attachments": 4
+  },
+  "card_overrides": {
+    "xiao_yin": {
+      "amount": 2
+    },
+    "art_h038a": {
+      "amount": 2
+    },
+    "art_h003": {
+      "cost": 3,
+      "attack": 3,
+      "durability": 3,
+      "effect": "play_damage",
+      "effect_amount": 1
+    },
+    "art_h008": {
+      "cost": 4,
+      "attack": 3,
+      "durability": 4,
+      "effect": "play_draw"
+    },
+    "art_h008a": {
+      "cost": 5,
+      "attack": 4,
+      "durability": 5,
+      "effect": "play_draw"
+    },
+    "art_h010": {
+      "cost": 4,
+      "attack": 4,
+      "durability": 4
+    },
+    "art_h011": {
+      "cost": 4,
+      "attack": 3,
+      "durability": 5,
+      "effect": "play_heal",
+      "effect_amount": 3
+    },
+    "art_h012": {
+      "cost": 4,
+      "attack": 3,
+      "durability": 3
+    },
+    "art_h013": {
+      "cost": 6,
+      "attack": 4,
+      "durability": 7
+    },
+    "art_h014": {
+      "cost": 5,
+      "attack": 4,
+      "durability": 5,
+      "effect": "play_damage",
+      "effect_amount": 2
+    },
+    "art_h015": {
+      "cost": 6,
+      "attack": 5,
+      "durability": 6
+    },
+    "art_h017": {
+      "cost": 6,
+      "attack": 4,
+      "durability": 7,
+      "effect": "play_heal",
+      "effect_amount": 4
+    },
+    "art_h018": {
+      "cost": 7,
+      "attack": 6,
+      "durability": 7,
+      "effect": "play_damage",
+      "effect_amount": 3
+    },
+    "art_h022": {
+      "effect": "play_heal",
+      "effect_amount": 3
+    },
+    "art_h023": {
+      "effect": "play_draw",
+      "attack": 2,
+      "durability": 2
+    },
+    "art_h024": {
+      "durability": 3
+    },
+    "qiao_jian": {
+      "cost": 5,
+      "attack": 4,
+      "durability": 5,
+      "effect": "play_draw"
+    },
+    "art_h032": {
+      "cost": 6,
+      "attack": 5,
+      "durability": 6,
+      "effect": "play_draw"
+    },
+    "art_h033": {
+      "cost": 5,
+      "attack": 4,
+      "durability": 5,
+      "effect": "play_damage",
+      "effect_amount": 2
+    },
+    "art_h033a": {
+      "cost": 6,
+      "attack": 5,
+      "durability": 6
+    },
+    "xuan_niu": {
+      "cost": 4,
+      "attack": 3,
+      "durability": 4
+    },
+    "art_h034a": {
+      "cost": 5,
+      "attack": 4,
+      "durability": 5
+    },
+    "art_h030a": {
+      "attack": 2,
+      "durability": 2,
+      "effect": "play_draw"
+    },
+    "art_h039e": {
+      "cost": 2,
+      "attack": 1,
+      "durability": 3,
+      "effect": "play_heal",
+      "effect_amount": 3
+    },
+    "art_h050": {
+      "cost": 7,
+      "attack": 6,
+      "durability": 8,
+      "effect": "play_draw"
+    },
+    "hou_ke": {
+      "cost": 5,
+      "attack": 3,
+      "durability": 5
+    }
+  }
+}

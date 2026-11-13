@@ -1,10 +1,19 @@
 #!/usr/bin/env python3
-"""Build the standalone pcg.clash.v0 page. Does not touch the old dist/index.html."""
+"""Build tactical Clash and its matching wiki data from the current profile."""
 import json
 import shutil
+import subprocess
+import sys
 from pathlib import Path
 
 root = Path(__file__).resolve().parents[1]
+shutil.copyfile(root / 'content/clash/clash_tactics.json', root / 'wiki/data/clash_tactics.json')
+subprocess.run([sys.executable, str(root / 'wiki/tools/build_design_pack.py'),
+    '--roster', str(root / 'content/clash/clash_roster_96.json'),
+    '--cards', str(root / 'wiki/data/cards.json'),
+    '--playtest', str(root / 'content/clash/clash_playtest.json'),
+    '--balance', str(root / 'content/clash/clash_balance.json'),
+    '--out', str(root / 'wiki/data/design-pack.json')], check=True)
 html = (root / 'src/clash/template.html').read_text()
 
 def script(text):
@@ -26,8 +35,8 @@ def art_map():
     return json.dumps(out, ensure_ascii=False, separators=(',', ':')).replace('<', '\\u003c')
 
 replacements = {
-    '/*__CLASH_CSS__*/': (root / 'shared/pulse.css').read_text() + '\n' + (root / 'src/clash/style.css').read_text(),
-    '/*__CLASH_CONTENT__*/': 'globalThis.PCGClashContent=' + embed('content/clash/clash_playtest.json') + ';\n',
+    '/*__CLASH_CSS__*/': (root / 'shared/pulse.css').read_text() + '\n' + (root / 'src/clash/style.css').read_text() + '\n' + (root / 'src/clash/tactical.css').read_text(),
+    '/*__CLASH_CONTENT__*/': 'globalThis.PCGClashContent=' + embed('content/clash/clash_playtest.json') + ';\n' + 'globalThis.PCGClashBalance=' + embed('content/clash/clash_balance.json') + ';\n' + 'globalThis.PCGClashTactics=' + embed('content/clash/clash_tactics.json') + ';\n',
     '/*__CLASH_CAPABILITIES__*/': 'globalThis.PCGClashCapabilities=' + embed('content/clash/capabilities.json') + ';\n',
     '/*__CLASH_ROSTER__*/': 'globalThis.PCGClashRoster=' + embed('content/clash/clash_roster_96.json') + ';\n' + 'globalThis.PCGClashServices=' + embed('content/clash/clash_services.json') + ';\n' + 'globalThis.PCGClashArt=' + art_map() + ';\n' + 'globalThis.PCGClashScene=' + embed('content/clash/scene_assets.json') + ';\n',
     '/*__CLASH_ENGINE__*/': script((root / 'src/clash/engine.js').read_text()),

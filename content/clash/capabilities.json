@@ -1,7 +1,26 @@
 {
   "ruleset_id": "pcg.clash.v0",
   "baseline_commit": "64848ae38b276e370ec225f88f1498424ff68497",
-  "effects": ["support", "knob", "mend", "damage", "heal_base", "supply", "play_draw", "play_damage", "draw_one", "retrieve_grave", "arm_aiflow", "seize"],
+  "effects": [
+    "support",
+    "knob",
+    "mend",
+    "damage",
+    "heal_base",
+    "supply",
+    "play_draw",
+    "play_damage",
+    "draw_one",
+    "retrieve_grave",
+    "arm_aiflow",
+    "seize",
+    "damage_all",
+    "freeze",
+    "bounce",
+    "execute",
+    "overclock",
+    "play_heal"
+  ],
   "bindings": {
     "support": {
       "source": "xiao_yin",
@@ -20,5 +39,6 @@
     "version": "卡上可选的不透明字符串。出现也不表示星级。"
   },
   "not_implemented": [],
-  "note": "已实现的效果只有这份清单。升星看卡上的 next_template_id、growth_kind 和 star，不从版本号推断。阵营和美术 type 按规则不进结算。多写一个效果名不会让引擎学会新技能。"
+  "note": "已实现的效果只有这份清单。升星看卡上的 next_template_id、growth_kind 和 star，不从版本号推断。阵营和美术 type 按规则不进结算。多写一个效果名不会让引擎学会新技能。",
+  "balance_version": "tactical-v1"
 }

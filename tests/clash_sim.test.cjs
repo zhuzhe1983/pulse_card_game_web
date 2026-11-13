@@ -9,7 +9,9 @@ const read = name => JSON.parse(fs.readFileSync(path.join(root, name), 'utf8'));
 const roster = read('content/clash/clash_roster_96.json');
 const wiki = read('wiki/data/cards.json');
 const playtest = read('content/clash/clash_playtest.json');
-const services = read('content/clash/clash_services.json');
+const services = read('content/clash/clash_tactics.json');
+const balance = read('content/clash/clash_balance.json');
+roster.cards = roster.cards.map(card => ({ ...card, ...(balance.card_overrides[card.template_id] || {}) }));
 const caps = read('content/clash/capabilities.json');
 const art = wiki.cards.map(card => card.rid);
 const catalog = C.simCatalog(roster.cards, art);
@@ -49,11 +51,11 @@ function chainTop(card) {
 check('many seeds deal two 30-card decks and replay', () => {
   const seeds = [1, 2, 7, 42, 99, 123456, 0x7ba58fb3, 999983];
   const seen = new Set();
-  const servicesIn = services.cards.filter(card => card.template_id === 'uiflow_blocks' || card.template_id === 'ezdata_note' || card.template_id === 'aiflow_say');
+  const servicesIn = services.cards;
   const pool = catalog.included.concat(servicesIn);
   const byId = Object.create(null);
   pool.forEach(card => { byId[card.template_id] = card; });
-  const serviceIds = ['uiflow_blocks', 'ezdata_note', 'aiflow_say'];
+  const serviceIds = ['pulse_bolt','arc_wave','emergency_stop','cache_read','repair_protocol'];
   function hostOk(deck, card) {
     const mains = deck.map(id => byId[id]).filter(item => item && item.kind === 'main');
     if (card.mount_class === 'hat') return mains.some(item => item.host_family === 'stick');
@@ -82,14 +84,16 @@ check('many seeds deal two 30-card decks and replay', () => {
       });
       const cards = deck.map(id => byId[id]);
       const mains = cards.filter(card => card.kind === 'main');
+      assert.ok(cards.slice(0, 4).filter(card => card.kind === 'main' && card.cost <= 2).length >= 2, 'opening protection includes actual deployable bodies');
       const parts = cards.filter(card => card.kind === 'attachment');
-      assert.ok(mains.length >= 21);
+      assert.equal(mains.length, 16);
+      assert.equal(cards.filter(card => card.kind === 'spell').length, 10);
       assert.ok(parts.length >= 4 && parts.length <= 6);
-      serviceIds.forEach(id => assert.equal(counts[id], 1, id));
+      serviceIds.forEach(id => assert.ok(counts[id] >= 1, id));
       parts.forEach(card => assert.equal(hostOk(deck, card), true, card.template_id));
       assert.ok(mains.filter(card => card.cost <= 2).length >= 5);
       assert.ok(cards.filter(card => card.cost >= 3 && card.cost <= 5).length >= 5);
-      assert.ok(cards.filter(card => card.cost >= 6).length >= 3);
+      assert.ok(cards.filter(card => card.cost >= 6).length >= 2);
       assert.ok(cards.slice(0, 4).filter(card => card.cost <= 2).length >= 2);
     });
   });
@@ -106,7 +110,7 @@ check('a 30-card deck deals 3 and 4, burns at 10, fatigues the core, and the spa
     template_id: 'bei_yong_dian_chi', name: '备用电池', kind: 'spell', cost: 0, attack: 0, durability: 0,
     attack_bonus: 0, grants_guard: false, bypass_guard: false, guard: false, effect: 'supply', amount: 1
   };
-  const servicesIn = services.cards.filter(card => card.template_id === 'uiflow_blocks' || card.template_id === 'ezdata_note' || card.template_id === 'aiflow_say');
+  const servicesIn = services.cards;
   const built = C.buildSimDecks(catalog.included.concat(servicesIn), 42);
   const simRules = Object.assign({}, loaded.rules, { handLimit: 10 });
   const game = new C.Game(loaded.cards, built.decks[0], built.decks[1], simRules, 'bei_yong_dian_chi', loaded.capabilities);
@@ -132,7 +136,7 @@ check('a 30-card deck deals 3 and 4, burns at 10, fatigues the core, and the spa
   assert.equal(tired.fatigue[0], 2);
   const ai = C.Game.empty(loaded.cards, simRules, loaded.capabilities);
   ai.seat = 1;
-  ai.hands[1] = ['bei_yong_dian_chi'];
+  ai.hands[1] = ['bei_yong_dian_chi', 'dian_zhen'];
   ai.supply[1] = 1;
   const action = C.planAi(C.aiView(ai), new Set());
   assert.equal(action.type, 'play');
