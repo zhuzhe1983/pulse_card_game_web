@@ -109,6 +109,9 @@ img { max-width: 100%; }
 .pulse-btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
 .pulse-btn.light { background: #eeede5; color: var(--ink); border: 1px solid #dbdbd1; }
 button:focus-visible, a:focus-visible { outline: 3px solid #eea03d; outline-offset: 3px; }
+.language-toggle { flex:0 0 auto; min-height:36px; padding:6px 12px; border:1px solid #81948d66; border-radius:7px; background:transparent; color:inherit; font:inherit; font-size:13px; cursor:pointer; }
+html:lang(en) .pulse-nav { gap:16px; }
+html:lang(en) .pulse-sub { letter-spacing:.04em; }
 @media (max-width: 720px) {
   .pulse-top { height: auto; min-height: 64px; padding: 10px 14px; flex-wrap: wrap; }
   .pulse-sub { display: none; }
@@ -949,6 +952,13 @@ body { background:#111c1e; color:var(--table-ink); padding:0; font-family:Inter,
 /* Electronics workstation. ImageGen bitmaps provide the physical surfaces;
    DOM text and state glows remain live, legible and accessible. */
 :root { --table-ink:#e4f0f2; --table-muted:#a0b9c2; --table-mint:#9ce7ed; }
+.menu-pop .language-toggle { width:100%; }
+html:lang(en) .minion.guard:after { content:'G'; }
+html:lang(en) .playcard .cname { font-size:12px; line-height:1.05; }
+html:lang(en) .playcard .detail { font-size:9px; line-height:1.2; }
+html:lang(en) .minion .mname { font-size:9px; overflow-wrap:anywhere; }
+html:lang(en) .minion .ribbon { font-size:6px; }
+html:lang(en) .hand-heading small { letter-spacing:0; }
 .arena { background:#12212b url('scene/raster-v1/tabletop.webp') center / 100% 100% no-repeat; }
 .arena:before,.arena:after { display:none; }
 .match-brand { left:6%; top:6.5%; }
@@ -957,6 +967,7 @@ body { background:#111c1e; color:var(--table-ink); padding:0; font-family:Inter,
 .menu-toggle,.log-toggle { top:6.5%; background:#142a35e8; border-color:#aacbd247; color:#d8e9ed; }
 .menu-toggle { right:calc(6% + 64px); }.log-toggle { right:6%; }
 .menu-pop { top:calc(6.5% + 48px); right:6%; background:#132631; }
+.log-panel { top:calc(6.5% + 48px); right:6%; max-height:65dvh; }
 .round-readout { top:5.6%; }
 .bays { left:6%; top:120px; }
 .mode-switch { left:6%; }
@@ -1007,6 +1018,13 @@ body { background:#111c1e; color:var(--table-ink); padding:0; font-family:Inter,
  .bays {top:100px;}.round-readout {top:30px;}
 }
 @media (max-width:800px) {
+ html:lang(en) .playcard .cname {font-size:10px;}
+ html:lang(en) .playcard .detail {font-size:8px;line-height:1.2;}
+ html:lang(en) .minion .mname {font-size:7px;}
+ html:lang(en) .minion .ribbon {font-size:5px;}
+ html:lang(en) .hand-heading small {font-size:8px;}
+ html:lang(en) .hand-count {font-size:8px;}
+ html:lang(en) .pile {grid-template-columns:38px;}
  .match-brand {left:6%;top:24px;}.match-brand>b {font-size:15px;}.match-brand small {font-size:7px;}
  .menu-toggle,.log-toggle {top:24px;min-height:32px;}.menu-toggle {right:calc(6% + 48px);}.log-toggle {right:6%;}
  .menu-pop,.log-panel {top:64px;right:10px;}.round-readout {top:62px;}
@@ -1025,6 +1043,10 @@ body { background:#111c1e; color:var(--table-ink); padding:0; font-family:Inter,
  .minion .mname {font-size:8px;}.minion .atk,.minion .hp {font-size:15px;}
 }
 @media (max-height:520px) and (min-width:600px) {
+ html:lang(en) .playcard .cname {font-size:9px;}
+ html:lang(en) .playcard .detail {font-size:8px;}
+ html:lang(en) .minion .mname {font-size:7px;}
+ html:lang(en) .minion .ribbon {font-size:5px;}
  .match-brand {top:14px;left:5%;}.menu-toggle,.log-toggle {top:12px;}
  .base-btn .core-name {top:25%!important;font-size:7px;}.base-btn .hp {bottom:22%!important;font-size:18px;}
  .hands .playcard {height:154px;width:103px;}.playcard .cname {font-size:10px;}.playcard .detail,.playcard.kind-main .detail {font-size:8px;}
@@ -1033,6 +1055,8 @@ body { background:#111c1e; color:var(--table-ink); padding:0; font-family:Inter,
  .core-slot.mine .battery {top:20%;}
 }
 </style>
+<script src="../../shared/locales/en.js?v=b79cda882b6f"></script>
+<script src="../../shared/i18n.js?v=58fd26c9bace"></script>
 </head>
 <body>
 <div id="app"></div>
@@ -2655,6 +2679,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
 
 (function (root) {
   'use strict';
+  const I = globalThis.PULSEI18n;
   const C = root.PCGClash;
   const content = root.PCGClashContent;
   const pack = C.loadPack(content, root.PCGClashCapabilities);
@@ -2969,19 +2994,19 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
       node.classList.toggle('selected', !!(ui.attacker && node.dataset.iid === ui.attacker));
     });
     const coachNode = document.querySelector('#coach');
-    if (coachNode) coachNode.textContent = coach();
+    if (coachNode) I.setText(coachNode, coach());
     const errorNode = document.querySelector('#last-error');
     if (errorNode) {
       errorNode.dataset.code = ui.error ? ui.error.code : '';
-      errorNode.textContent = ui.error ? ui.error.message : '';
+      I.setText(errorNode, ui.error ? ui.error.message : '');
     }
     const pads = document.querySelector('.pads');
-    if (pads) pads.innerHTML = actions();
+    if (pads) I.setHTML(pads, actions());
     const bottom = viewerBottom();
     const mine = document.querySelector('.slots.mine');
     const foe = document.querySelector('.slots.foe');
-    if (mine) mine.innerHTML = lane(bottom);
-    if (foe) foe.innerHTML = lane(1 - bottom);
+    if (mine) I.setHTML(mine, lane(bottom));
+    if (foe) I.setHTML(foe, lane(1 - bottom));
     applyMarks(null);
   }
 
@@ -3002,7 +3027,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
     if (ui.linking) return ui.linkSource ? '点一台己方 ESP32 主控。费用 1。本回合第一次接上时当前供电 +1。' : '点一台己方上位机。零键和树莓台可以发动。';
     if (card && card.kind === 'main') return `准备打出${card.name}。双击排到最右，也可以点队列里的插入位置。本回合不能攻击，技能不受这个限制。`;
     if (card && card.effect === 'supply') return '打出后当前供电 +1，可以暂时高于上限。回合结束会清零。';
-    if (card && card.effect === 'heal_base') return '打出后己方基地恢复 4，不超过 20。';
+    if (card && card.effect === 'heal_base') return `打出后己方核心恢复 ${card.amount} 点生命，不超过 ${rules.baseLife}。`;
     if (card && card.effect === 'draw_one') return '积木开工：抽 1 张。手牌满了就亮出进墓地。';
     if (card && card.effect === 'retrieve_grave') return '记一笔：取回自己墓地最上面一张。墓地是空的也会消耗这张牌。';
     if (card && card.effect === 'arm_aiflow') return '说人话：本回合下一次打击 +2。已经武装时不能再打。';
@@ -3370,10 +3395,11 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
       if (ui.poolFilter === 'service') return card.record_kind === 'game_service' || card.record_kind === 'design_only_host';
       return true;
     }).sort((a, b) => a.name.localeCompare(b.name, 'zh'));
-    $('#app').innerHTML = `<header class="top">
+    I.setHTML($('#app'), `<header class="top">
       <div class="brand"><b>PULSE</b><span>扩展组牌</span></div>
       <nav class="pulse-nav" data-shared-entry="clash-home"><a href="../../index.html">大厅</a><a href="../../wiki/index.html">图鉴</a><a href="./index.html">回合战</a></nav>
       <button type="button" class="btn" data-action="scenario" data-scenario="lesson">返回教学局</button>
+      ${I.control()}
     </header>
     <main class="builder" data-scenario="builder" data-ruleset="${esc(content.ruleset_id)}">
       <p class="balance">组一副练习牌库：每副 8 到 12 张，至少 4 张主控，同名 1 张，按选牌顺序抽取。设备卡、12 张技能和基线练习牌均可选择。这里使用新版数值，随机战仍使用独立的 30 张牌组。</p>
@@ -3393,7 +3419,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
         const label = card.record_kind === 'game_service' ? '服务' : card.record_kind === 'design_only_host' ? '设计' : kindName(card.kind);
         return `<button type="button" class="${picked ? 'picked' : ''}" data-action="toggle-pool" data-card="${esc(card.template_id)}">${esc(card.name)} · ${card.cost}费 · ${label}${star ? ' · ' + star + '星' : ''}${card.growth_kind === 'chain' ? ' · 可升星' : ''}<br><span class="hint">${esc(card.game_description || card.role_note || '基线牌，没有 96 图')}</span></button>`;
       }).join('')}</div>
-    </main>`;
+    </main>`);
     document.body.dataset.ready = '1';
   }
 
@@ -3411,7 +3437,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
     if (!arena) return;
     ghosts.forEach(ghost => {
       const holder = document.createElement('div');
-      holder.innerHTML = ghost.html;
+      I.setHTML(holder, ghost.html);
       const card = holder.firstElementChild;
       if (!card) return;
       card.classList.add('dying');
@@ -3507,7 +3533,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
     const canEnd = canAct();
     ui.idleIds = ui.confirmEnd ? idleAttackers().map(unit => unit.iid) : [];
     const scenarios = [['versus', '固定教学'], ['sim', '模拟战'], ['lesson', '本地双人'], ['support-present', '小印已在场'], ['support-deploy', '先打出小印'], ['support-again', '厚壳再死'], ['promote-stamp', '小印升星'], ['grow', '超过五台'], ['crowd', '两边七台'], ['synergy', '协同与夺舍'], ['tactics', '技能演练'], ['builder', '扩展组牌']];
-    $('#app').innerHTML = `<div class="table-page">
+    I.setHTML($('#app'), `<div class="table-page">
     <div class="match-brand"><b>P</b><span>PULSE<small>脉冲对决</small></span></div>
     <button type="button" class="menu-toggle" data-action="toggle-menu" aria-expanded="${ui.menu ? 'true' : 'false'}">菜单</button>
     <div class="menu-pop"${ui.menu ? '' : ' hidden'}>
@@ -3519,6 +3545,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
       </nav>
       <button type="button" data-action="toggle-reveal" aria-pressed="${ui.reveal}">${ui.reveal ? '遮住对方手牌' : '教学明牌'}</button>
       <button type="button" data-action="restart">重新开局</button>
+      ${I.control()}
       <p class="menu-note">核心 30 · 7 个主控位 · 16 主控 / 10 技能 / 4 配件</p>
       <div class="scenario-row">${scenarios.map(([id, label]) => `<button type="button" data-action="scenario" data-scenario="${id}">${label}</button>`).join('')}</div>
       <div class="nfc-dock">${nfcControl()}${nfcPanel()}</div>
@@ -3569,7 +3596,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
         <ol id="action-log" class="log">${ui.log.slice().reverse().map(item => `<li${item.code ? ` class="bad" data-error-code="${esc(item.code)}"` : ''}>${esc(item.text)}</li>`).join('') || '<li>还没有记录</li>'}</ol>
       </aside>
     </main>
-    </div>`;
+    </div>`);
     mountGhosts(ghosts);
     ui.seen = new Set(game.boards.flat().filter(Boolean).map(unit => unit.iid));
     ui.fx = null;
@@ -3641,7 +3668,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
     if (!rect || rect.left == null) return;
     const node = document.createElement('div');
     node.className = 'dmg-float';
-    node.textContent = text;
+    I.setText(node, text);
     node.style.left = (rect.left + rect.width / 2) + 'px';
     node.style.top = (rect.top + 6) + 'px';
     document.body.appendChild(node);
@@ -3726,7 +3753,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
   async function showAiCard(card) {
     const node = document.createElement('div');
     node.className = 'ai-showcard';
-    node.innerHTML = `<div>${esc(card.name)}</div><div>${card.cost}费</div>`;
+    I.setHTML(node, `<div>${esc(card.name)}</div><div>${card.cost}费</div>`);
     document.body.appendChild(node);
     await sleep(motion().show);
     node.remove();
@@ -3752,7 +3779,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
     }
     const node = document.createElement('div');
     node.className = 'fx-caption';
-    node.textContent = caption;
+    I.setText(node, caption);
     document.body.appendChild(node);
     nodes.push(node);
     await sleep(motion().lunge);
@@ -3941,7 +3968,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
     if (ui.animating) return;
     if (el && el.dataset && el.dataset.block) {
       const why = el.querySelector('.act-why');
-      return note(new C.ClashError(why ? why.textContent : C.reasonText(el.dataset.block), el.dataset.block));
+      return note(new C.ClashError(why ? I.source(why) : C.reasonText(el.dataset.block), el.dataset.block));
     }
     const free = ['mode', 'toggle-menu', 'toggle-log', 'scenario', 'restart', 'handoff-confirm', 'replay-seed'];
     if ((ui.aiBusy || ui.handoff || (ui.mode === 'ai' && game && game.seat !== 0)) && !free.includes(action)) {
@@ -4261,14 +4288,14 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
       }
       const badge = document.createElement('span');
       badge.className = 'trade';
-      badge.textContent = text;
-      badge.title = title;
+      I.setText(badge, text);
+      I.setAttr(badge, 'title', title);
       node.appendChild(badge);
     });
     const reasonNode = document.querySelector('#last-error');
     if (!ui.error && reasonNode && marks.reason.code && !marks.legal.size) {
       reasonNode.dataset.code = marks.reason.code;
-      reasonNode.textContent = marks.reason.text;
+      I.setText(reasonNode, marks.reason.text);
     }
     if (bad && bad.key && !marks.legal.has(bad.key)) {
       const node = markHost(bad.key);
@@ -4276,7 +4303,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
         node.dataset.mark = 'bad';
         const badge = document.createElement('div');
         badge.className = 'reject-badge';
-        badge.innerHTML = `<span class="cross" aria-hidden="true">×</span><span class="why">${esc(bad.text)}</span>`;
+        I.setHTML(badge, `<span class="cross" aria-hidden="true">×</span><span class="why">${esc(bad.text)}</span>`);
         node.appendChild(badge);
       }
     }
@@ -4404,7 +4431,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
     }
     const peek = document.createElement('div');
     peek.className = 'peek';
-    peek.textContent = `${card.name} · ${detail} · 只查看，不出牌`;
+    I.setText(peek, `${card.name} · ${detail} · 只查看，不出牌`);
     document.body.appendChild(peek);
     setTimeout(() => peek.remove(), 1200);
   }
@@ -4424,7 +4451,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
     if (document.querySelector('.drag-ghost')) return;
     const ghost = document.createElement('div');
     ghost.className = 'drag-ghost';
-    ghost.textContent = label;
+    I.setText(ghost, label);
     document.body.appendChild(ghost);
     dragNodes.push(ghost);
     if (attack && gesture) {
@@ -4461,7 +4488,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
       ui.handIndex = gesture.handIndex;
       ui.attacker = null;
       const laneEl = document.querySelector(game.seat === viewerBottom() ? '.slots.mine' : '.slots.foe');
-      if (laneEl) laneEl.innerHTML = lane(game.seat);
+      if (laneEl) I.setHTML(laneEl, lane(game.seat));
       const card = selectedCard();
       ensureGhost(card ? card.name : '牌', !!(card && wantsTarget(card)));
     } else if (gesture.kind === 'knob') {

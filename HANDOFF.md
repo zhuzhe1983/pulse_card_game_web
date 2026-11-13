@@ -7,6 +7,7 @@
 - `content/clash/clash_balance.json`：当前规则和主控数值覆盖层。
 - `content/clash/clash_tactics.json`：12 张技能；`clash_roster_96.json` 保留设备映射。
 - `src/clash/engine.js`：唯一网页裁判、构筑与公开信息 AI。prompt 的 `reference/clash.js` 是其同步副本，两者必须字节一致。
+- `shared/i18n.js` / `shared/locales/en.json`：中英文显示层与词库；构建生成 en.js，详见 `docs/I18N.md`。不要翻译引擎数据或卡牌标识符。
 - `src/clash/app.js`：操作、模式、AI 时序和测试状态；`nfc.js`：当前 NFC 适配。
 - `src/clash/raster.css`：电子工作台位图皮肤；`tactical.css` 承载布局，`style.css` 承载结构、目标标记和动画。
 - `src/clash/scene/raster-v1/`：ImageGen 生成的 6 个界面组件和 12 张技能插画；manifest 保留提示词，source/ 保留 PNG 原稿。构建仅复制运行资产，不复制 source/。
@@ -24,6 +25,7 @@ node tools/check.cjs
 python3 tools/serve.py --port 8026
 # 另一个终端；本机需可加载 playwright
 PULSE_TEST_URL=http://127.0.0.1:8026 node tests/tactical.browser.cjs
+PULSE_TEST_URL=http://127.0.0.1:8026 node tests/i18n.browser.cjs
 node tools/audit_clash.cjs > docs/review/clash-tactical-v1.json
 ```
 

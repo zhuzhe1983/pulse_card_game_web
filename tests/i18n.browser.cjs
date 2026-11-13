@@ -1,0 +1,113 @@
+'use strict';
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const {chromium} = require(process.env.PLAYWRIGHT_MODULE_PATH || 'playwright');
+const base = process.env.PULSE_TEST_URL || 'http://127.0.0.1:8002';
+fs.mkdirSync('output/playwright', {recursive:true});
+(async () => {
+  const browser = await chromium.launch({headless:true});
+  try {
+    const context = await browser.newContext({locale:'en-US', viewport:{width:1440,height:900}, reducedMotion:'reduce'});
+    const page = await context.newPage(), errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    page.on('response', response => { if (response.status() >= 400 && !response.url().endsWith('favicon.ico')) errors.push(`${response.status()} ${response.url()}`); });
+    const ready = async () => { await page.waitForFunction(() => document.body.dataset.ready === '1' && document.body.dataset.animating !== '1'); await page.evaluate(() => Promise.all(Array.from(document.images, img => img.decode()))); };
+    const state = () => page.evaluate(() => JSON.parse(render_game_to_text()));
+    const language = () => page.locator('html').getAttribute('lang');
+    const visibleChinese = () => page.evaluate(() => {
+      const out = [], walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+      let node;
+      while ((node = walk.nextNode())) {
+        if (!/[\u3400-\u9fff]/.test(node.nodeValue) || node.parentElement.closest('script,style,code,pre,[data-i18n-ignore]')) continue;
+        const range = document.createRange(); range.selectNodeContents(node);
+        if ([...range.getClientRects()].some(r => r.width > 0 && r.height > 0)) out.push(node.nodeValue.trim());
+      }
+      return out;
+    });
+    await page.goto(base + '/');
+    assert.equal(await language(), 'en', 'browser locale is used initially');
+    await page.locator('[data-language-toggle]').click();
+    assert.equal(await language(), 'zh-CN');
+    await page.goto(base + '/dist/clash/?scenario=tactics'); await ready();
+    assert.equal(await language(), 'zh-CN', 'saved preference overrides browser locale');
+    await page.locator('.hands [data-card="arc_wave"]').click();
+    await page.locator('[data-action="toggle-menu"]').click();
+    const before = await state();
+    await page.locator('[data-language-toggle]').click();
+    assert.equal(await language(), 'en');
+    assert.deepEqual(await state(), before, 'changing language must not reset or advance the match or clear selection');
+    assert.equal(await page.locator('[data-action="end-turn"]').innerText(), 'End turn');
+    await page.locator('[data-action="toggle-menu"]').click();
+    await page.locator('[data-action="play"]').click(); await ready();
+    assert.equal((await state()).boards[1].length, 1);
+    await page.locator('[data-action="toggle-log"]').click();
+    assert.ok((await page.locator('#action-log').innerText()).includes('Arc Wave'));
+    assert.deepEqual(await visibleChinese(), [], 'English gameplay and logs are translated');
+    await page.locator('[data-action="toggle-menu"]').click();
+    const after = await state();
+    await page.locator('[data-language-toggle]').click();
+    assert.deepEqual(await state(), after);
+    assert.equal(await page.locator('[data-action="end-turn"]').innerText(), '结束回合');
+    assert.ok((await page.locator('#action-log').innerText()).includes('电磁风暴'));
+    await page.locator('[data-language-toggle]').click();
+    await page.locator('[data-nav="wiki"]').click();
+    await page.waitForFunction(() => window.PULSEWikiCards?.length === 96);
+    assert.equal(await language(), 'en');
+    await page.locator('#q').fill('Speaker Hat');
+    assert.equal(await page.locator('#result-count').innerText(), '1', 'English card names are searchable');
+    await page.locator('#q').fill('小喇叭');
+    assert.equal(await page.locator('#result-count').innerText(), '1', 'Chinese names still work in English');
+    await page.locator('#q').fill('Core II');
+    await page.locator('#tile-H005').click();
+    await page.locator('#detail [data-language-toggle]').click();
+    assert.equal(await language(), 'zh-CN');
+    assert.equal(await page.locator('#detail').evaluate(el => el.open), true);
+    assert.equal(await page.locator('#q').inputValue(), 'Core II');
+    assert.equal(await page.locator('#detail .zh').innerText(), '二代壳');
+    await page.locator('#detail [data-language-toggle]').click();
+    assert.equal(await page.locator('#detail .zh').innerText(), 'Core II');
+    assert.deepEqual(await visibleChinese(), [], 'English catalog detail is translated');
+    await page.screenshot({path:'output/playwright/i18n-detail-final.png'});
+    await page.locator('[data-action="zoom"]').click();
+    await page.evaluate(() => PULSEI18n.setLocale('zh-CN'));
+    assert.equal(await page.locator('#zoom').isVisible(), true, 'language switching preserves the image zoom');
+    await page.evaluate(() => PULSEI18n.setLocale('en'));
+    await page.locator('[data-action="close-zoom"]').click();
+    await page.keyboard.press('Escape'); await page.waitForFunction(() => !document.querySelector('#detail').open);
+    await page.locator('#q').fill('');
+    const ids = await page.evaluate(() => PULSEWikiCards.map(card => card.rid));
+    for (const id of ids) {
+      await page.locator('#tile-' + id).click();
+      await page.waitForFunction(() => document.querySelector('#detail').open);
+      await page.goBack();
+      await page.waitForFunction(() => !document.querySelector('#detail').open);
+    }
+    assert.deepEqual(await page.evaluate(() => [...PULSEI18n.missing]), [], 'all 96 card details have catalog translations');
+    for (const [width,height] of [[1440,900],[390,844],[375,667],[844,390]]) {
+      await page.setViewportSize({width,height});
+      await page.goto(base + '/dist/clash/?scenario=tactics&lang=en'); await ready();
+      await page.locator('.hands [data-card="pulse_bolt"]').click();
+      await page.locator('.slots.foe [data-card="art_h028"]').click(); await ready();
+      assert.equal((await state()).supply[0], 8);
+      assert.deepEqual(await visibleChinese(), []);
+      assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+      await page.screenshot({path:`output/playwright/i18n-${width}x${height}.png`});
+    }
+    await page.goto(base + '/wiki/curve.html?lang=zh-CN');
+    assert.equal(await language(), 'zh-CN', 'explicit URL overrides saved preference');
+    await page.locator('[data-language-toggle]').click();
+    await page.waitForFunction(() => document.querySelectorAll('.bar').length === 10);
+    assert.deepEqual(await visibleChinese(), []);
+    await page.reload(); assert.equal(await language(), 'en');
+    const privateContext = await browser.newContext({locale:'zh-CN'});
+    await privateContext.addInitScript(() => Object.defineProperty(window, 'localStorage', {get() {throw new Error('storage blocked');}}));
+    const privatePage = await privateContext.newPage();
+    await privatePage.goto(base + '/');
+    await privatePage.locator('[data-language-toggle]').click();
+    await privatePage.locator('.primary-link').click();
+    assert.equal(await privatePage.locator('html').getAttribute('lang'), 'en', 'language survives navigation without storage');
+    await privatePage.reload(); assert.equal(await privatePage.locator('html').getAttribute('lang'), 'en');
+    assert.deepEqual(errors, []);
+    console.log('PASS i18n browser: browser/saved/URL locale priority, reversible live switching without state loss, bilingual search, dialog/filter/zoom retention, all 96 card details, English battle and 4 viewports, curve, reload and blocked storage.');
+  } finally { await browser.close(); }
+})().catch(error => {console.error(error); process.exitCode = 1;});

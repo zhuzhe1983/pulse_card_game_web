@@ -1,6 +1,13 @@
 /* Electronics workstation. ImageGen bitmaps provide the physical surfaces;
    DOM text and state glows remain live, legible and accessible. */
 :root { --table-ink:#e4f0f2; --table-muted:#a0b9c2; --table-mint:#9ce7ed; }
+.menu-pop .language-toggle { width:100%; }
+html:lang(en) .minion.guard:after { content:'G'; }
+html:lang(en) .playcard .cname { font-size:12px; line-height:1.05; }
+html:lang(en) .playcard .detail { font-size:9px; line-height:1.2; }
+html:lang(en) .minion .mname { font-size:9px; overflow-wrap:anywhere; }
+html:lang(en) .minion .ribbon { font-size:6px; }
+html:lang(en) .hand-heading small { letter-spacing:0; }
 .arena { background:#12212b url('scene/raster-v1/tabletop.webp') center / 100% 100% no-repeat; }
 .arena:before,.arena:after { display:none; }
 .match-brand { left:6%; top:6.5%; }
@@ -9,6 +16,7 @@
 .menu-toggle,.log-toggle { top:6.5%; background:#142a35e8; border-color:#aacbd247; color:#d8e9ed; }
 .menu-toggle { right:calc(6% + 64px); }.log-toggle { right:6%; }
 .menu-pop { top:calc(6.5% + 48px); right:6%; background:#132631; }
+.log-panel { top:calc(6.5% + 48px); right:6%; max-height:65dvh; }
 .round-readout { top:5.6%; }
 .bays { left:6%; top:120px; }
 .mode-switch { left:6%; }
@@ -59,6 +67,13 @@
  .bays {top:100px;}.round-readout {top:30px;}
 }
 @media (max-width:800px) {
+ html:lang(en) .playcard .cname {font-size:10px;}
+ html:lang(en) .playcard .detail {font-size:8px;line-height:1.2;}
+ html:lang(en) .minion .mname {font-size:7px;}
+ html:lang(en) .minion .ribbon {font-size:5px;}
+ html:lang(en) .hand-heading small {font-size:8px;}
+ html:lang(en) .hand-count {font-size:8px;}
+ html:lang(en) .pile {grid-template-columns:38px;}
  .match-brand {left:6%;top:24px;}.match-brand>b {font-size:15px;}.match-brand small {font-size:7px;}
  .menu-toggle,.log-toggle {top:24px;min-height:32px;}.menu-toggle {right:calc(6% + 48px);}.log-toggle {right:6%;}
  .menu-pop,.log-panel {top:64px;right:10px;}.round-readout {top:62px;}
@@ -77,6 +92,10 @@
  .minion .mname {font-size:8px;}.minion .atk,.minion .hp {font-size:15px;}
 }
 @media (max-height:520px) and (min-width:600px) {
+ html:lang(en) .playcard .cname {font-size:9px;}
+ html:lang(en) .playcard .detail {font-size:8px;}
+ html:lang(en) .minion .mname {font-size:7px;}
+ html:lang(en) .minion .ribbon {font-size:5px;}
  .match-brand {top:14px;left:5%;}.menu-toggle,.log-toggle {top:12px;}
  .base-btn .core-name {top:25%!important;font-size:7px;}.base-btn .hp {bottom:22%!important;font-size:18px;}
  .hands .playcard {height:154px;width:103px;}.playcard .cname {font-size:10px;}.playcard .detail,.playcard.kind-main .detail {font-size:8px;}

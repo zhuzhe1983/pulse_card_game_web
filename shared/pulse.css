@@ -101,6 +101,9 @@ img { max-width: 100%; }
 .pulse-btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
 .pulse-btn.light { background: #eeede5; color: var(--ink); border: 1px solid #dbdbd1; }
 button:focus-visible, a:focus-visible { outline: 3px solid #eea03d; outline-offset: 3px; }
+.language-toggle { flex:0 0 auto; min-height:36px; padding:6px 12px; border:1px solid #81948d66; border-radius:7px; background:transparent; color:inherit; font:inherit; font-size:13px; cursor:pointer; }
+html:lang(en) .pulse-nav { gap:16px; }
+html:lang(en) .pulse-sub { letter-spacing:.04em; }
 @media (max-width: 720px) {
   .pulse-top { height: auto; min-height: 64px; padding: 10px 14px; flex-wrap: wrap; }
   .pulse-sub { display: none; }

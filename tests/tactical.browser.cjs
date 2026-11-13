@@ -12,7 +12,7 @@ fs.mkdirSync(output, { recursive: true });
 (async () => {
   const browser = await chromium.launch({ headless: true });
   try {
-    const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
+    const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce', locale: 'zh-CN' });
     const page = await context.newPage(), errors = [];
     page.on('pageerror', e => errors.push(e.message));
     page.on('response', r => { if (r.status() >= 400 && !r.url().endsWith('favicon.ico')) errors.push(`${r.status()} ${r.url()}`); });

@@ -1,5 +1,6 @@
 (function (root) {
   'use strict';
+  const I = globalThis.PULSEI18n;
   const C = root.PCGClash;
   const content = root.PCGClashContent;
   const pack = C.loadPack(content, root.PCGClashCapabilities);
@@ -314,19 +315,19 @@
       node.classList.toggle('selected', !!(ui.attacker && node.dataset.iid === ui.attacker));
     });
     const coachNode = document.querySelector('#coach');
-    if (coachNode) coachNode.textContent = coach();
+    if (coachNode) I.setText(coachNode, coach());
     const errorNode = document.querySelector('#last-error');
     if (errorNode) {
       errorNode.dataset.code = ui.error ? ui.error.code : '';
-      errorNode.textContent = ui.error ? ui.error.message : '';
+      I.setText(errorNode, ui.error ? ui.error.message : '');
     }
     const pads = document.querySelector('.pads');
-    if (pads) pads.innerHTML = actions();
+    if (pads) I.setHTML(pads, actions());
     const bottom = viewerBottom();
     const mine = document.querySelector('.slots.mine');
     const foe = document.querySelector('.slots.foe');
-    if (mine) mine.innerHTML = lane(bottom);
-    if (foe) foe.innerHTML = lane(1 - bottom);
+    if (mine) I.setHTML(mine, lane(bottom));
+    if (foe) I.setHTML(foe, lane(1 - bottom));
     applyMarks(null);
   }
 
@@ -347,7 +348,7 @@
     if (ui.linking) return ui.linkSource ? '点一台己方 ESP32 主控。费用 1。本回合第一次接上时当前供电 +1。' : '点一台己方上位机。零键和树莓台可以发动。';
     if (card && card.kind === 'main') return `准备打出${card.name}。双击排到最右，也可以点队列里的插入位置。本回合不能攻击，技能不受这个限制。`;
     if (card && card.effect === 'supply') return '打出后当前供电 +1，可以暂时高于上限。回合结束会清零。';
-    if (card && card.effect === 'heal_base') return '打出后己方基地恢复 4，不超过 20。';
+    if (card && card.effect === 'heal_base') return `打出后己方核心恢复 ${card.amount} 点生命，不超过 ${rules.baseLife}。`;
     if (card && card.effect === 'draw_one') return '积木开工：抽 1 张。手牌满了就亮出进墓地。';
     if (card && card.effect === 'retrieve_grave') return '记一笔：取回自己墓地最上面一张。墓地是空的也会消耗这张牌。';
     if (card && card.effect === 'arm_aiflow') return '说人话：本回合下一次打击 +2。已经武装时不能再打。';
@@ -715,10 +716,11 @@
       if (ui.poolFilter === 'service') return card.record_kind === 'game_service' || card.record_kind === 'design_only_host';
       return true;
     }).sort((a, b) => a.name.localeCompare(b.name, 'zh'));
-    $('#app').innerHTML = `<header class="top">
+    I.setHTML($('#app'), `<header class="top">
       <div class="brand"><b>PULSE</b><span>扩展组牌</span></div>
       <nav class="pulse-nav" data-shared-entry="clash-home"><a href="../../index.html">大厅</a><a href="../../wiki/index.html">图鉴</a><a href="./index.html">回合战</a></nav>
       <button type="button" class="btn" data-action="scenario" data-scenario="lesson">返回教学局</button>
+      ${I.control()}
     </header>
     <main class="builder" data-scenario="builder" data-ruleset="${esc(content.ruleset_id)}">
       <p class="balance">组一副练习牌库：每副 8 到 12 张，至少 4 张主控，同名 1 张，按选牌顺序抽取。设备卡、12 张技能和基线练习牌均可选择。这里使用新版数值，随机战仍使用独立的 30 张牌组。</p>
@@ -738,7 +740,7 @@
         const label = card.record_kind === 'game_service' ? '服务' : card.record_kind === 'design_only_host' ? '设计' : kindName(card.kind);
         return `<button type="button" class="${picked ? 'picked' : ''}" data-action="toggle-pool" data-card="${esc(card.template_id)}">${esc(card.name)} · ${card.cost}费 · ${label}${star ? ' · ' + star + '星' : ''}${card.growth_kind === 'chain' ? ' · 可升星' : ''}<br><span class="hint">${esc(card.game_description || card.role_note || '基线牌，没有 96 图')}</span></button>`;
       }).join('')}</div>
-    </main>`;
+    </main>`);
     document.body.dataset.ready = '1';
   }
 
@@ -756,7 +758,7 @@
     if (!arena) return;
     ghosts.forEach(ghost => {
       const holder = document.createElement('div');
-      holder.innerHTML = ghost.html;
+      I.setHTML(holder, ghost.html);
       const card = holder.firstElementChild;
       if (!card) return;
       card.classList.add('dying');
@@ -852,7 +854,7 @@
     const canEnd = canAct();
     ui.idleIds = ui.confirmEnd ? idleAttackers().map(unit => unit.iid) : [];
     const scenarios = [['versus', '固定教学'], ['sim', '模拟战'], ['lesson', '本地双人'], ['support-present', '小印已在场'], ['support-deploy', '先打出小印'], ['support-again', '厚壳再死'], ['promote-stamp', '小印升星'], ['grow', '超过五台'], ['crowd', '两边七台'], ['synergy', '协同与夺舍'], ['tactics', '技能演练'], ['builder', '扩展组牌']];
-    $('#app').innerHTML = `<div class="table-page">
+    I.setHTML($('#app'), `<div class="table-page">
     <div class="match-brand"><b>P</b><span>PULSE<small>脉冲对决</small></span></div>
     <button type="button" class="menu-toggle" data-action="toggle-menu" aria-expanded="${ui.menu ? 'true' : 'false'}">菜单</button>
     <div class="menu-pop"${ui.menu ? '' : ' hidden'}>
@@ -864,6 +866,7 @@
       </nav>
       <button type="button" data-action="toggle-reveal" aria-pressed="${ui.reveal}">${ui.reveal ? '遮住对方手牌' : '教学明牌'}</button>
       <button type="button" data-action="restart">重新开局</button>
+      ${I.control()}
       <p class="menu-note">核心 30 · 7 个主控位 · 16 主控 / 10 技能 / 4 配件</p>
       <div class="scenario-row">${scenarios.map(([id, label]) => `<button type="button" data-action="scenario" data-scenario="${id}">${label}</button>`).join('')}</div>
       <div class="nfc-dock">${nfcControl()}${nfcPanel()}</div>
@@ -914,7 +917,7 @@
         <ol id="action-log" class="log">${ui.log.slice().reverse().map(item => `<li${item.code ? ` class="bad" data-error-code="${esc(item.code)}"` : ''}>${esc(item.text)}</li>`).join('') || '<li>还没有记录</li>'}</ol>
       </aside>
     </main>
-    </div>`;
+    </div>`);
     mountGhosts(ghosts);
     ui.seen = new Set(game.boards.flat().filter(Boolean).map(unit => unit.iid));
     ui.fx = null;
@@ -986,7 +989,7 @@
     if (!rect || rect.left == null) return;
     const node = document.createElement('div');
     node.className = 'dmg-float';
-    node.textContent = text;
+    I.setText(node, text);
     node.style.left = (rect.left + rect.width / 2) + 'px';
     node.style.top = (rect.top + 6) + 'px';
     document.body.appendChild(node);
@@ -1071,7 +1074,7 @@
   async function showAiCard(card) {
     const node = document.createElement('div');
     node.className = 'ai-showcard';
-    node.innerHTML = `<div>${esc(card.name)}</div><div>${card.cost}费</div>`;
+    I.setHTML(node, `<div>${esc(card.name)}</div><div>${card.cost}费</div>`);
     document.body.appendChild(node);
     await sleep(motion().show);
     node.remove();
@@ -1097,7 +1100,7 @@
     }
     const node = document.createElement('div');
     node.className = 'fx-caption';
-    node.textContent = caption;
+    I.setText(node, caption);
     document.body.appendChild(node);
     nodes.push(node);
     await sleep(motion().lunge);
@@ -1286,7 +1289,7 @@
     if (ui.animating) return;
     if (el && el.dataset && el.dataset.block) {
       const why = el.querySelector('.act-why');
-      return note(new C.ClashError(why ? why.textContent : C.reasonText(el.dataset.block), el.dataset.block));
+      return note(new C.ClashError(why ? I.source(why) : C.reasonText(el.dataset.block), el.dataset.block));
     }
     const free = ['mode', 'toggle-menu', 'toggle-log', 'scenario', 'restart', 'handoff-confirm', 'replay-seed'];
     if ((ui.aiBusy || ui.handoff || (ui.mode === 'ai' && game && game.seat !== 0)) && !free.includes(action)) {
@@ -1606,14 +1609,14 @@
       }
       const badge = document.createElement('span');
       badge.className = 'trade';
-      badge.textContent = text;
-      badge.title = title;
+      I.setText(badge, text);
+      I.setAttr(badge, 'title', title);
       node.appendChild(badge);
     });
     const reasonNode = document.querySelector('#last-error');
     if (!ui.error && reasonNode && marks.reason.code && !marks.legal.size) {
       reasonNode.dataset.code = marks.reason.code;
-      reasonNode.textContent = marks.reason.text;
+      I.setText(reasonNode, marks.reason.text);
     }
     if (bad && bad.key && !marks.legal.has(bad.key)) {
       const node = markHost(bad.key);
@@ -1621,7 +1624,7 @@
         node.dataset.mark = 'bad';
         const badge = document.createElement('div');
         badge.className = 'reject-badge';
-        badge.innerHTML = `<span class="cross" aria-hidden="true">×</span><span class="why">${esc(bad.text)}</span>`;
+        I.setHTML(badge, `<span class="cross" aria-hidden="true">×</span><span class="why">${esc(bad.text)}</span>`);
         node.appendChild(badge);
       }
     }
@@ -1749,7 +1752,7 @@
     }
     const peek = document.createElement('div');
     peek.className = 'peek';
-    peek.textContent = `${card.name} · ${detail} · 只查看，不出牌`;
+    I.setText(peek, `${card.name} · ${detail} · 只查看，不出牌`);
     document.body.appendChild(peek);
     setTimeout(() => peek.remove(), 1200);
   }
@@ -1769,7 +1772,7 @@
     if (document.querySelector('.drag-ghost')) return;
     const ghost = document.createElement('div');
     ghost.className = 'drag-ghost';
-    ghost.textContent = label;
+    I.setText(ghost, label);
     document.body.appendChild(ghost);
     dragNodes.push(ghost);
     if (attack && gesture) {
@@ -1806,7 +1809,7 @@
       ui.handIndex = gesture.handIndex;
       ui.attacker = null;
       const laneEl = document.querySelector(game.seat === viewerBottom() ? '.slots.mine' : '.slots.foe');
-      if (laneEl) laneEl.innerHTML = lane(game.seat);
+      if (laneEl) I.setHTML(laneEl, lane(game.seat));
       const card = selectedCard();
       ensureGhost(card ? card.name : '牌', !!(card && wantsTarget(card)));
     } else if (gesture.kind === 'knob') {
