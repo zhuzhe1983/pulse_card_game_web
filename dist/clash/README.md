@@ -7,3 +7,5 @@
 菜单可切换随机人机、固定教学、本地双人和技能演练。点选或拖拽出牌，Escape 取消选择。原点数游戏入口已经跳转新版，旧代码保存在 `archive/pre-tactical-20261113`。
 
 已做自动规则与浏览器检查，尚待真人平衡试玩和实体手机/NFC 验证。
+
+当前视觉为电子工作台位图 UI，使用内置 ImageGen 生成的背景、模块卡框、核心、按钮、卡背及 12 张技能插画。运行素材在 scene/raster-v1/；PNG 原稿只保存在 src/clash/scene/raster-v1/source/，完整提示词见 manifest.json。

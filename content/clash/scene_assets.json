@@ -1,15 +1,32 @@
 {
   "status": "ready",
   "slots": {
-    "arena_background": "scene/pulse-arena-bg-16x9.webp",
-    "core_frame": "scene/ui/core-portrait-frame-a.webp",
-    "core_frame_small": "scene/ui/core-portrait-frame-b.webp",
-    "unit_frame": "scene/ui/device-card-frame-c.webp",
-    "hand_frame": "scene/ui/device-card-frame-b.webp",
-    "end_turn": "scene/ui/end-turn-button-primary.webp",
-    "end_turn_compact": "scene/ui/end-turn-button-compact.webp",
+    "arena_background": "scene/raster-v1/tabletop.webp",
+    "core_frame": "scene/raster-v1/core-frame.webp",
+    "core_frame_small": "scene/raster-v1/core-frame.webp",
+    "unit_frame": "scene/raster-v1/unit-frame.webp",
+    "hand_frame": "scene/raster-v1/hand-frame.webp",
+    "end_turn": "scene/raster-v1/turn-button.webp",
+    "end_turn_compact": "scene/raster-v1/turn-button.webp",
     "lamp_cost": "scene/ui/lamp-cost-cyan.webp",
     "lamp_attack": "scene/ui/lamp-attack-amber.webp",
-    "lamp_durability": "scene/ui/lamp-durability-teal.webp"
+    "lamp_durability": "scene/ui/lamp-durability-teal.webp",
+    "card_back": "scene/raster-v1/card-back.webp"
+  },
+  "theme": "electronics-workbench",
+  "generator": "built-in image_gen",
+  "spell_art": {
+    "pulse_bolt": "scene/raster-v1/pulse_bolt.webp",
+    "arc_wave": "scene/raster-v1/arc_wave.webp",
+    "emergency_stop": "scene/raster-v1/emergency_stop.webp",
+    "factory_reset": "scene/raster-v1/factory_reset.webp",
+    "safe_shutdown": "scene/raster-v1/safe_shutdown.webp",
+    "repair_protocol": "scene/raster-v1/repair_protocol.webp",
+    "overclock": "scene/raster-v1/overclock.webp",
+    "cache_read": "scene/raster-v1/cache_read.webp",
+    "uiflow_blocks": "scene/raster-v1/uiflow_blocks.webp",
+    "ezdata_note": "scene/raster-v1/ezdata_note.webp",
+    "aiflow_say": "scene/raster-v1/aiflow_say.webp",
+    "burner_seize": "scene/raster-v1/burner_seize.webp"
   }
 }

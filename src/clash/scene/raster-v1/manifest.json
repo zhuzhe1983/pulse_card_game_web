@@ -1,0 +1,151 @@
+{
+  "theme": "electronics-workbench",
+  "generated_by": "built-in image_gen",
+  "encoding": "WebP quality 86; full resolution; alpha quality 100; PNG originals in source/",
+  "assets": [
+    {
+      "id": "tabletop",
+      "source_file": "/Users/zhuzhe/.codex/generated_images/01a1d3c1-accf-7b51-ace6-647b02105fbc/exec-630f7417-bd43-4bf1-baa6-947b3614e0cf.png",
+      "file": "scene/raster-v1/tabletop.webp",
+      "mode": "built-in image_gen",
+      "prompt": "Use case: stylized-concept. Asset type: production full-screen raster game-board background for PULSE, a card battler between ESP development boards and small electronic modules. Theme is a premium electronics prototyping workstation, NOT fantasy, tavern, steampunk or wood. Top-down orthographic camera, landscape 16:10. Spacious center, 82% of image, is a quiet deep graphite-blue anti-static silicone work mat, soft tactile microtexture, extremely faint precision grid. The outermost left/right 5%, top 5%, bottom 7% form a sophisticated physical chassis of satin anodized aluminum and off-white injection-molded ABS, black rubber seals, recessed screws, short exposed copper PCB traces behind narrow dark-green soldermask strips, tiny restrained cyan and amber diagnostic LEDs, a few small modular electrical connector details restricted to far corners. Corners have precise chamfers and layered mechanical depth, no gold decoration. Lighting is soft studio overhead, gentle cool reflections, photographic material detail with polished hand-painted videogame rendering. Rich readable materials, actual bitmap illustration. Central playing area must stay unobstructed and low contrast: no cards, no sockets, no circles, no built-in unit positions, no large circuit diagram or divider. Background fills full canvas edge to edge. No people, characters, devices in the center, letters, numbers, text, branding, watermark, wood, leather, brass, gold, riveted fantasy trim, flat vector art or UI screenshot.",
+      "original": "source/tabletop.png"
+    },
+    {
+      "id": "hand-frame",
+      "source_file": "/Users/zhuzhe/.codex/generated_images/01a1d3c1-accf-7b51-ace6-647b02105fbc/exec-81c1372e-f85b-46a8-b8df-b429f30c9096.png",
+      "file": "scene/raster-v1/hand-frame.webp",
+      "mode": "built-in image_gen",
+      "prompt": "Use case: stylized-concept. Production bitmap UI asset for PULSE, a game about ESP development boards and electronic modules. Electronics prototyping workstation visual language. Premium hand-painted 3D game rendering with realistic injection-molded off-white ABS, graphite rubber seals, satin aluminum chamfers, dark-green PCB with short copper traces, restrained cyan/amber LEDs. No wood, leather, parchment, brass, gold, fantasy ornaments, letters, text, numerals, logos or watermark. Clean orthographic front view, no perspective. True transparent exterior. Single portrait playing-card skin, 3:4 proportions. Object fills 96% width and 96% height. Off-white ABS modular cartridge casing with narrow aluminum edges and four small screws. Large rectangular illustration window in upper portion x=9..91%, y=9..53%, completely transparent inside. Lower portion y=56..94% is an opaque pale warm-grey clean matte label panel for dark card name and 3 lines of rules overlaid by software; do not put anything on it. Tiny cyan light and copper trace accents limited to outer edge. A small empty cyan rounded cost socket at upper-left corner, within card silhouette. Two very small empty stat sockets inset at bottom corners, left amber, right pale cyan. Make a beautifully tactile collectible electronic cartridge, not an app panel. One object only.",
+      "original": "source/hand-frame.png"
+    },
+    {
+      "id": "unit-frame",
+      "source_file": "/Users/zhuzhe/.codex/generated_images/01a1d3c1-accf-7b51-ace6-647b02105fbc/exec-75f5e258-12a9-4c0f-a65a-2abcf477e0a8.png",
+      "file": "scene/raster-v1/unit-frame.webp",
+      "mode": "built-in image_gen",
+      "prompt": "Use case: stylized-concept. Production bitmap UI asset for PULSE, a game about ESP development boards and electronic modules. Electronics prototyping workstation visual language. Premium hand-painted 3D game rendering with realistic injection-molded off-white ABS, graphite rubber seals, satin aluminum chamfers, dark-green PCB with short copper traces, restrained cyan/amber LEDs. No wood, leather, parchment, brass, gold, fantasy ornaments, letters, text, numerals, logos or watermark. Clean orthographic front view, no perspective. True transparent exterior. Single compact portrait unit frame, 4:5 proportions. A chunky off-white ABS device-module carrier, subtle aluminum side rails and chamfered corners. Large empty transparent display window x=12..88%, y=9..65% for an actual device portrait. Bottom 25% is clean opaque pale grey label strip for a short name and stats added by software. Two empty small circular inset status sockets at bottom corners, amber left and cyan right. Tiny cyan status LED on upper right rim, four micro screws. Object fills 96% width and 96% height. One frame only, no other components.",
+      "original": "source/unit-frame.png"
+    },
+    {
+      "id": "core-frame",
+      "source_file": "/Users/zhuzhe/.codex/generated_images/01a1d3c1-accf-7b51-ace6-647b02105fbc/exec-b34173d2-706e-440b-a761-8bd892a9c9da.png",
+      "file": "scene/raster-v1/core-frame.webp",
+      "mode": "built-in image_gen",
+      "prompt": "Use case: stylized-concept. Production bitmap UI asset for PULSE, a game about ESP development boards and electronic modules. Electronics prototyping workstation visual language. Premium hand-painted 3D game rendering with realistic injection-molded off-white ABS, graphite rubber seals, satin aluminum chamfers, dark-green PCB with short copper traces, restrained cyan/amber LEDs. No wood, leather, parchment, brass, gold, fantasy ornaments, letters, text, numerals, logos or watermark. Clean orthographic front view, no perspective. True transparent exterior. Single square player-core power module for a game HUD, centered, covers 94% canvas. A substantial rounded square white ABS enclosure with chamfered satin aluminum corners, a few micro screws and a thin glowing cyan perimeter. Its center is a large empty near-black graphite glass display occupying 68% width and height, quiet and uniformly dark for player label and large life total rendered by software. Small exposed PCB pins confined to two outer sides, tiny amber diagnostic LED at lower edge. Strong physical depth, clear silhouette. No central chip, no icon, no ticks, no writing. One module only.",
+      "original": "source/core-frame.png"
+    },
+    {
+      "id": "turn-button",
+      "source_file": "/Users/zhuzhe/.codex/generated_images/01a1d3c1-accf-7b51-ace6-647b02105fbc/exec-1f3cc7cf-31dd-4476-8793-15eee54ccdcc.png",
+      "file": "scene/raster-v1/turn-button.webp",
+      "mode": "built-in image_gen",
+      "prompt": "Use case: stylized-concept. Production bitmap UI asset for PULSE, a game about ESP development boards and electronic modules. Electronics prototyping workstation visual language. Premium hand-painted 3D game rendering with realistic injection-molded off-white ABS, graphite rubber seals, satin aluminum chamfers, dark-green PCB with short copper traces, restrained cyan/amber LEDs. No wood, leather, parchment, brass, gold, fantasy ornaments, letters, text, numerals, logos or watermark. Clean orthographic front view, no perspective. True transparent exterior. Single isolated landscape button, 3:1 proportions, object fills 96% canvas width and 88% height. A physical jade-cyan illuminated rectangular pushbutton keycap seated in off-white ABS housing with graphite gasket and precise aluminum edge. Broad clean pale cyan center, 70% width, completely blank for dark Chinese text added by software. Tiny amber light at far right, subtle recessed screw at each far end. Restrained convex keycap shading, premium tactile electronics hardware. One button only, all edges in view.",
+      "original": "source/turn-button.png"
+    },
+    {
+      "id": "card-back",
+      "source_file": "/Users/zhuzhe/.codex/generated_images/01a1d3c1-accf-7b51-ace6-647b02105fbc/exec-066ae2b9-85b9-4721-a08a-8b7c398537f0.png",
+      "file": "scene/raster-v1/card-back.webp",
+      "mode": "built-in image_gen",
+      "prompt": "Use case: stylized-concept. Single finished portrait card-back bitmap for PULSE, ESP development-board combat, aspect 3:4. Orthographic top-down. A premium off-white ABS cartridge with graphite gasket, satin aluminum beveled rim and tiny corner screws, centered, fills 96% of canvas. Entire inner face is dark-green PCB with elegant symmetric copper traces radiating out from one large unmarked black square microcontroller, thin cyan status lights and precision solder pads. Strong recognizable silhouette and restrained depth. All interior opaque. True transparent exterior. No text, letters, numbers, logos, fantasy decorations, wood, brass, leather or vector art. Same high-quality hand-painted 3D materials as an electronics workstation game.",
+      "original": "source/card-back.png"
+    },
+    {
+      "id": "pulse_bolt",
+      "source_file": "/Users/zhuzhe/.codex/generated_images/01a1d3c1-accf-7b51-ace6-647b02105fbc/exec-0c13984e-2fa4-42bf-beff-753aa37b782c.png",
+      "file": "scene/raster-v1/pulse_bolt.webp",
+      "mode": "built-in image_gen",
+      "prompt": "Use case: stylized-concept. Asset type: one complete rectangular landscape 4:3 spell-card illustration for PULSE, ESP development-board and electronic-module combat. Premium painterly 3D game illustration with crisp focal object, convincing PCB, silicon, solder, metal and ABS materials; dramatic localized energy light; clear readable silhouette at a 120-pixel thumbnail. The composition is close-up and fills the image, with key action centered and margin for cropping at the edges. No UI, frames, typography, letters, numerals, logos, watermark, people, medieval or fantasy props, wood or vector icons. No transparency. This depicts an imaginative game action, not a schematic or factual product photo. A small copper induction coil on a compact black-and-white microcontroller module discharges one intense cyan electrical bolt into a dark-green chip at right. Sharp branching plasma, orange solder-point reflections, deep navy backdrop. Readable single-target electromagnetic strike.",
+      "original": "source/pulse_bolt.png"
+    },
+    {
+      "id": "arc_wave",
+      "source_file": "/Users/zhuzhe/.codex/generated_images/01a1d3c1-accf-7b51-ace6-647b02105fbc/exec-f5c7c126-aace-4a2d-af1c-794bebca3215.png",
+      "file": "scene/raster-v1/arc_wave.webp",
+      "mode": "built-in image_gen",
+      "prompt": "Use case: stylized-concept. Asset type: one complete rectangular landscape 4:3 spell-card illustration for PULSE, ESP development-board and electronic-module combat. Premium painterly 3D game illustration with crisp focal object, convincing PCB, silicon, solder, metal and ABS materials; dramatic localized energy light; clear readable silhouette at a 120-pixel thumbnail. The composition is close-up and fills the image, with key action centered and margin for cropping at the edges. No UI, frames, typography, letters, numerals, logos, watermark, people, medieval or fantasy props, wood or vector icons. No transparency. This depicts an imaginative game action, not a schematic or factual product photo. An electromagnetic shockwave expands from a luminous central capacitor, sweeping across three small dark-green development boards in a shallow semicircle. Blue-white energy ring, violet fringes, tiny suspended components, cool slate background. Clearly a wide-area electrical wave, not fire.",
+      "original": "source/arc_wave.png"
+    },
+    {
+      "id": "emergency_stop",
+      "source_file": "/Users/zhuzhe/.codex/generated_images/01a1d3c1-accf-7b51-ace6-647b02105fbc/exec-9262d523-7c17-498b-80ad-dabbe1ef10f3.png",
+      "file": "scene/raster-v1/emergency_stop.webp",
+      "mode": "built-in image_gen",
+      "prompt": "Use case: stylized-concept. Asset type: one complete rectangular landscape 4:3 spell-card illustration for PULSE, ESP development-board and electronic-module combat. Premium painterly 3D game illustration with crisp focal object, convincing PCB, silicon, solder, metal and ABS materials; dramatic localized energy light; clear readable silhouette at a 120-pixel thumbnail. The composition is close-up and fills the image, with key action centered and margin for cropping at the edges. No UI, frames, typography, letters, numerals, logos, watermark, people, medieval or fantasy props, wood or vector icons. No transparency. This depicts an imaginative game action, not a schematic or factual product photo. A satisfying chunky red emergency-stop pushbutton pressed down on a small graphite control module; a nearby white ABS development board is arrested inside cold cyan crystalline energy. Red button is primary focal point, icy blue circuit sparks taper to stillness. Technical tabletop, tight cinematic crop.",
+      "original": "source/emergency_stop.png"
+    },
+    {
+      "id": "factory_reset",
+      "source_file": "/Users/zhuzhe/.codex/generated_images/01a1d3c1-accf-7b51-ace6-647b02105fbc/exec-69722388-1f4a-45b4-be30-45b99d577d96.png",
+      "file": "scene/raster-v1/factory_reset.webp",
+      "mode": "built-in image_gen",
+      "prompt": "Use case: stylized-concept. Asset type: one complete rectangular landscape 4:3 spell-card illustration for PULSE, ESP development-board and electronic-module combat. Premium painterly 3D game illustration with crisp focal object, convincing PCB, silicon, solder, metal and ABS materials; dramatic localized energy light; clear readable silhouette at a 120-pixel thumbnail. The composition is close-up and fills the image, with key action centered and margin for cropping at the edges. No UI, frames, typography, letters, numerals, logos, watermark, people, medieval or fantasy props, wood or vector icons. No transparency. This depicts an imaginative game action, not a schematic or factual product photo. A compact ivory ABS microcontroller module suspended in a circular stream of cyan binary-like particles WITHOUT any literal digits or text. Its dark screen relights while one physical USB cable curves smoothly around the device in a returning loop. Small disassembled parts reassemble, blue-green reinitialization energy. Deep teal background.",
+      "original": "source/factory_reset.png"
+    },
+    {
+      "id": "safe_shutdown",
+      "source_file": "/Users/zhuzhe/.codex/generated_images/01a1d3c1-accf-7b51-ace6-647b02105fbc/exec-cf567f3b-e1e5-4585-8911-2f431e761653.png",
+      "file": "scene/raster-v1/safe_shutdown.webp",
+      "mode": "built-in image_gen",
+      "prompt": "Use case: stylized-concept. One finished rectangular landscape 4:3 spell-card illustration for PULSE, a battle game of ESP development boards and electronic modules. Premium painterly 3D videogame art, realistic PCB, silicon, solder, metal and ABS materials, dramatic localized energy lighting. A crisp large focal object and readable action even at 120-pixel thumbnail. Close-up composition fills canvas, central action safe from edge cropping. No UI, card frame, typography, letters, numerals, branding, watermark, people, fantasy medieval props, wood or vector icon. No transparency. This is imaginative game art, not a factual product schematic. A heavy miniature safety contactor opens its two copper power contacts above a large dark microcontroller; an intense orange-white electrical current is cleanly cut at the gap. The chip beneath falls into darkness, a tiny red indicator lights on the switch. Strong orange-red versus charcoal, decisive clean cutoff, no explosion. Diagonal mechanical switch is the focal object.",
+      "original": "source/safe_shutdown.png"
+    },
+    {
+      "id": "repair_protocol",
+      "source_file": "/Users/zhuzhe/.codex/generated_images/01a1d3c1-accf-7b51-ace6-647b02105fbc/exec-03025577-fa60-45b2-b112-f0d2bca88af4.png",
+      "file": "scene/raster-v1/repair_protocol.webp",
+      "mode": "built-in image_gen",
+      "prompt": "Use case: stylized-concept. One finished rectangular landscape 4:3 spell-card illustration for PULSE, a battle game of ESP development boards and electronic modules. Premium painterly 3D videogame art, realistic PCB, silicon, solder, metal and ABS materials, dramatic localized energy lighting. A crisp large focal object and readable action even at 120-pixel thumbnail. Close-up composition fills canvas, central action safe from edge cropping. No UI, card frame, typography, letters, numerals, branding, watermark, people, fantasy medieval props, wood or vector icon. No transparency. This is imaginative game art, not a factual product schematic. A precision soldering iron tip and tiny silver solder bead repair a clearly cracked dark-green PCB. Bright new copper bridge closes the fracture and fresh emerald/cyan life lights flow along restored traces. A small off-white ESP-style module in background powers on. Macro craftsmanship, satisfying sense of recovery, pale mint light and warm solder glint, no hands.",
+      "original": "source/repair_protocol.png"
+    },
+    {
+      "id": "overclock",
+      "source_file": "/Users/zhuzhe/.codex/generated_images/01a1d3c1-accf-7b51-ace6-647b02105fbc/exec-4d51a8b9-1ab8-43f0-9f7e-c358416ba400.png",
+      "file": "scene/raster-v1/overclock.webp",
+      "mode": "built-in image_gen",
+      "prompt": "Use case: stylized-concept. One finished rectangular landscape 4:3 spell-card illustration for PULSE, a battle game of ESP development boards and electronic modules. Premium painterly 3D videogame art, realistic PCB, silicon, solder, metal and ABS materials, dramatic localized energy lighting. A crisp large focal object and readable action even at 120-pixel thumbnail. Close-up composition fills canvas, central action safe from edge cropping. No UI, card frame, typography, letters, numerals, branding, watermark, people, fantasy medieval props, wood or vector icon. No transparency. This is imaginative game art, not a factual product schematic. A powerful central black microcontroller on a small development board radiates concentrated orange-red energy through copper traces, a compact silver heatsink glows from beneath, several bright electric streaks race outward. Dynamic radial acceleration and controlled thermal glow, intense red/orange center against deep blue-black technical background. The chip is large and unmistakable.",
+      "original": "source/overclock.png"
+    },
+    {
+      "id": "cache_read",
+      "source_file": "/Users/zhuzhe/.codex/generated_images/01a1d3c1-accf-7b51-ace6-647b02105fbc/exec-a9a99e54-dc46-42e8-878e-725251611ff3.png",
+      "file": "scene/raster-v1/cache_read.webp",
+      "mode": "built-in image_gen",
+      "prompt": "Use case: stylized-concept. One finished rectangular landscape 4:3 spell-card illustration for PULSE, a battle game of ESP development boards and electronic modules. Premium painterly 3D videogame art, realistic PCB, silicon, solder, metal and ABS materials, dramatic localized energy lighting. A crisp large focal object and readable action even at 120-pixel thumbnail. Close-up composition fills canvas, central action safe from edge cropping. No UI, card frame, typography, letters, numerals, branding, watermark, people, fantasy medieval props, wood or vector icon. No transparency. This is imaginative game art, not a factual product schematic. Two stacked black memory chips with silver pins hover above a small dark-green board. Two organized streams of glowing violet and blue rectangular data tiles emerge from the chips into the air, with no characters or digits. Crystal-clear twin-chip focal point, precise parallel flow, rich purple/cyan lighting and cool metallic reflections.",
+      "original": "source/cache_read.png"
+    },
+    {
+      "id": "uiflow_blocks",
+      "source_file": "/Users/zhuzhe/.codex/generated_images/01a1d3c1-accf-7b51-ace6-647b02105fbc/exec-587da62c-ea6d-4ac5-9acf-858bf052be6d.png",
+      "file": "scene/raster-v1/uiflow_blocks.webp",
+      "mode": "built-in image_gen",
+      "prompt": "Use case: stylized-concept. One rectangular landscape 4:3 finished spell-card illustration for PULSE, a card battler of ESP development boards and electronic modules. Premium painterly 3D game art, believable PCB, chip, solder, aluminum and off-white ABS materials. Tight close-up with one unmistakable focal action, readable at small thumbnail size. Localized luminous energy highlights against a quieter technical background. Fill the canvas, keep focal action centered. No frames, UI, letters, numbers, words, logos, watermark, people, wood, fantasy props or vector icons. Not a literal product claim. Four colorful translucent modular logic blocks interlock physically on a small green microcontroller PCB; amber input block feeds cyan, green and violet blocks through glowing copper circuit paths, the final block is lifting into place. A satisfying visual-programming construction with real electronics underneath, soft blue studio darkness.",
+      "original": "source/uiflow_blocks.png"
+    },
+    {
+      "id": "ezdata_note",
+      "source_file": "/Users/zhuzhe/.codex/generated_images/01a1d3c1-accf-7b51-ace6-647b02105fbc/exec-407376d3-e106-4791-9ff5-88ec0df19669.png",
+      "file": "scene/raster-v1/ezdata_note.webp",
+      "mode": "built-in image_gen",
+      "prompt": "Use case: stylized-concept. One rectangular landscape 4:3 finished spell-card illustration for PULSE, a card battler of ESP development boards and electronic modules. Premium painterly 3D game art, believable PCB, chip, solder, aluminum and off-white ABS materials. Tight close-up with one unmistakable focal action, readable at small thumbnail size. Localized luminous energy highlights against a quieter technical background. Fill the canvas, keep focal action centered. No frames, UI, letters, numbers, words, logos, watermark, people, wood, fantasy props or vector icons. Not a literal product claim. A single silver-and-black removable memory module is recovered from a small open graphite archive cartridge; warm amber data particles stream back into the module along a curved ribbon. Tactile gold connector contacts, cyan memory cells, precise recessed PCB details. Clear retrieval and recall, amber focal object in deep blue environment.",
+      "original": "source/ezdata_note.png"
+    },
+    {
+      "id": "aiflow_say",
+      "source_file": "/Users/zhuzhe/.codex/generated_images/01a1d3c1-accf-7b51-ace6-647b02105fbc/exec-d8c48452-2489-4d22-9dea-bc9249d11e03.png",
+      "file": "scene/raster-v1/aiflow_say.webp",
+      "mode": "built-in image_gen",
+      "prompt": "Use case: stylized-concept. One rectangular landscape 4:3 finished spell-card illustration for PULSE, a card battler of ESP development boards and electronic modules. Premium painterly 3D game art, believable PCB, chip, solder, aluminum and off-white ABS materials. Tight close-up with one unmistakable focal action, readable at small thumbnail size. Localized luminous energy highlights against a quieter technical background. Fill the canvas, keep focal action centered. No frames, UI, letters, numbers, words, logos, watermark, people, wood, fantasy props or vector icons. Not a literal product claim. A tiny ivory ABS voice module with a round black speaker grille and small microphone broadcasts a strong luminous cyan sound wave that curls into one concentrated energy pulse. Detailed chip and copper traces visible under a lifted translucent side plate. Warm orange status light, crisp teal waveform with no characters or symbols.",
+      "original": "source/aiflow_say.png"
+    },
+    {
+      "id": "burner_seize",
+      "source_file": "/Users/zhuzhe/.codex/generated_images/01a1d3c1-accf-7b51-ace6-647b02105fbc/exec-b0558aec-0aab-45d1-870c-474cf409e8b4.png",
+      "file": "scene/raster-v1/burner_seize.webp",
+      "mode": "built-in image_gen",
+      "prompt": "Use case: stylized-concept. One rectangular landscape 4:3 finished spell-card illustration for PULSE, a card battler of ESP development boards and electronic modules. Premium painterly 3D game art, believable PCB, chip, solder, aluminum and off-white ABS materials. Tight close-up with one unmistakable focal action, readable at small thumbnail size. Localized luminous energy highlights against a quieter technical background. Fill the canvas, keep focal action centered. No frames, UI, letters, numbers, words, logos, watermark, people, wood, fantasy props or vector icons. Not a literal product claim. A compact USB programming tool connected by a glowing purple cable takes control of another small development-board module: violet light travels through the cable into the target chip, replacing its amber glow. Two small boards at opposite ends of the clear cable, one foreground dominant target, deep indigo background. Tactile black USB plug, green PCB, silver RF shield and off-white shell, energetic but no fire.",
+      "original": "source/burner_seize.png"
+    }
+  ]
+}

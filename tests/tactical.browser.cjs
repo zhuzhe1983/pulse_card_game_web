@@ -17,7 +17,10 @@ fs.mkdirSync(output, { recursive: true });
     page.on('pageerror', e => errors.push(e.message));
     page.on('response', r => { if (r.status() >= 400 && !r.url().endsWith('favicon.ico')) errors.push(`${r.status()} ${r.url()}`); });
     const state = () => page.evaluate(() => JSON.parse(window.render_game_to_text()));
-    const ready = () => page.waitForFunction(() => document.body.dataset.ready === '1' && document.body.dataset.animating !== '1');
+    const ready = async () => {
+      await page.waitForFunction(() => document.body.dataset.ready === '1' && document.body.dataset.animating !== '1');
+      await page.evaluate(() => Promise.all(Array.from(document.images, img => img.decode())));
+    };
     const reset = async scenario => { await page.goto(`${base}/dist/clash/?scenario=${scenario || 'tactics'}`); await ready(); };
     const select = async id => { const card = page.locator(`.hands [data-action="select-hand"][data-card="${id}"]`); await card.scrollIntoViewIfNeeded(); await card.click(); };
     const target = id => page.locator(`.slots.foe .minion[data-card="${id}"]`);

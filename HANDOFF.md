@@ -8,7 +8,8 @@
 - `content/clash/clash_tactics.json`：12 张技能；`clash_roster_96.json` 保留设备映射。
 - `src/clash/engine.js`：唯一网页裁判、构筑与公开信息 AI。prompt 的 `reference/clash.js` 是其同步副本，两者必须字节一致。
 - `src/clash/app.js`：操作、模式、AI 时序和测试状态；`nfc.js`：当前 NFC 适配。
-- `src/clash/tactical.css`：本版视觉覆盖；`style.css` 仍承载结构、目标标记和动画。
+- `src/clash/raster.css`：电子工作台位图皮肤；`tactical.css` 承载布局，`style.css` 承载结构、目标标记和动画。
+- `src/clash/scene/raster-v1/`：ImageGen 生成的 6 个界面组件和 12 张技能插画；manifest 保留提示词，source/ 保留 PNG 原稿。构建仅复制运行资产，不复制 source/。
 - `wiki/data/design-pack.json`：基线牌表加 balance 覆盖的生成结果；产品原图不改。
 - `dist/clash/`：生成页面；需要根目录下的 `wiki/`、`shared/` 配套资源。
 - `src/readers.js`、`firmware/`、`dist/flash.html`：独立保留的硬件资产，本轮没有改固件。

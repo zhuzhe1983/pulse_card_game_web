@@ -12,6 +12,8 @@ python3 tools/serve.py --port 8002
 
 点牌后选择目标，或拖拽到合法目标；无目标技能点“打出”。点己方主控再点敌方主控/核心可以攻击。菜单可切换随机人机、固定教学、本地双人、技能演练和组牌练习。随机战可重放种子，本地双人交接后当前玩家在下方。当前版不提供联网对战、账号收藏或跨设备存档。
 
+视觉采用电子工作台：防静电垫、ABS 模块外壳、铝边、PCB 走线和状态灯。内置 ImageGen 生成了 6 个位图界面组件与 12 张技能插画；[素材清单与完整提示词](src/clash/scene/raster-v1/manifest.json)和 PNG 原稿保存在源码目录，网页加载 WebP。具体规范见 [位图 UI](docs/RASTER_UI_V1.md)。
+
 规则与数值见 [新版规格](docs/TACTICAL_V1.md)，复审依据见 [评估报告](docs/REVIEW_20261113.md)，实现入口和测试见 [HANDOFF.md](HANDOFF.md)。规格仓库是隔壁 `pulse_card_game_prompt`，两边的战术配置和参考引擎保持一致。当前状态为已实现、待真人试玩，不代表竞技平衡完成。
 
 旧昆特式点数游戏已移出主线，保存在本地分支 `archive/pre-tactical-20261113`。旧 `/dist/` 入口跳转新版。独立读卡器适配器与 M5Dial 固件仍保留，但不等于已经与当前牌桌全部打通或通过实机验证；边界见 [READERS.md](docs/READERS.md)。

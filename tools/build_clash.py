@@ -35,7 +35,7 @@ def art_map():
     return json.dumps(out, ensure_ascii=False, separators=(',', ':')).replace('<', '\\u003c')
 
 replacements = {
-    '/*__CLASH_CSS__*/': (root / 'shared/pulse.css').read_text() + '\n' + (root / 'src/clash/style.css').read_text() + '\n' + (root / 'src/clash/tactical.css').read_text(),
+    '/*__CLASH_CSS__*/': '\n'.join((root / path).read_text() for path in ['shared/pulse.css', 'src/clash/style.css', 'src/clash/tactical.css', 'src/clash/raster.css']),
     '/*__CLASH_CONTENT__*/': 'globalThis.PCGClashContent=' + embed('content/clash/clash_playtest.json') + ';\n' + 'globalThis.PCGClashBalance=' + embed('content/clash/clash_balance.json') + ';\n' + 'globalThis.PCGClashTactics=' + embed('content/clash/clash_tactics.json') + ';\n',
     '/*__CLASH_CAPABILITIES__*/': 'globalThis.PCGClashCapabilities=' + embed('content/clash/capabilities.json') + ';\n',
     '/*__CLASH_ROSTER__*/': 'globalThis.PCGClashRoster=' + embed('content/clash/clash_roster_96.json') + ';\n' + 'globalThis.PCGClashServices=' + embed('content/clash/clash_services.json') + ';\n' + 'globalThis.PCGClashArt=' + art_map() + ';\n' + 'globalThis.PCGClashScene=' + embed('content/clash/scene_assets.json') + ';\n',
@@ -57,7 +57,7 @@ scene_src = root / 'src/clash/scene'
 scene_out = out / 'scene'
 if scene_out.exists():
     shutil.rmtree(scene_out)
-shutil.copytree(scene_src, scene_out)
+shutil.copytree(scene_src, scene_out, ignore=shutil.ignore_patterns('source'))
 font_src = root / 'src/clash/fonts'
 font_out = out / 'fonts'
 if font_src.exists():

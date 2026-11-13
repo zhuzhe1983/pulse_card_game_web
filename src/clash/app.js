@@ -370,23 +370,17 @@
     return `data-scene-slot="${slot}" data-scene-ready="${url ? '1' : '0'}"${url ? ` style="--scene-url:url('${esc(url)}')"` : ''}`;
   }
   const painted = {
-    bu_ji: 'scene/cards/art-supply-432x576.webp',
-    uiflow_blocks: 'scene/cards/art-uiflow-service.jpg',
-    ezdata_note: 'scene/cards/art-ezdata-service.jpg',
-    aiflow_say: 'scene/cards/art-aiflow-service.jpg',
-    burner_seize: 'scene/cards/art-seize-432x576.webp'
+    bu_ji: 'scene/cards/art-supply-432x576.webp'
   };
   function picture(card, kind) {
     if (card && (card.template_id === tokenId || card.template_id === batteryId)) return `<img class="coin-lamp" src="scene/ui/lamp-power-on-amber-128.webp" alt="" draggable="false">`;
+    const spellArt = card && scenebook.spell_art && scenebook.spell_art[card.template_id];
+    if (spellArt) return `<img class="skill-illustration" src="${esc(spellArt)}" alt="" draggable="false" decoding="async">`;
     const shot = card && artbook[card.rid];
     if (shot) return `<img src="${esc(kind === 'board' ? shot.char : shot.card)}" alt="" draggable="false">`;
     const paintedSrc = card && painted[card.template_id];
     if (paintedSrc) return `<img src="${esc(paintedSrc)}" alt="" draggable="false">`;
-    if (card && card.kind === 'spell') {
-      const symbols = { damage:'ϟ', damage_all:'◎', freeze:'Ⅱ', bounce:'↶', execute:'×', heal_base:'+', overclock:'↟', draw_one:'≡' };
-      return `<span class="spell-sigil" data-effect="${esc(card.effect)}"><svg viewBox="0 0 120 100" aria-hidden="true"><path d="M5 50h20l10-20h15M115 50H95L85 70H70M60 5v15M60 80v15"/><circle cx="60" cy="50" r="28"/><circle cx="60" cy="50" r="37"/></svg><b>${symbols[card.effect] || '◇'}</b></span>`;
-    }
-    return `<span class="spell-sigil"><b>+</b></span>`;
+    return `<img src="${esc(sceneUrl('card_back'))}" alt="" draggable="false">`;
   }
   function mana(seat) {
     const max = Math.max(0, Math.min(10, game.max_supply[seat]));
