@@ -206,7 +206,8 @@
     if (play.effect === 'play_draw') lines.push('入场抽 ' + play.effect_amount);
     if (play.effect === 'play_damage') lines.push('入场伤害 ' + play.effect_amount);
     if (play.effect === 'knob') lines.push('旋钮');
-    if (play.effect === 'support') lines.push('支援');
+    if (play.effect === 'play_heal') lines.push('入场恢复核心 ' + play.effect_amount);
+    if (play.effect === 'support') lines.push('支援 · ' + play.effect_amount + ' 电复活厚壳');
     return lines.length ? lines : ['无额外技能'];
   }
 
@@ -294,7 +295,7 @@
       <p class="badges"><span class="type ${esc(card.type)}">硬件 ${esc(card.type)}</span><span class="type role">游戏角色 ${esc(ROLE[card.design.gameplay.role] || '')}</span><span class="type growth">${esc(GROWTH[card.design.growth.kind] || '')}${star ? ' ' + esc(star) + ' 星' : ''}</span><span class="type draft">playtest_draft</span></p>
       ${back ? `<p class="back-callout" data-surface="back"><strong>背面 · 用户选择</strong><br>这张主体是用户指定的官方背面，不是正面。<br>${notes}</p>` : ''}
       <div class="detail-grid"><div><div class="stage"><img id="hero" src="${esc(webPath(card, view === 'card' ? 'card_webp' : 'char_webp'))}" alt="${alt}"></div><p class="star-slot" data-star="${star || 'none'}">${star ? '★'.repeat(star) + ' ' + star + ' 星' : '无星级'}</p><div class="toolbar"><div class="seg" role="group" aria-label="图片"><button type="button" data-action="view" data-view="char" aria-pressed="${view === 'char' ? 'true' : 'false'}">主体${back ? '（背面）' : ''}</button><button type="button" data-action="view" data-view="card" aria-pressed="${view === 'card' ? 'true' : 'false'}">整卡</button></div><button type="button" class="text-btn" data-action="zoom">放大</button></div><div class="downloads"><a href="${esc(webPath(card, 'char_webp'))}" download>下载主体展示图（WebP）</a><a href="${esc(webPath(card, 'card_webp'))}" download>下载整卡展示图（WebP）</a></div><p class="fine">下载的是网页展示版 WebP，不是原始 PNG 或 SVG。星级不画进图片。</p></div>
-      <div><section class="panel design-panel"><h3>首版设计 · 待试玩</h3><p class="flag">playtest_draft。这些数字和技能不是官方规格，也不是已经在网页对战里实现的结果。</p><p>${esc(identity.game_description)}</p><dl><dt>游戏阵营</dt><dd>${esc(identity.faction)}</dd><dt>设计说明</dt><dd>${esc(identity.balance_intent || '')}</dd></dl><div class="stats">${stats(card)}</div><h3>技能</h3><ul class="skills">${effectLines(card).map(line => `<li>${esc(line)}</li>`).join('')}</ul></section>
+      <div><section class="panel design-panel"><h3>战术改版 · 待试玩</h3><p class="flag">战术改版，待试玩。数值与网页对局一致；技能是游戏创作，不是官方硬件规格。</p><p>${esc(identity.game_description)}</p><dl><dt>游戏阵营</dt><dd>${esc(identity.faction)}</dd><dt>设计说明</dt><dd>${esc(identity.balance_intent || '')}</dd></dl><div class="stats">${stats(card)}</div><h3>技能</h3><ul class="skills">${effectLines(card).map(line => `<li>${esc(line)}</li>`).join('')}</ul></section>
       ${growthBlock(card)}
       <section class="panel hardware-panel"><h3>官方硬件</h3><dl><dt>系列</dt><dd>${card.product_series ? esc(card.product_series) : '未归类'}</dd><dt>浏览前缀</dt><dd>${esc(card.nav_group || '未按前缀')} <span class="fine">不是成长家族</span></dd><dt>美术 type</dt><dd>${esc(card.type)} / ${esc(card.style)}</dd><dt>主控归类</dt><dd>${esc(CONTROLLER[controller.controller] || controller.controller || '')} <span class="fine">来自芯片栏，不是游戏角色</span>${controller.note ? '<br>' + esc(controller.note) : ''}</dd><dt>SKU</dt><dd>${esc(card.trusted_sku || '')} · ${esc(card.sku_status || '')}</dd><dt>芯片</dt><dd>${(card.official_main_chips || []).length ? '<ul class="skills">' + card.official_main_chips.map(item => `<li>${esc(item)}</li>`).join('') + '</ul>' : '规格未记录可编程主控'}</dd><dt>资料</dt><dd><a href="${esc(card.official_product_link)}" target="_blank" rel="noopener noreferrer">官方产品页</a></dd>${notes && !back ? `<dt>画面说明</dt><dd>${notes}</dd>` : ''}<dt>授权说明</dt><dd>${esc(card.license_or_usage_note || '')}</dd></dl></section>
       ${v8Block(card)}${technical(card)}
@@ -466,8 +467,8 @@
       if (!response.ok) throw new Error('design-pack.json');
       return response.json();
     }),
-    fetch('data/clash_services.json').then(response => {
-      if (!response.ok) throw new Error('clash_services.json');
+    fetch('data/clash_tactics.json').then(response => {
+      if (!response.ok) throw new Error('clash_tactics.json');
       return response.json();
     })
   ]).then(([catalog, designPack, servicePack]) => {

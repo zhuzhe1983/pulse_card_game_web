@@ -11,7 +11,7 @@ import argparse
 import json
 from pathlib import Path
 
-SOURCE_COMMIT = "5e1caabddd13559ad8d05f1b9ff8b681ec164052"
+SOURCE_COMMIT = "8a9acd2e221708835dab446d019a47dcd90896c6"
 FORBIDDEN = ("/workspace/", "/Users/", "/home/", "file://")
 PLAYTEST_IDS = ("xiao_yin", "hou_ke", "dian_zhen", "qiao_jian", "xuan_niu")
 PLAYTEST_KEYS = (
@@ -177,6 +177,7 @@ def main() -> None:
     parser.add_argument("--cards", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--playtest", type=Path)
+    parser.add_argument("--balance", type=Path)
     args = parser.parse_args()
     roster_doc = load(args.roster)
     hardware = load(args.cards)
@@ -252,6 +253,22 @@ def main() -> None:
         },
         "cards": {raw["rid"]: card for raw, card in zip(raw_cards, built)},
     }
+    if args.balance:
+        balance = load(args.balance)
+        pack["balance_version"] = balance["balance_version"]
+        pack["label"] = "战术改版 · 待试玩"
+        pack["note"] = "按当前战术配置结算。数字与技能是游戏设计，不是硬件规格。"
+        for card in pack["cards"].values():
+            patch = balance["card_overrides"].get(card["template_id"], {})
+            for key, value in patch.items():
+                if key in ("cost", "attack", "durability", "guard", "effect", "effect_amount"):
+                    card["gameplay"][key] = value
+            if "amount" in patch:
+                card["gameplay"]["effect_amount"] = patch["amount"]
+            if patch:
+                card["gameplay"]["cost_note"] = "战术改版数值，以对局职责定费。"
+                card["identity"]["balance_intent"] = "战术改版：技能与费用见本页当前数值。"
+                card["identity"]["game_description"] = "主控单位；可部署、攻击或按卡面技能行动。"
     blob = json.dumps(pack, ensure_ascii=False, indent=2) + "\n"
     assert_public(blob)
     args.out.parent.mkdir(parents=True, exist_ok=True)
