@@ -9,7 +9,7 @@
  * This driver is intentionally small and follows the de-facto standard
  * MFRC522 register/command map. It exposes only what the bridge needs:
  *   - soft reset + version check + antenna/timing init
- *   - monotone field / ISO14443A REQA + cascaded UID selection (4/7/10 bytes)
+ *   - field reset / ISO14443A REQA + cascaded UID selection (4/7/10 bytes)
  *   - NTAG READ (0x30) of arbitrary memory bytes (no auth)
  * No key author, crypto, or write helpers beyond what the identifier needs.
  */
@@ -43,16 +43,22 @@ bool rc522_select(pcg_tag_id_t *out, uint32_t max_ms);
 
 /*
  * Read `len` bytes starting at NTAG memory byte `addr`. NTAG READ command
- * returns 4 bytes per page-aligned read, so reading arbitrary N bytes may
- * need 0..3 reads. We keep each read aligned to a page for simplicity and
- * require addr be a multiple of 4. Returns bytes read (<= len), 0 on error.
+ * returns 16 data bytes plus two CRC bytes. One call returns up to 16 bytes
+ * starting at addr; callers loop to read longer regions. Returns bytes read (<= len), 0 on error.
  */
 size_t rc522_read_memory(uint8_t *out, size_t out_len, uint32_t addr);
 
 /* Program one 4-byte NTAG page with the Ultralight WRITE (0xA2) command.
- * Pages 0-2 (UID and static lock) and pages above 129 (dynamic lock / config)
+ * Pages 0-3 (UID, static lock and CC) and pages above 129 (dynamic lock / config)
  * are refused. Returns 0 on ACK. */
 bool rc522_get_version(uint8_t version[8]);
 int rc522_write_page(uint8_t page, const uint8_t data[4]);
 
+typedef struct {
+    uint8_t version, irq, error;
+    int last_rc, stage;
+    bool crc_ok;
+    uint32_t polls, selected, io_errors;
+} pcg_rc522_diag_t;
+void rc522_diagnostics(pcg_rc522_diag_t *out);
 #endif /* PCG_RC522_H */

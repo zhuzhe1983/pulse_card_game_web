@@ -47,3 +47,7 @@ Node 全套与固件 host 测试通过；浏览器模拟 NFC/串口的操作链�
 网页按新 write_mode 启用 M5Dial 玩家初始化，旧固件提示升级；通过实际响应验证后才保存当前身份。烧录页复用已连接串口，校验版本/摘要/镜像头/芯片，并在成功或失败后释放串口，提供下载与牌桌入口。主机测试、Node 检查、真实浏览器模拟 Android/M5Dial 写读流程和烧录流程测试通过。实体 USB/射频/写卡仍未验收，manifest 保持 hardware_tested:false。保留用户的 flash_packages 和原有 8002 服务。
 
 本版最终回归：战术玩法浏览器、i18n 96 张详情/多视口、NFC 玩家初始化与出牌、烧录页模拟连接全通过；真实 UI 截图已查看。写卡主机用例另跑 AddressSanitizer/UndefinedBehaviorSanitizer 检查；发布到 main 与 gh-pages，并在线校验发布清单、固件 SHA-256 和页面。线上确认结果保存在 output/playwright。
+
+2026-11-14 feedback.2：用户报告 NTAG215 放置无反应。已在其现有 Chrome 页面核实固件 player-write.1、握手正常而无 UID；临时通过网页断开串口，保留玩家草稿，只读实机 probe 确认 card_present=false。核对官方 M5Dial MFRC522 找到旧驱动 Transceive/CRC low 常量错误，已修复并新增直接运行生产驱动的寄存器级测试及 ASan/UBSan。新增 image_gen 圆屏底图、OFL 中文字形、九状态实时 UI、独立蜂鸣任务、正面按键静音、网页状态/静音/诊断。新固件编译完成；ROM probe 未收到响应，已请用户手动进入下载模式，尚未烧录本版。
+
+feedback.2 最终本地验证：ESP-IDF 5.3 编译、合并镜像 DIO/80MHz/8MB 检查、反馈与生产驱动寄存器测试、写卡/协议主机测试、Node 全套、NFC/烧录器模拟硬件浏览器、中英文与完整战术浏览器均通过。九状态预览由实际固件渲染器输出并逐帧查看；蜂鸣频率/时长由源数据断言核对，尚未听到新版实机蜂鸣。用户浏览器保留，串口已释放；玩家草稿未清除。

@@ -20,4 +20,4 @@ python3 tools/serve.py --port 8002
 
 规则与数值见 [新版规格](docs/TACTICAL_V1.md)，复审依据见 [评估报告](docs/REVIEW_20261113.md)，实现入口和测试见 [HANDOFF.md](HANDOFF.md)。规格仓库是隔壁 `pulse_card_game_prompt`，两边的战术配置和参考引擎保持一致。当前状态为已实现、待真人试玩，不代表竞技平衡完成。
 
-旧昆特式点数游戏已移出主线，保存在归档分支 `archive/pre-tactical-20261113`。旧 `/dist/` 入口跳转新版。牌桌已接入 M5Dial USB 刷游戏牌和安卓 NFC 读写游戏牌；点「刷卡」使用。安卓与 M5Dial 已提供空白玩家身份卡初始化；M5Dial 请先通过 [固件烧录页](https://zhuzhe1983.github.io/pulse_card_game_web/dist/flash.html) 升级到 `2026.11.14-player-write.1`，只接受空白、可写的 NTAG215。固件编译与自动测试通过，实体设备仍待验收；边界见 [READERS.md](docs/READERS.md)。
+旧昆特式点数游戏已移出主线，保存在归档分支 `archive/pre-tactical-20261113`。旧 `/dist/` 入口跳转新版。牌桌已接入 M5Dial USB 刷游戏牌和安卓 NFC 读写游戏牌；点「刷卡」使用。安卓与 M5Dial 已提供空白玩家身份卡初始化；M5Dial 请先通过 [固件烧录页](https://zhuzhe1983.github.io/pulse_card_game_web/dist/flash.html) 升级到 `2026.11.14-feedback.2`，只接受空白、可写的 NTAG215。固件编译与自动测试通过，实体设备仍待验收；边界见 [READERS.md](docs/READERS.md)。

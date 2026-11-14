@@ -811,13 +811,24 @@
     onIdentity: recognizePlayer
   });
 
-  let serialBusy = false, serialCard = null, playerWriteBusy = false;
+  let serialBusy = false, serialCard = null, playerWriteBusy = false, readerDiagnostic = null;
   function serialPlayerWriteEnabled() { return serialReader.state.canWrite && serialReader.state.writeMode === 'blank-player-v1'; }
   function serialBlankCard() {
     const tag = serialCard && serialCard.tag;
     return serialCard && serialCard.ndef === 'blank' && tag && tag.type === 'NTAG215' && tag.cc === 'E1103E00' && tag.capacity === 496 && tag.writable === true && tag.lock === 'open';
   }
   const serialReader = new root.PCGReaders.ReaderManager({
+    onDeviceStatus(event) {
+      if (event.diagnostic) readerDiagnostic = event.diagnostic;
+      const phases = {
+        idle: '等待卡片，请将卡片贴近 M5Dial 屏幕', reading: '正在读取，请保持卡片不动…',
+        writing: '正在写入玩家身份，请保持卡片不动…', verifying: '正在读回校验，请勿移开卡片…',
+        write_ok: '设备已写入，正在确认校验结果…', write_error: '写入未完成，请移开再刷检查',
+        error: '读取失败，请移开卡片后重新放上'
+      };
+      if (phases[event.phase]) ui.nfcStatus = phases[event.phase] + (['writing','verifying'].includes(event.phase) && event.progress >= 0 ? ' ' + event.progress + '%' : '');
+      if (document.body.dataset.ready === '1') render();
+    },
     onRemoved() { serialCard = null; if (document.body.dataset.ready === '1') render(); },
     onStatus(state) {
       ui.nfcStatus = state.message;
@@ -863,6 +874,13 @@
     play(null);
   }
 
+  function diagnosticText(d) {
+    const r = d.reader;
+    const t = root.PULSEI18n ? root.PULSEI18n.text : value => value;
+    if (!r) return t(d.nfc_ready ? '读卡器已启动' : '读卡器未就绪');
+    return t(r.crc_ok && d.nfc_ready ? '读卡器自检正常' : '读卡器自检失败') + ' · ' + t('轮询 {0} 次 · 选卡 {1} 次 · 通信错误 {2} 次').replace('{0}',r.polls).replace('{1}',r.selected).replace('{2}',r.io_errors);
+  }
+
   function nfcControl() {
     const support = nfcSession.support;
     const serial = root.PCGReaders.capabilities();
@@ -877,6 +895,8 @@
       ${!support.enabled ? '<p class="nfc-help">本浏览器不能使用手机 NFC，可用 M5Dial 或点选出牌。</p>' : ''}
       <button type="button" data-action="nfc-player-init"${!playerSetup || busy ? ' disabled' : ''}>${ui.identityPanel ? '返回刷卡' : connected ? '创建玩家身份卡（M5Dial）' : '创建玩家身份卡（安卓 NFC）'}</button>
       <button type="button" class="nfc-init" data-action="nfc-init"${!support.enabled || connected || busy ? ' disabled' : ''}>${ui.nfcPanel ? '返回刷卡出牌' : '初始化游戏牌（安卓 NFC）'}</button>
+      ${connected && serialReader.state.feedback ? `<div class="nfc-device-tools"><button type="button" data-action="nfc-sound">${serialReader.state.sound ? '提示音：开' : '提示音：静音'}</button><button type="button" data-action="nfc-diagnose"${playerWriteBusy ? ' disabled' : ''}>检查读卡器</button></div><p class="nfc-help">等待短滴，读卡长滴，读完双音，写卡成功三音。按 M5Dial 正面按键可静音。</p>` : ''}
+      ${readerDiagnostic && connected ? `<p class="nfc-help" data-i18n-ignore>${esc(diagnosticText(readerDiagnostic))}</p>` : ''}
       <a class="nfc-flash" href="../flash.html" target="_blank" rel="noopener">M5Dial 固件烧录 / 升级</a>
       ${connected ? `<p class="nfc-help">固件版本：<span data-i18n-ignore>${esc(serialReader.state.firmware || '—')}</span></p>${serialPlayerWriteEnabled() ? '<p class="nfc-help">已支持空白 NTAG215 玩家身份卡写入，写后自动读回校验。</p>' : '<p class="nfc-help">此固件不支持新版写卡，请先升级。</p>'}` : '<p class="nfc-help">M5Dial 连接后可创建玩家身份卡；请先安装新版写卡固件。</p>'}
       <p class="nfc-status" role="status" aria-live="polite">${esc(ui.nfcStatus || '选择一种刷卡方式')}</p>`;
@@ -1370,7 +1390,7 @@
       const why = el.querySelector('.act-why');
       return note(new C.ClashError(why ? I.source(why) : C.reasonText(el.dataset.block), el.dataset.block));
     }
-    const free = ['mode', 'toggle-menu', 'toggle-log', 'scenario', 'restart', 'handoff-confirm', 'replay-seed', 'nfc-menu', 'nfc-close', 'nfc-player-init', 'nfc-player-prepare', 'nfc-player-write', 'nfc-player-edit', 'nfc-start', 'nfc-serial', 'nfc-stop', 'nfc-init', 'nfc-write', 'nfc-overwrite'];
+    const free = ['mode', 'toggle-menu', 'toggle-log', 'scenario', 'restart', 'handoff-confirm', 'replay-seed', 'nfc-menu', 'nfc-close', 'nfc-player-init', 'nfc-player-prepare', 'nfc-player-write', 'nfc-player-edit', 'nfc-start', 'nfc-serial', 'nfc-sound', 'nfc-diagnose', 'nfc-stop', 'nfc-init', 'nfc-write', 'nfc-overwrite'];
     if ((ui.aiBusy || ui.handoff || (ui.mode === 'ai' && game && game.seat !== 0)) && !free.includes(action)) {
       return note(new C.ClashError(C.reasonText('not_your_turn'), 'not_your_turn'));
     }
@@ -1404,6 +1424,8 @@
         .finally(() => { serialBusy = false; render(); });
       return;
     }
+    if (action === 'nfc-sound') { serialReader.setSound(!serialReader.state.sound).catch(error => { ui.nfcStatus = error.message; render(); }); return; }
+    if (action === 'nfc-diagnose') { serialReader.diagnose().catch(error => { ui.nfcStatus = error.message; render(); }); return; }
     if (action === 'nfc-stop') {
       nfcSession.stop();
       serialReader.disconnect().catch(error => { ui.nfcStatus = error.message; });

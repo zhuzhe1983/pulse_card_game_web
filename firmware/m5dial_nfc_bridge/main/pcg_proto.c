@@ -25,6 +25,14 @@ static void send_json(pcg_proto_t *p, cJSON *value, char *buffer)
     cJSON_Delete(value);
 }
 static cJSON *message(const char *type) { cJSON *o = cJSON_CreateObject(); if (o) cJSON_AddStringToObject(o,"type",type); return o; }
+void pcg_proto_status(pcg_proto_t *p,const char *phase,const char *uid,int progress)
+{
+ snprintf(p->phase,sizeof p->phase,"%s",phase);p->progress=progress;
+ if(!p->session||!p->status_events||!p->send)return;
+ /* Reader mutex serializes both poll events and write progress. */
+ cJSON *o=message("status");cJSON_AddStringToObject(o,"phase",phase);
+ cJSON_AddStringToObject(o,"uid",uid?uid:"");cJSON_AddNumberToObject(o,"progress",progress);send_json(p,o,card_line);
+}
 static void error(pcg_proto_t *p, const char *text) { cJSON *o = message("error"); cJSON_AddStringToObject(o,"message",text); send_json(p,o,reply_line); }
 static const char *string(const cJSON *o, const char *key)
 {
@@ -84,16 +92,25 @@ void pcg_proto_on_line(pcg_proto_t *p, const char *line, size_t len)
             cJSON_AddItemToArray(caps,cJSON_CreateString("uid"));
             if (pcg_proto_has_read_ndef(p)) cJSON_AddItemToArray(caps,cJSON_CreateString("ndef_read"));
             if (pcg_proto_has_write_ndef(p)) { cJSON_AddItemToArray(caps,cJSON_CreateString("ndef_write")); cJSON_AddStringToObject(o,"write_mode",PCG_WRITE_MODE); }
+            cJSON_AddBoolToObject(o,"feedback",p->on_feedback!=NULL);
+            p->status_events=cJSON_IsTrue(cJSON_GetObjectItemCaseSensitive(input,"status_events"));
             bool new_session = !p->session;
             p->session = true; send_json(p,o,reply_line);
             if (new_session && p->on_session) p->on_session(p);
         }
+    } else if (same(type,"feedback")) {
+        const cJSON *sound=cJSON_GetObjectItemCaseSensitive(input,"sound");
+        if(!p->session||!p->on_feedback||!cJSON_IsBool(sound))error(p,"feedback unavailable");
+        else {p->on_feedback(p,cJSON_IsTrue(sound));cJSON *o=message("feedback");cJSON_AddBoolToObject(o,"sound",cJSON_IsTrue(sound));send_json(p,o,reply_line);}
     } else if (same(type,"diag")) {
         cJSON *o = message("diag"); cJSON_AddStringToObject(o,"reset",p->reset_reason);
         cJSON_AddStringToObject(o,"firmware",PCG_FIRMWARE_VERSION);
         cJSON_AddBoolToObject(o,"session",p->session); cJSON_AddBoolToObject(o,"nfc_ready",p->nfc_ready);
         cJSON_AddBoolToObject(o,"card_present",p->card_present); cJSON_AddStringToObject(o,"uid",p->current_uid);
-        cJSON_AddStringToObject(o,"ndef",p->presence_ndef); send_json(p,o,reply_line);
+        cJSON_AddStringToObject(o,"ndef",p->presence_ndef);
+        cJSON_AddStringToObject(o,"phase",p->phase);cJSON_AddNumberToObject(o,"progress",p->progress);
+        if(p->on_diag)p->on_diag(p,o);
+        send_json(p,o,reply_line);
     } else if (same(type,"write")) {
         pcg_write_result_t result = {0};
         char descriptor[PCG_NDEF_MAX], uid[24] = "", actual[PCG_NDEF_MAX];

@@ -1,10 +1,12 @@
 # NFC 与读卡器现状
 
+新版 `feedback.2` 修复旧驱动的射频收发命令/CRC 低字节寄存器错误，并提供读卡状态、声音和诊断。旧版“hello 正常”不代表能读到 NTAG215，需重新烧录。详见 [M5Dial 修复与反馈](M5DIAL_FEEDBACK.md)。
+
 2026-11-14：当前牌桌提供「刷卡」入口，可连接 M5Dial USB 串口读取玩家身份卡或游戏牌，新版 M5Dial 固件可初始化空白 NTAG215 玩家身份卡；支持 Web NFC 的安卓 Chrome 可初始化空白玩家身份卡、读写游戏牌。下面明确区分软件实现和硬件验收。
 
 **玩家身份卡操作**：在安卓 NFC 手机的 Chrome 中打开 HTTPS 牌桌 →「刷卡」→「创建玩家身份卡（安卓 NFC）」→填写昵称并选卡面编号→「生成玩家身份」→刷空白 NDEF 卡→「确认写入玩家身份」→移开并重刷同一张卡。看到「玩家身份卡写入并校验成功」后才算完成；写入返回成功本身还不够。已有内容的卡不会在此入口被覆盖。
 
-**M5Dial 玩家卡操作**：电脑 Chrome/Edge 打开 [烧录页](https://zhuzhe1983.github.io/pulse_card_game_web/dist/flash.html)，安装 `2026.11.14-player-write.1`；进入牌桌 → 刷卡 → 连接 M5Dial（USB）→ 创建玩家身份卡（M5Dial）→ 填昵称、选卡面、生成身份 → 放上空白可写 NTAG215 → 确认写入。保持卡片不动，设备自动读回后页面显示成功。旧固件不会启用写卡，异常/超时不保存新身份，也不自动重试。
+**M5Dial 玩家卡操作**：电脑 Chrome/Edge 打开 [烧录页](https://zhuzhe1983.github.io/pulse_card_game_web/dist/flash.html)，安装 `2026.11.14-feedback.2`；进入牌桌 → 刷卡 → 连接 M5Dial（USB）→ 创建玩家身份卡（M5Dial）→ 填昵称、选卡面、生成身份 → 放上空白可写 NTAG215 → 确认写入。保持卡片不动，设备自动读回后页面显示成功。旧固件不会启用写卡，异常/超时不保存新身份，也不自动重试。
 
 卡中保存独立 UUID、昵称和卡面编号。身份只用于游戏中的玩家识别，不是安全账号登录；不同设备可以读出同一身份，但不会同步对局或收藏。本机记住最近识别的玩家，浏览器禁止存储时仍可用实体卡识别。
 
@@ -13,7 +15,7 @@
 | 安卓网页读游戏牌 | 已修复真实入口缺少 `NDEFReader` 工厂的问题；需要 NFC 手机、开启 NFC、Chrome、HTTPS 和用户授权 |
 | 安卓初始化游戏牌 | 选图册牌 → 读卡 → 明确点击写入；空白卡使用 `overwrite:false`，已有内容需点「仍然覆写」；移开后重刷同一 UID 和内容验证；20 秒未验证则失败 |
 | M5Dial 网页刷卡 | 已接入 `pcg.reader.v1` 串口；默认 115200，过滤 PULSE CDC `303A:4001`；从完整 `tag.ndef_hex` 读取游戏牌 MIME。截断、损坏记录不出牌；合法玩家身份记录用于识别当前玩家 |
-| M5Dial 写卡 | `2026.11.14-player-write.1` 已编译，网页已接通空白 NTAG215 玩家身份写入与自动读回验证。只写玩家身份，不写游戏牌；实机验收待补 |
+| M5Dial 写卡 | `2026.11.14-feedback.2` 已编译，网页已接通空白 NTAG215 玩家身份写入与自动读回验证。只写玩家身份，不写游戏牌；实机验收待补 |
 | 玩家身份初始化 | 安卓和新版 M5Dial 已提供入口：昵称 + 卡面 01–09 → 生成 UUID v4 → 刷空白卡 → 确认写入 → 同卡读回验证。只写空白卡；验证后保存本机当前玩家，后续安卓或 M5Dial 刷身份卡可重新识别。旧收藏、领取、备份和账号服务没有恢复 |
 | 实机验证 | 最后保留的 2026-11-11 记录：固件烧录和镜像校验成功，但应用 CDC 没有枚举，未完成稳定握手、实体卡读写或读回；本轮没有连接设备、烧录或写实体卡 |
 
@@ -95,7 +97,7 @@ WebUSB 固件须提供 class `0xFF` 的接口，至少一个 bulk IN 和一个 b
 ```
 
 ```json
-{"type":"hello","protocol":"pcg.reader.v1","device":"PULSE M5Dial NFC","firmware":"2026.11.14-player-write.1","write_mode":"blank-player-v1","capabilities":["uid","ndef_read","ndef_write"],"reset":"poweron"}
+{"type":"hello","protocol":"pcg.reader.v1","device":"PULSE M5Dial NFC","firmware":"2026.11.14-feedback.2","write_mode":"blank-player-v1","capabilities":["uid","ndef_read","ndef_write"],"reset":"poweron"}
 ```
 
 `reset` 是可选诊断字段，表示本次启动的复位原因（`poweron`、`panic`、`task_wdt`、`int_wdt`、`brownout`、`usb` 等）。旧网页忽略不认识的字段。握手完成前，已经放在读卡器上的卡会在这条应答之后补发一条 `card`，不需要先拿开再贴上，也不会因为卡一直放着而重复刷卡。

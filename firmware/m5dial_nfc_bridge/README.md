@@ -1,6 +1,8 @@
 # M5Dial NFC·USB 读卡桥 (ESP-IDF)
 
-> 2026-11-14 新版 `2026.11.14-player-write.1`：固件与网页已接通空白 NTAG215 玩家身份写入，逐页写前检查 UID，写后读回 UID、完整用户区和身份内容再返回 `verified:true`。只接受标准、未锁定且无写保护的空白卡，不覆盖已有卡。ESP-IDF 5.3 编译和主机测试通过；本轮未接设备，实机烧录、CDC 稳定性及实体卡读写待验收。11 月 11 日旧镜像 CDC 未枚举的记录不代表本版测试结果。
+> `feedback.2` 修复旧版本射频收发命令和 CRC 寄存器错误（旧版虽能握手但无法正常选卡），加入中文圆屏、等待/读写/成功/失败提示音、按键静音和网页诊断。详见 [本版说明](../../docs/M5DIAL_FEEDBACK.md)。
+
+> 2026-11-14 新版 `2026.11.14-feedback.2`：固件与网页已接通空白 NTAG215 玩家身份写入，逐页写前检查 UID，写后读回 UID、完整用户区和身份内容再返回 `verified:true`。只接受标准、未锁定且无写保护的空白卡，不覆盖已有卡。ESP-IDF 5.3 编译和主机测试通过；本轮已只读检查旧版设备，确认握手正常但没有卡事件；新版烧录与实体卡读写仍待验收。11 月 11 日旧镜像 CDC 未枚举的记录不代表本版测试结果。
 >
 > **在线烧录**：[M5Dial 烧录器](https://zhuzhe1983.github.io/pulse_card_game_web/dist/flash.html)（电脑 Chrome/Edge + USB）。页面显示版本、下载链接与 SHA-256，校验通过才启用烧录。烧录后进入 [牌桌](https://zhuzhe1983.github.io/pulse_card_game_web/dist/clash/?lang=zh-CN) → 刷卡 → 连接 M5Dial → 创建玩家身份卡（M5Dial）。
 

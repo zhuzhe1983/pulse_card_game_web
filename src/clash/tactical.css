@@ -241,3 +241,5 @@ body { background:#111c1e; color:var(--table-ink); padding:0; font-family:Inter,
 }
 
 .nfc-flash{display:inline-block;color:#a8e8d3;text-underline-offset:3px;margin:4px 0}
+
+.nfc-device-tools{display:flex;gap:6px}.nfc-device-tools button{flex:1}

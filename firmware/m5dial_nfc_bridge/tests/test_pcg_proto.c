@@ -3,6 +3,8 @@
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
+static bool sound=true;
+static void feedback_cb(pcg_proto_t*p,bool enabled){(void)p;sound=enabled;}
 static char emitted[4096];static int writes;static bool wrong_readback;
 static const char*id="{\"game\":\"pcg\",\"v\":1,\"type\":\"player\",\"id\":\"12345678-1234-4123-8123-123456789abc\",\"skin\":\"01\",\"name\":\"小明 \\\"}\\\"\"}";
 static void send_cb(pcg_proto_t*p,const char*line){(void)p;snprintf(emitted,sizeof emitted,"%s",line);}
@@ -17,6 +19,11 @@ int main(void){
  pcg_proto_t p;pcg_proto_init(&p,"M5Dial",7,send_cb,write_cb,NULL);pcg_proto_set_ready(&p,true);
  request(&p,true,false,PCG_IDENTITY_MIME);assert(!writes&&strstr(emitted,"false"));
  pcg_proto_on_line(&p,"{\"type\":\"hello\",\"protocol\":\"pcg.reader.v1\"}",0);assert(strstr(emitted,PCG_FIRMWARE_VERSION)&&strstr(emitted,PCG_WRITE_MODE));
+ char saved[4096];strcpy(saved,emitted);pcg_proto_status(&p,"reading","04AA",-1);assert(!strcmp(saved,emitted));
+ p.on_feedback=feedback_cb;
+ pcg_proto_on_line(&p,"{\"type\":\"hello\",\"protocol\":\"pcg.reader.v1\",\"status_events\":true}",0);
+ pcg_proto_status(&p,"reading","04AA",-1);assert(strstr(emitted,"reading")&&strstr(emitted,"status"));
+ pcg_proto_on_line(&p,"{\"type\":\"feedback\",\"sound\":false}",0);assert(!sound&&strstr(emitted,"false"));
  request(&p,false,false,PCG_IDENTITY_MIME);assert(!writes);request(&p,true,true,PCG_IDENTITY_MIME);assert(!writes);request(&p,true,false,"text/plain");assert(!writes);
  request(&p,true,false,PCG_IDENTITY_MIME);assert(writes==1);cJSON*r=cJSON_Parse(emitted);assert(cJSON_IsTrue(cJSON_GetObjectItem(r,"ok"))&&cJSON_IsTrue(cJSON_GetObjectItem(r,"verified")));
  char actual[512];assert(pcg_player_object(cJSON_GetObjectItem(r,"descriptor"),actual,sizeof actual)&&strcmp(actual,id)==0);cJSON_Delete(r);

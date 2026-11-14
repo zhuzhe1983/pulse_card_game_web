@@ -30,7 +30,7 @@ export class ESPLoader {
   page.on('pageerror', e => errors.push(e.message));
   await page.goto(base+'/dist/flash.html');
   await page.waitForFunction(() => !document.querySelector('#btn-connect').disabled);
-  assert.equal(await page.locator('#firm-version').innerText(),'2026.11.14-player-write.1');
+  assert.equal(await page.locator('#firm-version').innerText(),'2026.11.14-feedback.2');
   await page.locator('#btn-connect').click();
   await page.waitForFunction(() => !document.querySelector('#btn-disconnect').disabled);
   await page.locator('#btn-flash').click();

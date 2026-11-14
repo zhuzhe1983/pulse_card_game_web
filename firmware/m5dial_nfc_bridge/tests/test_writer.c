@@ -12,7 +12,7 @@ static bool version(void*ctx,uint8_t out[8]){tag_t*t=ctx;uint8_t v[]={0,4,4,2,1,
 static size_t read_tag(void*ctx,uint32_t addr,uint8_t*out,size_t n){tag_t*t=ctx;assert(addr+n<=sizeof t->memory);memcpy(out,t->memory+addr,n);if(t->corrupt&&t->writes&&n==508)out[5]^=1;return t->short_read&&n==508?n-4:n;}
 static int write_tag(void*ctx,uint8_t page,const uint8_t bytes[4]){tag_t*t=ctx;assert(page>=4&&page<=129);t->writes++;if(t->fail_at&&t->writes==t->fail_at)return -1;memcpy(t->memory+page*4,bytes,4);return 0;}
 static void init(tag_t*t){memset(t,0,sizeof *t);memcpy(t->memory+12,"\xe1\x10\x3e\x00",4);t->memory[527]=255;}
-static pcg_write_result_t run(tag_t*t){const pcg_tag_io_t io={t,select_tag,version,read_tag,write_tag};pcg_write_result_t r;pcg_write_blank_player(&io,uid,identity,&r);return r;}
+static pcg_write_result_t run(tag_t*t){const pcg_tag_io_t io={t,select_tag,version,read_tag,write_tag,NULL};pcg_write_result_t r;pcg_write_blank_player(&io,uid,identity,&r);return r;}
 int main(void){
  tag_t t;pcg_write_result_t r;char normalized[512];assert(pcg_player_json(identity,normalized,sizeof normalized));
  assert(!pcg_player_json("{\"game\":\"pcg\",\"v\":1,\"type\":\"player\",\"id\":\"bad\",\"skin\":\"01\"}",normalized,sizeof normalized));

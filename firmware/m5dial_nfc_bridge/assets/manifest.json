@@ -1,0 +1,12 @@
+{
+  "theme": "electronics-workbench",
+  "generated_by": "built-in image_gen",
+  "source": "dial-workbench-v2.png",
+  "firmware_asset": "dial-workbench-v2.rgb565",
+  "encoding": "240x240 RGB565 big-endian; runtime overlays Chinese status and progress",
+  "font": "Noto Sans CJK SC, subset; SIL OFL in OFL-Noto.txt",
+  "prompt_file": "prompt.txt",
+  "preview": "../../../dist/firmware/m5dial-ui-preview.png",
+  "font_source": "https://github.com/notofonts/noto-cjk/blob/main/Sans/OTF/SimplifiedChinese/NotoSansCJKsc-Regular.otf",
+  "font_source_sha256": "2c76254f6fc379fddfce0a7e84fb5385bb135d3e399294f6eeb6680d0365b74b"
+}

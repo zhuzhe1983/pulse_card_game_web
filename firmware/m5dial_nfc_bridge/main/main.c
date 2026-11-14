@@ -17,6 +17,7 @@
 #include "usb_cdc.h"
 #include "display_gc9a01.h"
 #include "buzzer.h"
+#include "driver/gpio.h"
 
 static const char *TAG = "pcg_m5dial";
 
@@ -56,13 +57,13 @@ void app_main(void)
     if (display_init() != 0)
         ESP_LOGE(TAG, "display init failed");
 
-    pcg_rc522_conf_t rc = { .sda = SDA_GPIO, .scl = SCL_GPIO, .freq = 400000 };
+    pcg_rc522_conf_t rc = { .sda = SDA_GPIO, .scl = SCL_GPIO, .freq = 100000 };
     bool nfc_ok = rc522_init(&rc);
     ESP_LOGI(TAG, "NFC init %s", nfc_ok ? "ok" : "failed");
     display_note_nfc(nfc_ok);
 
-    /* uid + ndef_read + ndef_write. Writes still require overwrite:true from
-     * the host, and the page planner refuses UID, lock and unformatted tags.
+    /* uid + ndef_read + ndef_write. Writes require confirm:true and overwrite:false from
+     * the host; only blank, writable NTAG215 player cards are accepted.
      * A read-only host that never sends write keeps the previous behavior. */
     static pcg_proto_t proto;
     pcg_proto_init(&proto, "PULSE M5Dial NFC bridge", 1 | 2 | 4, NULL, NULL, NULL);
@@ -76,5 +77,16 @@ void app_main(void)
 
     ESP_LOGI(TAG, "ready: 刷 NTAG → Web（pcg.reader.v1 %s）",
              nfc_ok ? "NFC ok" : "NFC down");
-    while (1) { vTaskDelay(pdMS_TO_TICKS(1000)); }
+    /* M5Unified maps Dial BtnA to active-low GPIO42. Holding a card does not
+     * toggle sound; only a debounced physical press does. */
+    gpio_config_t button = {.pin_bit_mask=1ULL<<42,.mode=GPIO_MODE_INPUT};
+    gpio_config(&button);
+    int stable=1,previous=1,count=0;
+    while (1) {
+        int value=gpio_get_level(42);
+        if(value==previous)count++;else count=0;
+        previous=value;
+        if(count==3&&value!=stable){stable=value;if(!value)buzzer_set_enabled(!buzzer_enabled());}
+        vTaskDelay(pdMS_TO_TICKS(20));
+    }
 }

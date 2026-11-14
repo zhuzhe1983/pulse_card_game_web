@@ -2,6 +2,10 @@
 # Host-side tests; no device or cross compiler required.
 # Needs cc and cJSON source: export IDF_PATH or CJSON_DIR. Run in this directory.
 set -e
+cc -std=c11 -Wall -Wextra -Werror -I main main/ui_model.c main/sound_pattern.c tests/test_feedback.c -o /tmp/pcg_feedback_test
+/tmp/pcg_feedback_test
+cc -std=c11 -Wall -Wextra -Werror -I main main/rc522.c tests/test_rc522.c -o /tmp/pcg_rc522_test
+/tmp/pcg_rc522_test
 cc -std=c11 -Wall -I main main/pcg_ndef.c tests/test_pcg_ndef.c  -o /tmp/pcg_ndef_test
 CJSON_DIR="${CJSON_DIR:-${IDF_PATH:?Set IDF_PATH or CJSON_DIR}/components/json/cJSON}"
 COMMON=(-std=c11 -Wall -Wextra -Werror -I main -I "$CJSON_DIR")

@@ -11,13 +11,8 @@
  * READ of whole pages (no authentication).
  */
 #include "rc522.h"
-#include "driver/i2c_master.h"
-#include "esp_log.h"
-#include "esp_err.h"
-#include "esp_rom_sys.h"
+#include "rc522_bus.h"
 #include <string.h>
-
-static const char *TAG = "rc522";
 
 /* ---- register map (M5 stack MFRC522 library) ---- */
 #define REG_COMMAND       0x01
@@ -47,8 +42,7 @@ static const char *TAG = "rc522";
 #define REG_MF_RX         0x1D
 #define REG_SERIAL_SPEED  0x1F
 #define REG_CRC_RESULT_H  0x21
-#define REG_CRC_RESULT_M  0x22
-#define REG_CRC_RESULT_L  0x23
+#define REG_CRC_RESULT_L  0x22
 #define REG_MOD_WIDTH     0x24
 #define REG_RF_CFG        0x26
 #define REG_GS_N          0x27
@@ -67,7 +61,7 @@ static const char *TAG = "rc522";
 #define PCD_IDLE       0x00
 #define PCD_MEM        0x01
 #define PCD_CALC_CRC   0x03
-#define PCD_TRANSCEIVE 0x0E
+#define PCD_TRANSCEIVE 0x0C
 #define PCD_SOFTRESET  0x0F
 
 /* ---- PICC commands ---- */
@@ -83,30 +77,25 @@ static const char *TAG = "rc522";
 enum { RC_OK=1, RC_ERROR=2, RC_COLLISION=3, RC_TIMEOUT=4, RC_NO_ROOM=5,
        RC_CRC_WRONG=8, RC_MIFARE_NACK=9 };
 
-#define I2C_ADDR        0x28u   /* 7-bit MFRC522 address on M5Dial */
-
-static i2c_master_dev_handle_t dev = NULL;
-
-/* ---- transport: two-step reads mirror the Arduino TwoWire flow ---- */
-static esp_err_t wreg(uint8_t reg, uint8_t val)
+static pcg_rc522_diag_t diag;
+static bool io_failed;
+static int wreg(uint8_t reg, uint8_t value)
 {
-    uint8_t b[2] = { reg, val };
-    return i2c_master_transmit(dev, b, sizeof b, 100);
+    if (!rc522_bus_write(reg,&value,1)) { diag.io_errors++; io_failed=true; return -1; }
+    return 0;
 }
-static esp_err_t wreg_n(uint8_t reg, const uint8_t *data, size_t n)
+static void wreg_n(uint8_t reg, const uint8_t *data, size_t n)
 {
-    uint8_t buf[70];
-    if (1 + n > sizeof buf) n = sizeof buf - 1;
-    buf[0] = reg;
-    memcpy(buf + 1, data, n);
-    return i2c_master_transmit(dev, buf, 1 + n, 100);
+    if (!rc522_bus_write(reg,data,n)) { diag.io_errors++; io_failed=true; }
 }
 static void rreg(uint8_t reg, uint8_t *out, size_t n)
 {
-    i2c_master_transmit(dev, &reg, 1, 100);
-    i2c_master_receive(dev, out, n, 100);
+    memset(out,0,n);
+    if (!rc522_bus_read(reg,out,n)) { diag.io_errors++; io_failed=true; }
 }
-static uint8_t rreg8(uint8_t reg) { uint8_t v = 0; rreg(reg, &v, 1); return v; }
+static uint8_t rreg8(uint8_t reg) { uint8_t value=0; rreg(reg,&value,1); return value; }
+void rc522_diagnostics(pcg_rc522_diag_t *out) { *out=diag; }
+
 static void set_bits8(uint8_t reg, uint8_t mask)
 {
     wreg(reg, rreg8(reg) | mask);
@@ -119,10 +108,10 @@ static void clear_bits8(uint8_t reg, uint8_t mask)
 static void soft_reset(void)
 {
     wreg(REG_COMMAND, PCD_SOFTRESET);
-    esp_rom_delay_us(50000);
+    rc522_bus_delay_us(50000);
     for (int i = 0; i < 20; i++) {
         if (!(rreg8(REG_COMMAND) & (1 << 4))) break;
-        esp_rom_delay_us(1000);
+        rc522_bus_delay_us(1000);
     }
 }
 
@@ -134,7 +123,8 @@ static int calc_crc(const uint8_t *data, uint8_t len, uint8_t res2[2])
     wreg_n(REG_FIFO_DATA, data, len);
     wreg(REG_COMMAND, PCD_CALC_CRC);
     int got = RC_TIMEOUT;
-    for (int i = 0; i < 5000; i++) {
+    uint64_t deadline = rc522_bus_now_us() + 50000;
+    while (!io_failed && rc522_bus_now_us() < deadline) {
         if (rreg8(REG_DIVIRQ) & 0x04) { got = RC_OK; break; }
     }
     wreg(REG_COMMAND, PCD_IDLE);
@@ -159,14 +149,18 @@ static int transceive(uint8_t *sendData, uint8_t sendLen,
     set_bits8(REG_BIT_FRAMING, 0x80);          /* StartSend */
 
     int status = RC_TIMEOUT;
-    for (int i = 2000; i > 0; i--) {
+    uint64_t deadline = rc522_bus_now_us() + 40000;
+    while (!io_failed && rc522_bus_now_us() < deadline) {
         uint8_t irq = rreg8(REG_COMIRQ);
+        diag.irq = irq;
         if (irq & 0x30) { status = RC_OK; break; }   /* RxIRq|IdleIRq */
         if (irq & 0x01) break;                        /* timer */
     }
+    if (io_failed) return RC_ERROR;
     if (status != RC_OK) return status;
 
     uint8_t errv = rreg8(REG_ERROR);
+    diag.error = errv;
     if (errv & 0x13) return RC_ERROR;
 
     if (backData && backLen) {
@@ -180,9 +174,10 @@ static int transceive(uint8_t *sendData, uint8_t sendLen,
 
     if (errv & 0x08) return RC_COLLISION;
 
+    if (io_failed) return RC_ERROR;
     if (backData && backLen && checkCRC) {
         if (validBits && *backLen == 1 && *validBits == 4) return RC_MIFARE_NACK;
-        if ((validBits && *backLen < 2) || (validBits && *validBits != 0)) return RC_CRC_WRONG;
+        if (*backLen < 2 || (validBits && *validBits != 0)) return RC_CRC_WRONG;
         uint8_t cmp[2];
         if (calc_crc(backData, *backLen - 2, cmp) != RC_OK) return RC_ERROR;
         if (backData[*backLen-2] != cmp[0] || backData[*backLen-1] != cmp[1])
@@ -205,76 +200,33 @@ static int request_reqa(uint8_t atqa[2])
 /* ---- cascaded UID selection (PICC_Select port) ---- */
 static int select_uid(uint8_t uid[10], uint8_t *uidLen)
 {
-    int cascade = 1;
-    bool complete = false;
-
-    while (!complete) {
-        uint8_t sel;
-        int uidIdx;
-        switch (cascade) {
-            case 1: sel = CMD_SEL_CL1; uidIdx = 0; break;
-            case 2: sel = CMD_SEL_CL2; uidIdx = 3; break;
-            case 3: sel = CMD_SEL_CL3; uidIdx = 6; break;
-            default: return RC_ERROR;
-        }
-
-        uint8_t buf[9];
-        buf[0] = sel;
-        int knownBits = 0;
-        bool done = false;
-        while (!done) {
-            if (knownBits >= 32) {
-                /* SELECT with CRC */
-                buf[1] = 0x70;
-                buf[6] = buf[2] ^ buf[3] ^ buf[4] ^ buf[5];
-                uint8_t crc[2];
-                if (calc_crc(buf, 7, crc) != RC_OK) return RC_ERROR;
-                buf[7] = crc[0]; buf[8] = crc[1];
-                uint8_t resp[3], rl = 3, txb = 0;
-                int rc = transceive(buf, 9, resp, &rl, &txb, 0, false);
-                if (rc != RC_OK) return rc;
-                if (rl != 3 || txb != 0) return RC_ERROR;
-                uint8_t sak = resp[0];
-                uint8_t src = (buf[2] == CMD_CT) ? 3 : 2;
-                uint8_t nb  = (buf[2] == CMD_CT) ? 3 : 4;
-                for (uint8_t i = 0; i < nb; i++) uid[uidIdx + i] = buf[src + i];
-                if (sak & 0x04) cascade++;
-                else complete = true;
-                done = true;
-            } else {
-                /* ANTICOLLISION */
-                uint8_t nvb = 2 + knownBits / 8;
-                uint8_t txb = knownBits % 8;
-                buf[1] = (nvb << 4) + txb;
-                uint8_t used = nvb + (txb ? 1 : 0);
-                uint8_t rl = sizeof buf - used;
-                uint8_t txb2 = txb;
-                int rc = transceive(buf, used, &buf[used], &rl, &txb2, txb, false);
-                if (rc == RC_COLLISION) {
-                    uint8_t coll = rreg8(REG_COLL);
-                    if (coll & 0x20) return RC_COLLISION;
-                    uint8_t pos = coll & 0x1F;
-                    if (pos == 0) pos = 32;
-                    if (pos <= (uint8_t)knownBits) return RC_ERROR;
-                    knownBits = pos;
-                    uint8_t bit = (pos - 1) % 8;
-                    uint8_t idx = 1 + pos / 8 + (bit ? 1 : 0);
-                    buf[idx] |= (1 << bit);
-                } else if (rc == RC_OK) {
-                    knownBits = 32;
-                } else {
-                    return rc;
-                }
-            }
-        }
+    static const uint8_t select_commands[] = {CMD_SEL_CL1,CMD_SEL_CL2,CMD_SEL_CL3};
+    unsigned offset=0;
+    for (unsigned cascade=0; cascade<3; cascade++) {
+        uint8_t anticollision[2]={select_commands[cascade],0x20}, response[5], n=5, bits=0;
+        int rc=transceive(anticollision,2,response,&n,&bits,0,false);
+        if (rc!=RC_OK) return rc;
+        if (n!=5 || bits || (response[0]^response[1]^response[2]^response[3])!=response[4]) return RC_ERROR;
+        uint8_t command[9]={select_commands[cascade],0x70};
+        memcpy(command+2,response,5);
+        if (calc_crc(command,7,command+7)!=RC_OK) return RC_ERROR;
+        uint8_t sak[3]; n=3; bits=0;
+        rc=transceive(command,9,sak,&n,&bits,0,true);
+        if (rc!=RC_OK || n!=3) return rc==RC_OK ? RC_ERROR : rc;
+        bool more=(sak[0]&4)!=0;
+        bool ct=response[0]==CMD_CT;
+        if (ct!=more || (cascade==2 && more)) return RC_ERROR;
+        memcpy(uid+offset,response+(ct ? 1 : 0),ct ? 3 : 4);
+        offset+=ct ? 3 : 4;
+        if (!more) { *uidLen=offset; return RC_OK; }
     }
-    *uidLen = 3 * cascade + 1;
-    return RC_OK;
+    return RC_ERROR;
 }
 
 /* ---- read 16 bytes from a page (4 pages) ---- */
 static int read_ntag_page(uint8_t page, uint8_t blockOut[16])
 {
+    diag.stage=3;
     uint8_t cmd[2] = { CMD_MF_READ, page };
     uint8_t crc[2];
     if (calc_crc(cmd, 2, crc) != RC_OK) return RC_ERROR;
@@ -282,6 +234,7 @@ static int read_ntag_page(uint8_t page, uint8_t blockOut[16])
     uint8_t response[18];
     uint8_t len = sizeof response, vb = 0;
     int rc = transceive(buf, 4, response, &len, &vb, 0, true);
+    diag.last_rc=rc;
     if (rc != RC_OK) return rc;
     if (len != 18) return RC_ERROR;
     memcpy(blockOut,response,16);
@@ -296,23 +249,8 @@ static void antenna_on(void)
 
 bool rc522_init(const pcg_rc522_conf_t *cfg)
 {
-    i2c_master_bus_config_t bcfg = {
-        .clk_source = I2C_CLK_SRC_DEFAULT,
-        .i2c_port = I2C_NUM_0,
-        .scl_io_num = cfg->scl,
-        .sda_io_num = cfg->sda,
-        .flags = { .enable_internal_pullup = true },
-    };
-    i2c_master_bus_handle_t bus;
-    if (i2c_new_master_bus(&bcfg, &bus) != ESP_OK) return false;
-
-    i2c_device_config_t dcfg = {
-        .dev_addr_length = I2C_ADDR_BIT_LEN_7,
-        .device_address = I2C_ADDR,
-        .scl_speed_hz = cfg->freq ? cfg->freq : 100000,
-    };
-    if (i2c_master_bus_add_device(bus, &dcfg, &dev) != ESP_OK) return false;
-
+    memset(&diag,0,sizeof diag); io_failed=false;
+    if (!rc522_bus_init(cfg)) return false;
     soft_reset();
     wreg(REG_T_MODE, 0x80);
     wreg(REG_T_PRESCALER, 0xA9);
@@ -323,22 +261,27 @@ bool rc522_init(const pcg_rc522_conf_t *cfg)
     antenna_on();
 
     uint8_t ver = rreg8(REG_VERSION);
-    ESP_LOGI(TAG, "MFRC522/WS1850S version=0x%02x", ver);
-    return ver != 0xFF && ver != 0x00;
+    diag.version=ver;
+    uint8_t crc[2], probe[]={0x30,0x04};
+    diag.crc_ok = calc_crc(probe,2,crc)==RC_OK && crc[0]==0x26 && crc[1]==0xee;
+    return !io_failed && ver != 0xFF && ver != 0x00 && diag.crc_ok;
 }
 
 bool rc522_select(pcg_tag_id_t *out, uint32_t max_ms)
 {
     (void)max_ms;
-    /* Reset the RF field so a previously ACTIVE tag accepts REQA again. */
-    clear_bits8(REG_TX_CONTROL,0x03);
-    esp_rom_delay_us(5000);
-    antenna_on();
-    esp_rom_delay_us(5000);
+    io_failed=false; diag.polls++;
+    /* A held tag must return to IDLE before the next REQA. */
+    clear_bits8(REG_TX_CONTROL,0x03); rc522_bus_delay_us(5000);
+    antenna_on(); rc522_bus_delay_us(5000);
     uint8_t atqa[2];
-    if (request_reqa(atqa) != RC_OK) return false;
-    if (select_uid(out->uid, &out->uid_len) != RC_OK) return false;
-    return out->uid_len == 4 || out->uid_len == 7 || out->uid_len == 10;
+    diag.stage=1; diag.last_rc=request_reqa(atqa);
+    if (diag.last_rc!=RC_OK) return false;
+    diag.stage=2; diag.last_rc=select_uid(out->uid,&out->uid_len);
+    if (diag.last_rc!=RC_OK) return false;
+    diag.selected++;
+    diag.stage=0;
+    return out->uid_len==4 || out->uid_len==7 || out->uid_len==10;
 }
 
 bool rc522_get_version(uint8_t version[8])

@@ -13,11 +13,12 @@
 #include <stdint.h>
 #include "pcg_ndef.h"
 
-#define PCG_FIRMWARE_VERSION "2026.11.14-player-write.1"
+#define PCG_FIRMWARE_VERSION "2026.11.14-feedback.2"
 #define PCG_WRITE_MODE "blank-player-v1"
 #define PCG_PROTO_LINE_MAX 4096   /* matches the web JSON-line cap */
 
 typedef struct pcg_proto pcg_proto_t;
+struct cJSON;
 
 /* A presented card, possibly with an identity descriptor. */
 typedef struct {
@@ -64,6 +65,11 @@ struct pcg_proto {
     char presence_ndef[16];
     char reset_reason[16];
     void (*on_session)(struct pcg_proto *p);
+    bool status_events;
+    void (*on_feedback)(struct pcg_proto *p,bool sound);
+    void (*on_diag)(struct pcg_proto *p,struct cJSON *response);
+    char phase[20];
+    int progress;
 };
 
 void pcg_proto_init(pcg_proto_t *p, const char *device_name,
@@ -86,4 +92,5 @@ void pcg_proto_on_line(pcg_proto_t *p, const char *line, size_t len);
 void pcg_proto_on_card(pcg_proto_t *p, const pcg_card_t *card);
 void pcg_proto_on_removed(pcg_proto_t *p);
 
+void pcg_proto_status(pcg_proto_t *p,const char *phase,const char *uid,int progress);
 #endif /* PCG_PROTO_H */

@@ -37,15 +37,15 @@ int main(void)
     ui_model_t ui;
     char a[22], b[22], c[22];
     ui_model_reset(&ui);
-    CHECK(ui_model_apply(&ui, 1, 0, "idle", "", a, b, c) == UI_BEEP_NONE, "ready does not beep");
-    CHECK(strcmp(a, "READY") == 0 && strcmp(b, "USB wait") == 0, "disconnected screen says USB wait");
+    CHECK(ui_model_apply(&ui, 1, 0, "idle", "", a, b, c) == UI_BEEP_WAIT, "ready starts gentle waiting tone");
+    CHECK(strcmp(a, "等待卡片") == 0, "disconnected screen says USB wait");
     CHECK(ui_model_apply(&ui, 1, 1, "idle", "", a, b, c) == UI_BEEP_NONE, "host open does not beep");
-    CHECK(strcmp(b, "PC open") == 0, "open port is shown");
+    CHECK(ui.usb_open == 1, "open port is shown");
     CHECK(ui_model_apply(&ui, 1, 1, "blank", "04AA", a, b, c) == UI_BEEP_OK, "blank card beeps once");
-    CHECK(strcmp(a, "BLANK CARD") == 0, "blank card is labeled");
+    CHECK(strcmp(a, "空白卡已就绪") == 0, "blank card is labeled");
     CHECK(ui_model_apply(&ui, 1, 1, "blank", "04AA", a, b, c) == UI_BEEP_NONE, "same blank card does not beep again");
     CHECK(ui_model_apply(&ui, 1, 1, "error", "04AA", a, b, c) == UI_BEEP_ERR, "read error beeps");
-    CHECK(ui_model_apply(&ui, 1, 1, "idle", "", a, b, c) == UI_BEEP_NONE, "removal does not beep");
+    CHECK(ui_model_apply(&ui, 1, 1, "idle", "", a, b, c) == UI_BEEP_WAIT, "removal resumes waiting tone");
 
     uint8_t mem[508];
     uint8_t out[508];

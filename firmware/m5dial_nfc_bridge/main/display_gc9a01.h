@@ -14,4 +14,5 @@ void display_note_nfc(int nfc_ok);
 void display_note_usb(int open);
 void display_note_card(const char *kind, const char *uid);
 
+void display_note_progress(const char *kind,const char *uid,int percent);
 #endif

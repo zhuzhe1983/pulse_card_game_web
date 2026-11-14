@@ -27,6 +27,7 @@ void pcg_write_blank_player(const pcg_tag_io_t *io, const char *uid, const char 
     if (pcg_ntag_plan_write(memory,sizeof memory,3,normalized,1,uid,uid,planned,reason,sizeof reason)) REJECT(reason);
     int count = pcg_ntag_dirty_pages(memory,planned,sizeof memory,3,pages,sizeof pages);
     if (count < 0) REJECT("invalid write plan");
+    if(io->progress)io->progress(io->ctx,"writing",0);
     /* Invalidate NDEF first; commit its first page only after the body is durable. */
     const uint8_t empty[4] = {3,0,0xfe,0};
     if (!same_card(io,uid)) REJECT("card removed or changed");
@@ -35,10 +36,12 @@ void pcg_write_blank_player(const pcg_tag_io_t *io, const char *uid, const char 
         if (pages[i] == 4) continue;
         if (!same_card(io,uid)) REJECT("card removed or changed");
         if (io->write_page(io->ctx,pages[i],planned + (pages[i]-3)*4)) REJECT("page write failed");
+        if(io->progress)io->progress(io->ctx,"writing",(i+1)*100/(count+1));
     }
     if (!same_card(io,uid)) REJECT("card removed or changed");
     if (io->write_page(io->ctx,4,planned + 4)) REJECT("page write failed");
     if (!same_card(io,uid)) REJECT("card removed or changed");
+    if(io->progress)io->progress(io->ctx,"verifying",100);
     if (io->read(io->ctx,12,check,sizeof check) != sizeof check || memcmp(check,planned,sizeof check)) REJECT("readback failed");
     if (pcg_ntag_classify(check,sizeof check,3,readback,sizeof readback) != PCG_NDEF_PULSE || strcmp(readback,normalized)) REJECT("readback failed");
     snprintf(out->uid,sizeof out->uid,"%s",uid);

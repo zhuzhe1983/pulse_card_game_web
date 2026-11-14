@@ -133,15 +133,15 @@
   }
 
   class ReaderManager {
-    constructor({ onCard = () => {}, onStatus = () => {}, onRemoved = () => {} } = {}) {
-      this.onCard = onCard; this.onStatus = onStatus; this.onRemoved = onRemoved;
+    constructor({ onCard = () => {}, onStatus = () => {}, onRemoved = () => {}, onDeviceStatus = () => {} } = {}) {
+      this.onCard = onCard; this.onStatus = onStatus; this.onRemoved = onRemoved; this.onDeviceStatus = onDeviceStatus;
       this.state = { state: 'disconnected', source: null, message: '尚未连接读卡器', canWrite: false };
       this._epoch = 0; this._pending = new Map(); this._source = null;
       this._lastSignature = ''; this._lastAt = 0; this._lastUID = null;
       this._writeBusy = false;
     }
     _status(state, source, message, canWrite = false) {
-      this.state = { state, source, message, canWrite: !!canWrite, firmware: this._firmware || null, writeMode: this._writeMode || null };
+      this.state = { state, source, message, canWrite: !!canWrite, firmware: this._firmware || null, writeMode: this._writeMode || null, feedback: !!this._feedback, sound: this._sound !== false };
       this.onStatus(this.state);
     }
     _secure() {
@@ -183,12 +183,21 @@
         if (message.protocol !== PROTOCOL || !Array.isArray(message.capabilities) || !message.capabilities.includes('uid') || message.capabilities.some(x => !['uid', 'ndef_read', 'ndef_write'].includes(x))) fail('BRIDGE_VERSION', '读卡桥协议不兼容。');
         this._firmware = typeof message.firmware === 'string' ? message.firmware : null;
         this._writeMode = message.write_mode === 'blank-player-v1' ? message.write_mode : null;
+        this._feedback = message.feedback === true;
         this._bridgeReady = true;
         this._canWrite = message.capabilities.includes('ndef_read') && message.capabilities.includes('ndef_write');
         if (this._hello) { this._hello.resolve(message); this._hello = null; }
         return;
       }
       if (!this._bridgeReady) fail('BRIDGE_HANDSHAKE', '读卡桥必须先完成 hello 握手。');
+      if (message.type === 'status') {
+        const phases = ['idle','reading','blank','pulse','game','foreign','unformatted','unsupported','error','writing','verifying','write_ok','write_error'];
+        if (!phases.includes(message.phase)) return;
+        this.onDeviceStatus({ phase: message.phase, uid: message.uid || '', progress: Number.isInteger(message.progress) ? Math.max(-1,Math.min(100,message.progress)) : -1 });
+        return;
+      }
+      if (message.type === 'diag') { if (typeof message.sound === 'boolean') {this._sound=message.sound;this.state.sound=message.sound;} this.onDeviceStatus({ diagnostic: message }); return; }
+      if (message.type === 'feedback') { this._sound = message.sound !== false; this.state.sound = this._sound; this.onDeviceStatus({ sound: this._sound }); return; }
       if (message.type === 'removed') { this._lastSignature = ''; this._lastUID = null; this._lastCard = null; this.onRemoved(); return; }
       if (message.type === 'card') {
         if (message.tech !== undefined && message.tech !== 'nfc-a') fail('CARD_TECH', '当前版本只接收 NFC-A 卡。');
@@ -261,7 +270,7 @@
             for (const message of decoder.push(result.data)) this._bridgeMessage(message);
           }
         })().catch(error => { if (epoch === this._epoch) this._transportError(error); });
-        await this._send({ type: 'hello', protocol: PROTOCOL });
+        await this._send({ type: 'hello', protocol: PROTOCOL, status_events: true });
         await hello;
         if (epoch !== this._epoch) fail('DISCONNECTED', '连接已取消。');
         this._status('connected', 'webusb', 'PCG USB 读卡桥已连接', this._canWrite);
@@ -315,7 +324,7 @@
             }
           } finally { reader.releaseLock(); }
         })().catch(error => { if (epoch === this._epoch) this._transportError(error); });
-        await this._send({ type: 'hello', protocol: PROTOCOL });
+        await this._send({ type: 'hello', protocol: PROTOCOL, status_events: true });
         await hello;
         if (epoch !== this._epoch) fail('DISCONNECTED', '连接已取消。');
         this._status('connected', 'serial', '握手完成，M5Dial 已连接。灯现在应为绿色。', this._canWrite);
@@ -359,6 +368,14 @@
       } catch (error) {
         await this.disconnect(); this._status('error', 'webnfc', error.message || 'NFC 扫描失败。'); throw error;
       }
+    }
+    async setSound(enabled) {
+      if (!this._bridgeReady || !this._feedback) fail('FEEDBACK_UNAVAILABLE', '请升级 M5Dial 声音与屏幕固件。');
+      await this._send({ type: 'feedback', sound: !!enabled });
+    }
+    async diagnose() {
+      if (!this._bridgeReady) fail('BRIDGE_HANDSHAKE', '请先连接 M5Dial。');
+      await this._send({ type: 'diag' });
     }
     async writePlayer(value, { overwrite = false, blankOnly = false } = {}) {
       const descriptor = parseDescriptor(value);
@@ -412,7 +429,7 @@
       for (const pending of this._pending.values()) { clearTimeout(pending.timer); pending.reject(error); }
       this._pending.clear();
       this._source = null; this._send = null; this._bridgeReady = false; this._canWrite = false;
-      this._lastUID = null; this._lastSignature = ''; this._lastCard = null; this._writeMode = null; this._firmware = null;
+      this._lastUID = null; this._lastSignature = ''; this._lastCard = null; this._writeMode = null; this._feedback = false; this._sound = true; this._firmware = null;
       this.onRemoved();
       if (usb && usb.opened) { try { await usb.close(); } catch (_) {} }
       if (reader) { try { await reader.cancel(); } catch (_) {} }
