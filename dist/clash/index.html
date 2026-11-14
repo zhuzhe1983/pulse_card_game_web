@@ -1065,8 +1065,13 @@ html:lang(en) .hand-heading small { letter-spacing:0; }
 .menu-pop .nfc-panel { max-height:none; overflow:visible; }
 .nfc-dock button:disabled { opacity:.5; cursor:default; }
 @media (max-width:700px), (max-height:550px) { .reader-toggle { top:24px; right:calc(6% + 110px); min-height:32px; font-size:12px; padding:5px 8px; } }
+
+.player-current { margin:2px 0; padding:8px; background:#253e40; border-radius:6px; font-size:14px; }
+.player-current small { display:block; margin-top:4px; overflow-wrap:anywhere; font-size:10px; }
+.player-panel input { width:100%; min-height:40px; padding:6px 8px; color:#f7fffb; background:#102018; border:1px solid #8d98a0; border-radius:6px; }
+.player-id { overflow-wrap:anywhere; }
 </style>
-<script src="../../shared/locales/en.js?v=7763a04900dd"></script>
+<script src="../../shared/locales/en.js?v=a648295e4dac"></script>
 <script src="../../shared/i18n.js?v=58fd26c9bace"></script>
 </head>
 <body>
@@ -2875,6 +2880,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
 (function (root) {
   'use strict';
   const MIME = 'application/vnd.pulse.card+json';
+  const Readers = root.PCGReaders || (typeof module === 'object' ? require('../readers.js') : null);
   const DEBOUNCE_MS = 1500;
   const TEXT = Object.freeze({
     unsupported: '这台浏览器不能刷卡，仍可用拖拽或点选出牌',
@@ -2926,7 +2932,12 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
     const records = message && Array.isArray(message.records) ? message.records : [];
     if (!records.length || records.every(record => record && record.recordType === 'empty')) return { kind: 'blank' };
     const matches = records.filter(record => record && record.recordType === 'mime' && String(record.mediaType || '').toLowerCase() === MIME);
-    if (matches.length !== 1) return { kind: 'unknown' };
+    const identities = records.filter(record => record && record.recordType === 'mime' && Readers && String(record.mediaType || '').toLowerCase() === Readers.MIME);
+    if (matches.length + identities.length !== 1) return { kind: 'unknown' };
+    if (identities.length) {
+      try { return identityResult(Readers.parseDescriptor(identities[0].data)); }
+      catch (_) { return { kind: 'unknown' }; }
+    }
     const mime = matches[0];
     let body;
     try { body = JSON.parse(bytesToText(mime.data)); }
@@ -2968,11 +2979,25 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
     return 'card:' + (cardId || 'blank');
   }
 
+  function identityResult(value) {
+    try {
+      const descriptor = Readers.parseDescriptor(value);
+      if (descriptor.type !== 'player') return { kind: 'unknown' };
+      return { kind: 'identity', descriptor, name: descriptor.name || descriptor.id, json: JSON.stringify(descriptor) };
+    } catch (_) { return { kind: 'unknown' }; }
+  }
+
+  function createPlayer(name, skin) {
+    name = String(name || '').trim();
+    if (!name) throw new Error('请填写玩家昵称');
+    return Readers.parseDescriptor({ game: 'pcg', v: 1, type: 'player', id: root.crypto.randomUUID(), skin, name });
+  }
+
   // The existing M5Dial reports raw NDEF as hex, including game-card MIME
   // records that its legacy identity parser classifies as "foreign".
   function classifyBridge(event, lookup) {
     if (!event || event.ndef === 'error') return { kind: 'failure' };
-    if (event.descriptor) return { kind: 'identity' };
+    if (event.descriptor) return identityResult(event.descriptor);
     if (event.ndef === 'blank') return { kind: 'blank' };
     const tag = event.tag || {};
     const hex = tag.ndef_hex;
@@ -3018,7 +3043,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
     const support = scanSupport(opts.env || {});
     const seen = new Map();
     let reader = null, scanAbort = null, writeAbort = null, verifyTimer = null;
-    let selected = null, lastKind = '', lastSerial = '', expected = null;
+    let selected = null, selectedIdentity = null, lastKind = '', lastSerial = '', expected = null;
     let active = false, starting = false, writing = false, epoch = 0;
     let status = support.enabled ? '' : support.text;
     const log = [];
@@ -3043,21 +3068,22 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
       if (writing) return { ignored: true, kind: 'writing' };
       const serial = event && typeof event.serialNumber === 'string' ? event.serialNumber : '';
       const found = classifyMessage(event && event.message, lookup);
-      const key = debounceKey(serial, found.cardId);
+      const key = debounceKey(serial, found.cardId || (found.descriptor && found.descriptor.id));
       if (expected) {
         if (expected.serial && serial !== expected.serial) {
           emit('请刷回刚才写入的同一张卡', { kind: 'verifying' });
           return { kind: 'wrong-card' };
         }
-        if (found.kind !== 'ready' || found.json !== expected.json) {
+        if (found.kind !== expected.kind || found.json !== expected.json) {
           verifyFailed();
           return { kind: 'verify-failed' };
         }
         clearVerify();
-        lastKind = 'ready';
+        lastKind = found.kind;
         lastSerial = serial;
         seen.set(key, now());
-        emit('写入并读回校验成功', { kind: 'verified', card: found });
+        emit(found.kind === 'identity' ? '玩家身份卡写入并校验成功' : '写入并读回校验成功', { kind: 'verified', card: found });
+        if (found.kind === 'identity' && opts.onIdentity) opts.onIdentity(found, { verified: true, serial });
         return { kind: 'verified', card: found };
       }
       const previous = seen.get(key);
@@ -3067,9 +3093,10 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
       lastKind = found.kind;
       lastSerial = serial;
       const note = serial ? [] : [TEXT.noUid, TEXT.noUidMore];
-      const text = found.kind === 'ready' ? '读到 ' + found.name : found.kind === 'blank' ? TEXT.blank : TEXT.unknown + '。' + TEXT.occupied;
+      const text = found.kind === 'identity' ? '已识别玩家身份卡' : found.kind === 'ready' ? '读到 ' + found.name : found.kind === 'blank' ? TEXT.blank : TEXT.unknown + '。' + TEXT.occupied;
       emit([text].concat(note).join('。'), { kind: found.kind, card: found });
       if (found.kind === 'ready' && opts.onReady) opts.onReady(found, { serial });
+      if (found.kind === 'identity' && opts.onIdentity) opts.onIdentity(found, { verified: false, serial });
       return found;
     }
 
@@ -3118,12 +3145,15 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
     }
 
     async function writeSelected(force) {
-      if (!selected) return { wrote: false, reason: 'no-selection' };
+      if (!selected && !selectedIdentity) return { wrote: false, reason: 'no-selection' };
       if (!active || !reader) return { wrote: false, reason: 'not-started' };
       if (writing || expected) return { wrote: false, reason: 'busy' };
-      if (['unknown', 'ready'].includes(lastKind) && !force) return { wrote: false, reason: 'needs-overwrite' };
+      if (['unknown', 'ready', 'identity'].includes(lastKind) && !force) return { wrote: false, reason: 'needs-overwrite' };
+      // Player setup is deliberately blank-tag only. Existing identities are never replaced here.
+      if (selectedIdentity && lastKind !== 'blank') return { wrote: false, reason: 'not-blank' };
       if (lastKind !== 'blank' && !(force && ['unknown', 'ready'].includes(lastKind))) return { wrote: false, reason: 'not-writable' };
-      const message = messageFor(selected, opts.wikiBase || '');
+      const kind = selectedIdentity ? 'identity' : 'ready';
+      const message = selectedIdentity ? { json: JSON.stringify(selectedIdentity), records: [{ recordType: 'mime', mediaType: Readers.MIME, data: Readers.encodeDescriptor(selectedIdentity) }] } : messageFor(selected, opts.wikiBase || '');
       const serial = lastSerial, generation = epoch;
       const controller = new AbortController();
       writeAbort = controller; writing = true; lastKind = 'writing';
@@ -3131,10 +3161,10 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
       const timer = setTimeout(() => controller.abort(), opts.timeoutMs || 20000);
       try {
         // Never let the default overwrite:true replace a different occupied tag.
-        await reader.write({ records: message.records }, { overwrite: !!force, signal: controller.signal });
+        await reader.write({ records: message.records }, { overwrite: kind === 'identity' ? false : !!force, signal: controller.signal });
         if (generation !== epoch) return { wrote: false, reason: 'cancelled' };
         writing = false; writeAbort = null;
-        expected = { json: message.json, serial };
+        expected = { json: message.json, serial, kind };
         lastKind = 'verifying';
         emit('写入完成，请移开再刷同一张卡以校验', { kind: 'verifying' });
         verifyTimer = setTimeout(verifyFailed, opts.timeoutMs || 20000);
@@ -3149,7 +3179,13 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
 
     return {
       TEXT, MIME, support, start, stop, handleReading,
-      select(card) { selected = card || null; },
+      select(card) { selected = card || null; selectedIdentity = null; },
+      selectIdentity(value) {
+        const found = value ? identityResult(value) : null;
+        if (found && found.kind !== 'identity') throw new Error('不是有效的玩家身份');
+        selectedIdentity = found ? found.descriptor : null;
+        selected = null;
+      },
       selected() { return selected; },
       lastKind() { return lastKind; },
       status() { return status; },
@@ -3163,7 +3199,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
   }
 
   const api = Object.freeze({
-    MIME, DEBOUNCE_MS, TEXT, scanSupport, classifyMessage, messageFor, canonical, debounceKey, decideTap, createTapSession, classifyBridge
+    MIME, DEBOUNCE_MS, TEXT, scanSupport, classifyMessage, messageFor, canonical, debounceKey, decideTap, createTapSession, classifyBridge, createPlayer
   });
   root.PCGClashNfc = api;
   if (typeof module === 'object' && module.exports) module.exports = api;
@@ -3236,7 +3272,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
       aiming: false, linking: false, linkSource: null, chainIndex: null, menu: false, logOpen: false,
       showBanner: true, fresh: true, seen: new Set(), fx: null, error: null, log: [],
       handoff: false, seed: 0, opening: scenario === 'sim' ? 'sim' : 'lesson', simPool: 0, simExcluded: '', simNotes: '',
-      readerMenu: false, nfcPanel: false, nfcRid: '', nfcStatus: '', confirmEnd: false, muteAttackRemind: false, idleIds: []
+      readerMenu: false, identityPanel: false, nfcPanel: false, nfcRid: '', nfcStatus: '', confirmEnd: false, muteAttackRemind: false, idleIds: []
     };
   }
 
@@ -3951,6 +3987,22 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
   const byRid = Object.create(null);
   roster.cards.forEach(card => { byRid[card.rid] = card; });
   function lookupRid(rid) { const base = byRid[rid]; return base ? Object.assign({}, base, cards[base.template_id]) : null; }
+  const playerStorageKey = 'pulse.clash.player.v1';
+  let currentPlayer = null, playerDraft = null, playerName = '', playerSkin = '01';
+  try {
+    const saved = localStorage.getItem(playerStorageKey);
+    const parsed = saved ? root.PCGReaders.parseDescriptor(saved) : null;
+    if (parsed && parsed.type === 'player') currentPlayer = parsed;
+  } catch (_) { /* Reading the card remains available without browser storage. */ }
+  function recognizePlayer(found, info) {
+    if ((ui.identityPanel || ui.nfcPanel) && !info.verified) return;
+    currentPlayer = found.descriptor;
+    try { localStorage.setItem(playerStorageKey, JSON.stringify(currentPlayer)); }
+    catch (_) { ui.nfcStatus += '。浏览器未保存身份，下次请重新刷卡'; }
+    if (info.verified) { ui.identityPanel = false; playerDraft = null; nfcSession.selectIdentity(null); }
+    render();
+    if (info.verified && $('.reader-pop')) $('.reader-pop').scrollTop = 0;
+  }
   const nfcSession = Nfc.createTapSession({
     env: {
       ua: navigator.userAgent,
@@ -3962,7 +4014,8 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
       ui.nfcStatus = text;
       if (document.body.dataset.ready === '1') render();
     },
-    onReady(found) { playFromNfc(found); }
+    onReady(found) { playFromNfc(found); },
+    onIdentity: recognizePlayer
   });
 
   let serialBusy = false;
@@ -3974,17 +4027,18 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
     onCard(event) {
       const found = Nfc.classifyBridge(event, lookupRid);
       ui.nfcStatus = found.kind === 'ready' ? '读到 ' + found.name
-        : found.kind === 'identity' ? '这是旧版玩家身份卡，不能用作出牌卡'
+        : found.kind === 'identity' ? '已识别玩家身份卡'
         : found.kind === 'blank' ? '这是空白卡，请用安卓 NFC 初始化游戏牌'
         : found.kind === 'failure' ? Nfc.TEXT.readFail
         : '未读到游戏牌记录，请先用安卓 NFC 写入游戏牌';
       render();
+      if (found.kind === 'identity') recognizePlayer(found, { verified: false });
       if (found.kind === 'ready') playFromNfc(found);
     }
   });
 
   function playFromNfc(found) {
-    if (ui.nfcPanel || nfcSession.busy()) return;
+    if (ui.nfcPanel || ui.identityPanel || nfcSession.busy()) return;
     const card = cards[found.templateId];
     const decision = Nfc.decideTap({
       canAct: canAct(),
@@ -4014,15 +4068,31 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
     const serial = root.PCGReaders.capabilities();
     const connected = root.PCGReaders.lampOn(serialReader.state.state);
     const busy = serialBusy || nfcSession.busy();
-    return `<strong>刷卡出牌</strong><p class="nfc-help">刷卡使用手牌中的同名牌，需要目标时再点选目标。</p>
+    return `<strong>刷卡与玩家身份</strong>${currentPlayer ? `<p class="player-current">当前玩家：<b data-i18n-ignore>${esc(currentPlayer.name || '玩家')}</b><small>ID <span data-i18n-ignore>${esc(currentPlayer.id)}</span></small></p>` : '<p class="nfc-help">刷玩家卡识别身份，刷游戏牌出牌。</p>'}<p class="nfc-help">刷卡使用手牌中的同名牌，需要目标时再点选目标。</p>
       <button type="button" data-action="nfc-serial"${!serial.secure || !serial.serial || connected || busy || nfcSession.active() ? ' disabled' : ''}>${connected ? 'M5Dial 已连接' : '连接 M5Dial（USB）'}</button>
       <button type="button" class="nfc-entry" data-action="nfc-start" data-nfc="${support.enabled ? 'on' : 'off'}"${!support.enabled || nfcSession.active() || connected || busy ? ' disabled' : ''}>${nfcSession.active() ? '安卓 NFC 已开启' : '开始安卓 NFC 刷卡'}</button>
       <button type="button" data-action="nfc-stop"${!connected && !serialBusy && !nfcSession.active() ? ' disabled' : ''}>停止刷卡 / 断开</button>
       <p class="nfc-help">电脑：Chrome / Edge + USB 连接 M5Dial。手机：开启 NFC，用安卓 Chrome 打开 HTTPS 网站。</p>
       ${!support.enabled ? '<p class="nfc-help">本浏览器不能使用手机 NFC，可用 M5Dial 或点选出牌。</p>' : ''}
-      <button type="button" class="nfc-init" data-action="nfc-init"${!support.enabled || connected || serialBusy ? ' disabled' : ''}>${ui.nfcPanel ? '返回刷卡出牌' : '初始化游戏牌（安卓 NFC）'}</button>
-      <p class="nfc-help">M5Dial 游戏牌写入尚未接通。玩家身份初始化不在当前版本提供。</p>
+      <button type="button" data-action="nfc-player-init"${!support.enabled || connected || busy ? ' disabled' : ''}>${ui.identityPanel ? '返回刷卡' : '创建玩家身份卡（安卓 NFC）'}</button>
+      <button type="button" class="nfc-init" data-action="nfc-init"${!support.enabled || connected || busy ? ' disabled' : ''}>${ui.nfcPanel ? '返回刷卡出牌' : '初始化游戏牌（安卓 NFC）'}</button>
+      <p class="nfc-help">M5Dial 可读取玩家卡和游戏牌，写卡仍待实机验证。</p>
       <p class="nfc-status" role="status" aria-live="polite">${esc(ui.nfcStatus || '选择一种刷卡方式')}</p>`;
+  }
+
+  function playerPanel() {
+    if (!ui.identityPanel) return '';
+    const canWrite = playerDraft && nfcSession.active() && !nfcSession.busy() && nfcSession.lastKind() === 'blank';
+    const occupied = ['identity', 'ready', 'unknown'].includes(nfcSession.lastKind());
+    const options = Array.from({ length: 9 }, (_, i) => { const value = '0' + (i + 1); return `<option value="${value}"${value === playerSkin ? ' selected' : ''}>${value}</option>`; }).join('');
+    return `<section class="nfc-panel player-panel" data-player-panel="1">
+      <strong>初始化空白玩家卡</strong><p>身份卡保存玩家 ID、昵称和卡面编号，不保存对局进度或收藏。</p>
+      ${playerDraft ? `<p>待写入玩家：<b data-i18n-ignore>${esc(playerDraft.name)}</b></p><p>卡面编号：<span data-i18n-ignore>${esc(playerDraft.skin)}</span></p><small class="player-id" data-i18n-ignore>ID ${esc(playerDraft.id)}</small><button type="button" data-action="nfc-player-edit"${nfcSession.busy() ? ' disabled' : ''}>重新填写</button>`
+      : '<label>玩家昵称<input type="text" data-player-name autocomplete="nickname" maxlength="48" placeholder="最多 24 字" value="' + esc(playerName) + '"></label><label>卡面编号<select data-player-skin>' + options + '</select></label><button type="button" data-action="nfc-player-prepare">生成玩家身份</button>'}
+      <p>请先刷空白卡，再确认写入；写入后移开并重刷同一张卡。</p>
+      ${occupied ? '<p>卡上已有内容，不能初始化玩家身份卡。请换一张空白卡。</p>' : ''}
+      <button type="button" data-action="nfc-player-write"${canWrite ? '' : ' disabled'}>确认写入玩家身份</button>
+    </section>`;
   }
 
   function nfcPanel() {
@@ -4074,7 +4144,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
     </div>
     <section class="menu-pop reader-pop" aria-label="刷卡出牌"${ui.readerMenu ? '' : ' hidden'}>
       <button type="button" data-action="nfc-close">关闭刷卡面板</button>
-      <div class="nfc-dock">${nfcControl()}${nfcPanel()}</div>
+      <div class="nfc-dock">${nfcControl()}${playerPanel()}${nfcPanel()}</div>
     </section>
     ${ui.reveal ? '<div class="banner" id="reveal-banner">教学明牌 · 双方手牌都看得见 · 牌库仍只显示张数</div>' : '<div id="reveal-banner" hidden></div>'}
     <main class="arena table${ui.attacker ? ' aiming' : ''}${canDeploy() ? ' holding' : ''}${ui.aiBusy ? ' ai-run' : ''}" data-scene-status="${esc(scenebook.status || 'awaiting_generated_assets')}" data-scenario="${esc(ui.scenario)}" data-ruleset="${esc(content.ruleset_id)}" data-source-commit="${esc(C.SOURCE_COMMIT)}" data-mode="${ui.mode}" data-opening="${esc(ui.opening)}" data-ai="${ui.aiBusy ? 'run' : 'idle'}" data-handoff="${ui.handoff ? '1' : '0'}" data-seed="${ui.seed || ''}" data-sim-pool="${ui.simPool || ''}" data-sim-excluded="${esc(ui.simExcluded || '')}" data-deck0="${esc(ui.built ? ui.built[0].join(',') : '')}" data-deck1="${esc(ui.built ? ui.built[1].join(',') : '')}">
@@ -4497,7 +4567,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
       const why = el.querySelector('.act-why');
       return note(new C.ClashError(why ? I.source(why) : C.reasonText(el.dataset.block), el.dataset.block));
     }
-    const free = ['mode', 'toggle-menu', 'toggle-log', 'scenario', 'restart', 'handoff-confirm', 'replay-seed', 'nfc-menu', 'nfc-close', 'nfc-start', 'nfc-serial', 'nfc-stop', 'nfc-init', 'nfc-write', 'nfc-overwrite'];
+    const free = ['mode', 'toggle-menu', 'toggle-log', 'scenario', 'restart', 'handoff-confirm', 'replay-seed', 'nfc-menu', 'nfc-close', 'nfc-player-init', 'nfc-player-prepare', 'nfc-player-write', 'nfc-player-edit', 'nfc-start', 'nfc-serial', 'nfc-stop', 'nfc-init', 'nfc-write', 'nfc-overwrite'];
     if ((ui.aiBusy || ui.handoff || (ui.mode === 'ai' && game && game.seat !== 0)) && !free.includes(action)) {
       return note(new C.ClashError(C.reasonText('not_your_turn'), 'not_your_turn'));
     }
@@ -4521,7 +4591,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
       ui.readerMenu = true;
       return render();
     }
-    if (action === 'nfc-close') { ui.readerMenu = false; ui.nfcPanel = false; return render(); }
+    if (action === 'nfc-close') { ui.readerMenu = false; ui.nfcPanel = false; ui.identityPanel = false; return render(); }
     if (action === 'nfc-start') return nfcSession.start();
     if (action === 'nfc-serial') {
       if (serialBusy || nfcSession.active()) return;
@@ -4536,7 +4606,30 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
       serialReader.disconnect().catch(error => { ui.nfcStatus = error.message; });
       return;
     }
+    if (action === 'nfc-player-init') {
+      ui.identityPanel = !ui.identityPanel;
+      ui.nfcPanel = false;
+      if (ui.identityPanel) {
+        playerDraft = null; playerName = ''; playerSkin = '01';
+        nfcSession.selectIdentity(null);
+        if (!nfcSession.active()) nfcSession.start();
+      }
+      render();
+      if (ui.identityPanel) $('.player-panel').scrollIntoView({ block: 'nearest' });
+      return;
+    }
+    if (action === 'nfc-player-prepare') {
+      try {
+        playerDraft = Nfc.createPlayer($('[data-player-name]').value, $('[data-player-skin]').value);
+        nfcSession.selectIdentity(playerDraft);
+        ui.nfcStatus = '玩家身份已生成，请刷空白卡后确认写入';
+      } catch (error) { ui.nfcStatus = error.message; }
+      return render();
+    }
+    if (action === 'nfc-player-edit') { playerDraft = null; nfcSession.selectIdentity(null); return render(); }
+    if (action === 'nfc-player-write') return nfcSession.writeCard();
     if (action === 'nfc-init') {
+      ui.identityPanel = false;
       ui.nfcPanel = !ui.nfcPanel;
       nfcSession.select(lookupRid(ui.nfcRid));
       if (ui.nfcPanel && !nfcSession.active()) nfcSession.start();
@@ -4552,7 +4645,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
       else begin('versus');
       return;
     }
-    if (action === 'toggle-menu') { ui.menu = !ui.menu; ui.readerMenu = false; ui.nfcPanel = false; return render(); }
+    if (action === 'toggle-menu') { ui.menu = !ui.menu; ui.readerMenu = false; ui.nfcPanel = false; ui.identityPanel = false; return render(); }
     if (action === 'toggle-log') { ui.logOpen = !ui.logOpen; return render(); }
     if (action === 'toggle-reveal') { ui.reveal = !ui.reveal; return render(); }
     if (action === 'toggle-catalog') { ui.catalog = !ui.catalog; return render(); }
@@ -5169,6 +5262,13 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
     event.preventDefault();
     gesture.dead = true;
     finishGesture(true);
+  });
+
+  document.addEventListener('input', event => {
+    if (event.target.matches('[data-player-name]')) playerName = event.target.value;
+  });
+  document.addEventListener('change', event => {
+    if (event.target.matches('[data-player-skin]')) playerSkin = event.target.value;
   });
 
   document.addEventListener('change', event => {

@@ -4,6 +4,7 @@
 (function (root) {
   'use strict';
   const MIME = 'application/vnd.pulse.card+json';
+  const Readers = root.PCGReaders || (typeof module === 'object' ? require('../readers.js') : null);
   const DEBOUNCE_MS = 1500;
   const TEXT = Object.freeze({
     unsupported: '这台浏览器不能刷卡，仍可用拖拽或点选出牌',
@@ -55,7 +56,12 @@
     const records = message && Array.isArray(message.records) ? message.records : [];
     if (!records.length || records.every(record => record && record.recordType === 'empty')) return { kind: 'blank' };
     const matches = records.filter(record => record && record.recordType === 'mime' && String(record.mediaType || '').toLowerCase() === MIME);
-    if (matches.length !== 1) return { kind: 'unknown' };
+    const identities = records.filter(record => record && record.recordType === 'mime' && Readers && String(record.mediaType || '').toLowerCase() === Readers.MIME);
+    if (matches.length + identities.length !== 1) return { kind: 'unknown' };
+    if (identities.length) {
+      try { return identityResult(Readers.parseDescriptor(identities[0].data)); }
+      catch (_) { return { kind: 'unknown' }; }
+    }
     const mime = matches[0];
     let body;
     try { body = JSON.parse(bytesToText(mime.data)); }
@@ -97,11 +103,25 @@
     return 'card:' + (cardId || 'blank');
   }
 
+  function identityResult(value) {
+    try {
+      const descriptor = Readers.parseDescriptor(value);
+      if (descriptor.type !== 'player') return { kind: 'unknown' };
+      return { kind: 'identity', descriptor, name: descriptor.name || descriptor.id, json: JSON.stringify(descriptor) };
+    } catch (_) { return { kind: 'unknown' }; }
+  }
+
+  function createPlayer(name, skin) {
+    name = String(name || '').trim();
+    if (!name) throw new Error('请填写玩家昵称');
+    return Readers.parseDescriptor({ game: 'pcg', v: 1, type: 'player', id: root.crypto.randomUUID(), skin, name });
+  }
+
   // The existing M5Dial reports raw NDEF as hex, including game-card MIME
   // records that its legacy identity parser classifies as "foreign".
   function classifyBridge(event, lookup) {
     if (!event || event.ndef === 'error') return { kind: 'failure' };
-    if (event.descriptor) return { kind: 'identity' };
+    if (event.descriptor) return identityResult(event.descriptor);
     if (event.ndef === 'blank') return { kind: 'blank' };
     const tag = event.tag || {};
     const hex = tag.ndef_hex;
@@ -147,7 +167,7 @@
     const support = scanSupport(opts.env || {});
     const seen = new Map();
     let reader = null, scanAbort = null, writeAbort = null, verifyTimer = null;
-    let selected = null, lastKind = '', lastSerial = '', expected = null;
+    let selected = null, selectedIdentity = null, lastKind = '', lastSerial = '', expected = null;
     let active = false, starting = false, writing = false, epoch = 0;
     let status = support.enabled ? '' : support.text;
     const log = [];
@@ -172,21 +192,22 @@
       if (writing) return { ignored: true, kind: 'writing' };
       const serial = event && typeof event.serialNumber === 'string' ? event.serialNumber : '';
       const found = classifyMessage(event && event.message, lookup);
-      const key = debounceKey(serial, found.cardId);
+      const key = debounceKey(serial, found.cardId || (found.descriptor && found.descriptor.id));
       if (expected) {
         if (expected.serial && serial !== expected.serial) {
           emit('请刷回刚才写入的同一张卡', { kind: 'verifying' });
           return { kind: 'wrong-card' };
         }
-        if (found.kind !== 'ready' || found.json !== expected.json) {
+        if (found.kind !== expected.kind || found.json !== expected.json) {
           verifyFailed();
           return { kind: 'verify-failed' };
         }
         clearVerify();
-        lastKind = 'ready';
+        lastKind = found.kind;
         lastSerial = serial;
         seen.set(key, now());
-        emit('写入并读回校验成功', { kind: 'verified', card: found });
+        emit(found.kind === 'identity' ? '玩家身份卡写入并校验成功' : '写入并读回校验成功', { kind: 'verified', card: found });
+        if (found.kind === 'identity' && opts.onIdentity) opts.onIdentity(found, { verified: true, serial });
         return { kind: 'verified', card: found };
       }
       const previous = seen.get(key);
@@ -196,9 +217,10 @@
       lastKind = found.kind;
       lastSerial = serial;
       const note = serial ? [] : [TEXT.noUid, TEXT.noUidMore];
-      const text = found.kind === 'ready' ? '读到 ' + found.name : found.kind === 'blank' ? TEXT.blank : TEXT.unknown + '。' + TEXT.occupied;
+      const text = found.kind === 'identity' ? '已识别玩家身份卡' : found.kind === 'ready' ? '读到 ' + found.name : found.kind === 'blank' ? TEXT.blank : TEXT.unknown + '。' + TEXT.occupied;
       emit([text].concat(note).join('。'), { kind: found.kind, card: found });
       if (found.kind === 'ready' && opts.onReady) opts.onReady(found, { serial });
+      if (found.kind === 'identity' && opts.onIdentity) opts.onIdentity(found, { verified: false, serial });
       return found;
     }
 
@@ -247,12 +269,15 @@
     }
 
     async function writeSelected(force) {
-      if (!selected) return { wrote: false, reason: 'no-selection' };
+      if (!selected && !selectedIdentity) return { wrote: false, reason: 'no-selection' };
       if (!active || !reader) return { wrote: false, reason: 'not-started' };
       if (writing || expected) return { wrote: false, reason: 'busy' };
-      if (['unknown', 'ready'].includes(lastKind) && !force) return { wrote: false, reason: 'needs-overwrite' };
+      if (['unknown', 'ready', 'identity'].includes(lastKind) && !force) return { wrote: false, reason: 'needs-overwrite' };
+      // Player setup is deliberately blank-tag only. Existing identities are never replaced here.
+      if (selectedIdentity && lastKind !== 'blank') return { wrote: false, reason: 'not-blank' };
       if (lastKind !== 'blank' && !(force && ['unknown', 'ready'].includes(lastKind))) return { wrote: false, reason: 'not-writable' };
-      const message = messageFor(selected, opts.wikiBase || '');
+      const kind = selectedIdentity ? 'identity' : 'ready';
+      const message = selectedIdentity ? { json: JSON.stringify(selectedIdentity), records: [{ recordType: 'mime', mediaType: Readers.MIME, data: Readers.encodeDescriptor(selectedIdentity) }] } : messageFor(selected, opts.wikiBase || '');
       const serial = lastSerial, generation = epoch;
       const controller = new AbortController();
       writeAbort = controller; writing = true; lastKind = 'writing';
@@ -260,10 +285,10 @@
       const timer = setTimeout(() => controller.abort(), opts.timeoutMs || 20000);
       try {
         // Never let the default overwrite:true replace a different occupied tag.
-        await reader.write({ records: message.records }, { overwrite: !!force, signal: controller.signal });
+        await reader.write({ records: message.records }, { overwrite: kind === 'identity' ? false : !!force, signal: controller.signal });
         if (generation !== epoch) return { wrote: false, reason: 'cancelled' };
         writing = false; writeAbort = null;
-        expected = { json: message.json, serial };
+        expected = { json: message.json, serial, kind };
         lastKind = 'verifying';
         emit('写入完成，请移开再刷同一张卡以校验', { kind: 'verifying' });
         verifyTimer = setTimeout(verifyFailed, opts.timeoutMs || 20000);
@@ -278,7 +303,13 @@
 
     return {
       TEXT, MIME, support, start, stop, handleReading,
-      select(card) { selected = card || null; },
+      select(card) { selected = card || null; selectedIdentity = null; },
+      selectIdentity(value) {
+        const found = value ? identityResult(value) : null;
+        if (found && found.kind !== 'identity') throw new Error('不是有效的玩家身份');
+        selectedIdentity = found ? found.descriptor : null;
+        selected = null;
+      },
       selected() { return selected; },
       lastKind() { return lastKind; },
       status() { return status; },
@@ -292,7 +323,7 @@
   }
 
   const api = Object.freeze({
-    MIME, DEBOUNCE_MS, TEXT, scanSupport, classifyMessage, messageFor, canonical, debounceKey, decideTap, createTapSession, classifyBridge
+    MIME, DEBOUNCE_MS, TEXT, scanSupport, classifyMessage, messageFor, canonical, debounceKey, decideTap, createTapSession, classifyBridge, createPlayer
   });
   root.PCGClashNfc = api;
   if (typeof module === 'object' && module.exports) module.exports = api;

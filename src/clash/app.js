@@ -65,7 +65,7 @@
       aiming: false, linking: false, linkSource: null, chainIndex: null, menu: false, logOpen: false,
       showBanner: true, fresh: true, seen: new Set(), fx: null, error: null, log: [],
       handoff: false, seed: 0, opening: scenario === 'sim' ? 'sim' : 'lesson', simPool: 0, simExcluded: '', simNotes: '',
-      readerMenu: false, nfcPanel: false, nfcRid: '', nfcStatus: '', confirmEnd: false, muteAttackRemind: false, idleIds: []
+      readerMenu: false, identityPanel: false, nfcPanel: false, nfcRid: '', nfcStatus: '', confirmEnd: false, muteAttackRemind: false, idleIds: []
     };
   }
 
@@ -780,6 +780,22 @@
   const byRid = Object.create(null);
   roster.cards.forEach(card => { byRid[card.rid] = card; });
   function lookupRid(rid) { const base = byRid[rid]; return base ? Object.assign({}, base, cards[base.template_id]) : null; }
+  const playerStorageKey = 'pulse.clash.player.v1';
+  let currentPlayer = null, playerDraft = null, playerName = '', playerSkin = '01';
+  try {
+    const saved = localStorage.getItem(playerStorageKey);
+    const parsed = saved ? root.PCGReaders.parseDescriptor(saved) : null;
+    if (parsed && parsed.type === 'player') currentPlayer = parsed;
+  } catch (_) { /* Reading the card remains available without browser storage. */ }
+  function recognizePlayer(found, info) {
+    if ((ui.identityPanel || ui.nfcPanel) && !info.verified) return;
+    currentPlayer = found.descriptor;
+    try { localStorage.setItem(playerStorageKey, JSON.stringify(currentPlayer)); }
+    catch (_) { ui.nfcStatus += '。浏览器未保存身份，下次请重新刷卡'; }
+    if (info.verified) { ui.identityPanel = false; playerDraft = null; nfcSession.selectIdentity(null); }
+    render();
+    if (info.verified && $('.reader-pop')) $('.reader-pop').scrollTop = 0;
+  }
   const nfcSession = Nfc.createTapSession({
     env: {
       ua: navigator.userAgent,
@@ -791,7 +807,8 @@
       ui.nfcStatus = text;
       if (document.body.dataset.ready === '1') render();
     },
-    onReady(found) { playFromNfc(found); }
+    onReady(found) { playFromNfc(found); },
+    onIdentity: recognizePlayer
   });
 
   let serialBusy = false;
@@ -803,17 +820,18 @@
     onCard(event) {
       const found = Nfc.classifyBridge(event, lookupRid);
       ui.nfcStatus = found.kind === 'ready' ? '读到 ' + found.name
-        : found.kind === 'identity' ? '这是旧版玩家身份卡，不能用作出牌卡'
+        : found.kind === 'identity' ? '已识别玩家身份卡'
         : found.kind === 'blank' ? '这是空白卡，请用安卓 NFC 初始化游戏牌'
         : found.kind === 'failure' ? Nfc.TEXT.readFail
         : '未读到游戏牌记录，请先用安卓 NFC 写入游戏牌';
       render();
+      if (found.kind === 'identity') recognizePlayer(found, { verified: false });
       if (found.kind === 'ready') playFromNfc(found);
     }
   });
 
   function playFromNfc(found) {
-    if (ui.nfcPanel || nfcSession.busy()) return;
+    if (ui.nfcPanel || ui.identityPanel || nfcSession.busy()) return;
     const card = cards[found.templateId];
     const decision = Nfc.decideTap({
       canAct: canAct(),
@@ -843,15 +861,31 @@
     const serial = root.PCGReaders.capabilities();
     const connected = root.PCGReaders.lampOn(serialReader.state.state);
     const busy = serialBusy || nfcSession.busy();
-    return `<strong>刷卡出牌</strong><p class="nfc-help">刷卡使用手牌中的同名牌，需要目标时再点选目标。</p>
+    return `<strong>刷卡与玩家身份</strong>${currentPlayer ? `<p class="player-current">当前玩家：<b data-i18n-ignore>${esc(currentPlayer.name || '玩家')}</b><small>ID <span data-i18n-ignore>${esc(currentPlayer.id)}</span></small></p>` : '<p class="nfc-help">刷玩家卡识别身份，刷游戏牌出牌。</p>'}<p class="nfc-help">刷卡使用手牌中的同名牌，需要目标时再点选目标。</p>
       <button type="button" data-action="nfc-serial"${!serial.secure || !serial.serial || connected || busy || nfcSession.active() ? ' disabled' : ''}>${connected ? 'M5Dial 已连接' : '连接 M5Dial（USB）'}</button>
       <button type="button" class="nfc-entry" data-action="nfc-start" data-nfc="${support.enabled ? 'on' : 'off'}"${!support.enabled || nfcSession.active() || connected || busy ? ' disabled' : ''}>${nfcSession.active() ? '安卓 NFC 已开启' : '开始安卓 NFC 刷卡'}</button>
       <button type="button" data-action="nfc-stop"${!connected && !serialBusy && !nfcSession.active() ? ' disabled' : ''}>停止刷卡 / 断开</button>
       <p class="nfc-help">电脑：Chrome / Edge + USB 连接 M5Dial。手机：开启 NFC，用安卓 Chrome 打开 HTTPS 网站。</p>
       ${!support.enabled ? '<p class="nfc-help">本浏览器不能使用手机 NFC，可用 M5Dial 或点选出牌。</p>' : ''}
-      <button type="button" class="nfc-init" data-action="nfc-init"${!support.enabled || connected || serialBusy ? ' disabled' : ''}>${ui.nfcPanel ? '返回刷卡出牌' : '初始化游戏牌（安卓 NFC）'}</button>
-      <p class="nfc-help">M5Dial 游戏牌写入尚未接通。玩家身份初始化不在当前版本提供。</p>
+      <button type="button" data-action="nfc-player-init"${!support.enabled || connected || busy ? ' disabled' : ''}>${ui.identityPanel ? '返回刷卡' : '创建玩家身份卡（安卓 NFC）'}</button>
+      <button type="button" class="nfc-init" data-action="nfc-init"${!support.enabled || connected || busy ? ' disabled' : ''}>${ui.nfcPanel ? '返回刷卡出牌' : '初始化游戏牌（安卓 NFC）'}</button>
+      <p class="nfc-help">M5Dial 可读取玩家卡和游戏牌，写卡仍待实机验证。</p>
       <p class="nfc-status" role="status" aria-live="polite">${esc(ui.nfcStatus || '选择一种刷卡方式')}</p>`;
+  }
+
+  function playerPanel() {
+    if (!ui.identityPanel) return '';
+    const canWrite = playerDraft && nfcSession.active() && !nfcSession.busy() && nfcSession.lastKind() === 'blank';
+    const occupied = ['identity', 'ready', 'unknown'].includes(nfcSession.lastKind());
+    const options = Array.from({ length: 9 }, (_, i) => { const value = '0' + (i + 1); return `<option value="${value}"${value === playerSkin ? ' selected' : ''}>${value}</option>`; }).join('');
+    return `<section class="nfc-panel player-panel" data-player-panel="1">
+      <strong>初始化空白玩家卡</strong><p>身份卡保存玩家 ID、昵称和卡面编号，不保存对局进度或收藏。</p>
+      ${playerDraft ? `<p>待写入玩家：<b data-i18n-ignore>${esc(playerDraft.name)}</b></p><p>卡面编号：<span data-i18n-ignore>${esc(playerDraft.skin)}</span></p><small class="player-id" data-i18n-ignore>ID ${esc(playerDraft.id)}</small><button type="button" data-action="nfc-player-edit"${nfcSession.busy() ? ' disabled' : ''}>重新填写</button>`
+      : '<label>玩家昵称<input type="text" data-player-name autocomplete="nickname" maxlength="48" placeholder="最多 24 字" value="' + esc(playerName) + '"></label><label>卡面编号<select data-player-skin>' + options + '</select></label><button type="button" data-action="nfc-player-prepare">生成玩家身份</button>'}
+      <p>请先刷空白卡，再确认写入；写入后移开并重刷同一张卡。</p>
+      ${occupied ? '<p>卡上已有内容，不能初始化玩家身份卡。请换一张空白卡。</p>' : ''}
+      <button type="button" data-action="nfc-player-write"${canWrite ? '' : ' disabled'}>确认写入玩家身份</button>
+    </section>`;
   }
 
   function nfcPanel() {
@@ -903,7 +937,7 @@
     </div>
     <section class="menu-pop reader-pop" aria-label="刷卡出牌"${ui.readerMenu ? '' : ' hidden'}>
       <button type="button" data-action="nfc-close">关闭刷卡面板</button>
-      <div class="nfc-dock">${nfcControl()}${nfcPanel()}</div>
+      <div class="nfc-dock">${nfcControl()}${playerPanel()}${nfcPanel()}</div>
     </section>
     ${ui.reveal ? '<div class="banner" id="reveal-banner">教学明牌 · 双方手牌都看得见 · 牌库仍只显示张数</div>' : '<div id="reveal-banner" hidden></div>'}
     <main class="arena table${ui.attacker ? ' aiming' : ''}${canDeploy() ? ' holding' : ''}${ui.aiBusy ? ' ai-run' : ''}" data-scene-status="${esc(scenebook.status || 'awaiting_generated_assets')}" data-scenario="${esc(ui.scenario)}" data-ruleset="${esc(content.ruleset_id)}" data-source-commit="${esc(C.SOURCE_COMMIT)}" data-mode="${ui.mode}" data-opening="${esc(ui.opening)}" data-ai="${ui.aiBusy ? 'run' : 'idle'}" data-handoff="${ui.handoff ? '1' : '0'}" data-seed="${ui.seed || ''}" data-sim-pool="${ui.simPool || ''}" data-sim-excluded="${esc(ui.simExcluded || '')}" data-deck0="${esc(ui.built ? ui.built[0].join(',') : '')}" data-deck1="${esc(ui.built ? ui.built[1].join(',') : '')}">
@@ -1326,7 +1360,7 @@
       const why = el.querySelector('.act-why');
       return note(new C.ClashError(why ? I.source(why) : C.reasonText(el.dataset.block), el.dataset.block));
     }
-    const free = ['mode', 'toggle-menu', 'toggle-log', 'scenario', 'restart', 'handoff-confirm', 'replay-seed', 'nfc-menu', 'nfc-close', 'nfc-start', 'nfc-serial', 'nfc-stop', 'nfc-init', 'nfc-write', 'nfc-overwrite'];
+    const free = ['mode', 'toggle-menu', 'toggle-log', 'scenario', 'restart', 'handoff-confirm', 'replay-seed', 'nfc-menu', 'nfc-close', 'nfc-player-init', 'nfc-player-prepare', 'nfc-player-write', 'nfc-player-edit', 'nfc-start', 'nfc-serial', 'nfc-stop', 'nfc-init', 'nfc-write', 'nfc-overwrite'];
     if ((ui.aiBusy || ui.handoff || (ui.mode === 'ai' && game && game.seat !== 0)) && !free.includes(action)) {
       return note(new C.ClashError(C.reasonText('not_your_turn'), 'not_your_turn'));
     }
@@ -1350,7 +1384,7 @@
       ui.readerMenu = true;
       return render();
     }
-    if (action === 'nfc-close') { ui.readerMenu = false; ui.nfcPanel = false; return render(); }
+    if (action === 'nfc-close') { ui.readerMenu = false; ui.nfcPanel = false; ui.identityPanel = false; return render(); }
     if (action === 'nfc-start') return nfcSession.start();
     if (action === 'nfc-serial') {
       if (serialBusy || nfcSession.active()) return;
@@ -1365,7 +1399,30 @@
       serialReader.disconnect().catch(error => { ui.nfcStatus = error.message; });
       return;
     }
+    if (action === 'nfc-player-init') {
+      ui.identityPanel = !ui.identityPanel;
+      ui.nfcPanel = false;
+      if (ui.identityPanel) {
+        playerDraft = null; playerName = ''; playerSkin = '01';
+        nfcSession.selectIdentity(null);
+        if (!nfcSession.active()) nfcSession.start();
+      }
+      render();
+      if (ui.identityPanel) $('.player-panel').scrollIntoView({ block: 'nearest' });
+      return;
+    }
+    if (action === 'nfc-player-prepare') {
+      try {
+        playerDraft = Nfc.createPlayer($('[data-player-name]').value, $('[data-player-skin]').value);
+        nfcSession.selectIdentity(playerDraft);
+        ui.nfcStatus = '玩家身份已生成，请刷空白卡后确认写入';
+      } catch (error) { ui.nfcStatus = error.message; }
+      return render();
+    }
+    if (action === 'nfc-player-edit') { playerDraft = null; nfcSession.selectIdentity(null); return render(); }
+    if (action === 'nfc-player-write') return nfcSession.writeCard();
     if (action === 'nfc-init') {
+      ui.identityPanel = false;
       ui.nfcPanel = !ui.nfcPanel;
       nfcSession.select(lookupRid(ui.nfcRid));
       if (ui.nfcPanel && !nfcSession.active()) nfcSession.start();
@@ -1381,7 +1438,7 @@
       else begin('versus');
       return;
     }
-    if (action === 'toggle-menu') { ui.menu = !ui.menu; ui.readerMenu = false; ui.nfcPanel = false; return render(); }
+    if (action === 'toggle-menu') { ui.menu = !ui.menu; ui.readerMenu = false; ui.nfcPanel = false; ui.identityPanel = false; return render(); }
     if (action === 'toggle-log') { ui.logOpen = !ui.logOpen; return render(); }
     if (action === 'toggle-reveal') { ui.reveal = !ui.reveal; return render(); }
     if (action === 'toggle-catalog') { ui.catalog = !ui.catalog; return render(); }
@@ -1998,6 +2055,13 @@
     event.preventDefault();
     gesture.dead = true;
     finishGesture(true);
+  });
+
+  document.addEventListener('input', event => {
+    if (event.target.matches('[data-player-name]')) playerName = event.target.value;
+  });
+  document.addEventListener('change', event => {
+    if (event.target.matches('[data-player-skin]')) playerSkin = event.target.value;
   });
 
   document.addEventListener('change', event => {

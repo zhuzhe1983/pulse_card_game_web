@@ -114,3 +114,8 @@ html:lang(en) .hand-heading small { letter-spacing:0; }
 .menu-pop .nfc-panel { max-height:none; overflow:visible; }
 .nfc-dock button:disabled { opacity:.5; cursor:default; }
 @media (max-width:700px), (max-height:550px) { .reader-toggle { top:24px; right:calc(6% + 110px); min-height:32px; font-size:12px; padding:5px 8px; } }
+
+.player-current { margin:2px 0; padding:8px; background:#253e40; border-radius:6px; font-size:14px; }
+.player-current small { display:block; margin-top:4px; overflow-wrap:anywhere; font-size:10px; }
+.player-panel input { width:100%; min-height:40px; padding:6px 8px; color:#f7fffb; background:#102018; border:1px solid #8d98a0; border-radius:6px; }
+.player-id { overflow-wrap:anywhere; }

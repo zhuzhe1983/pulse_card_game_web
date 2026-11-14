@@ -236,12 +236,44 @@ function check(name, fn) {
     assert.equal(N.classifyBridge({ ...event, tag: { ...event.tag, ndef_hex_truncated: true } }, lookup).kind, 'unknown');
     assert.equal(N.classifyBridge({ ...event, tag: { ndef_hex: raw.subarray(0, -1).toString('hex') } }, lookup).kind, 'unknown');
     assert.equal(N.classifyBridge({ ...event, tag: { ndef_hex: '00' + event.tag.ndef_hex } }, lookup).kind, 'unknown');
-    assert.equal(N.classifyBridge({ descriptor: { type: 'player' } }, lookup).kind, 'identity');
+    assert.equal(N.classifyBridge({ descriptor: N.createPlayer('小明', '01') }, lookup).kind, 'identity');
     assert.equal(N.classifyBridge({ ndef: 'error' }, lookup).kind, 'failure');
     assert.equal(N.classifyBridge({ ndef: 'blank' }, lookup).kind, 'blank');
     assert.equal(N.classifyBridge({ ndef: 'unformatted' }, lookup).kind, 'unknown');
     assert.equal(N.classifyMessage({ records: [mime({ v: 1, cardId: 'H024' }), mime({ v: 1, cardId: 'H024' })] }, lookup).kind, 'unknown');
     function lookup(rid) { return byRid[rid]; }
+  });
+
+  await check('player identity creation uses distinct UUIDs and verifies before recognizing the player', async () => {
+    const R = require('../src/readers.js');
+    const first = N.createPlayer('小明', '01'), second = N.createPlayer('小明', '01');
+    assert.notEqual(first.id, second.id);
+    assert.equal(first.name, '小明');
+    assert.throws(() => N.createPlayer('', '01'));
+    assert.throws(() => N.createPlayer('字'.repeat(25), '01'));
+    assert.throws(() => N.createPlayer('名字', '10'));
+    const identities = [];
+    const {tap, fake, ready} = session({ onIdentity: (found, info) => identities.push({found, info}) });
+    const identityRecord = value => ({recordType:'mime',mediaType:R.MIME,data:R.encodeDescriptor(value)});
+    await tap.start(); tap.selectIdentity(first);
+    tap.handleReading(reading('blank-player', []));
+    assert.equal((await tap.writeCard()).wrote, true);
+    assert.equal(fake.writeOptions.overwrite, false);
+    assert.equal(fake.writes[0].records[0].mediaType, R.MIME);
+    assert.equal(identities.length, 0, 'write promise alone does not activate identity');
+    tap.handleReading(reading('different-tag', [identityRecord(first)]));
+    assert.equal(identities.length, 0);
+    tap.handleReading(reading('blank-player', [identityRecord(first)]));
+    assert.equal(tap.status(), '玩家身份卡写入并校验成功');
+    assert.equal(identities[0].info.verified, true);
+    assert.deepEqual(identities[0].found.descriptor, first);
+    assert.equal(ready.length, 0, 'identity cards never enter the game play callback');
+    assert.equal((await tap.overwrite()).wrote, false, 'player setup never overwrites another identity');
+    tap.handleReading(reading('another-tag', [identityRecord(second)]));
+    assert.equal(identities[1].found.descriptor.id, second.id);
+    assert.equal(identities[1].info.verified, false);
+    assert.equal(N.classifyMessage({records:[identityRecord(first),mime({v:1,cardId:'H024'})]}, ()=>h024).kind, 'unknown');
+    tap.stop();
   });
 
   console.log('PASS', passed, 'nfc');
