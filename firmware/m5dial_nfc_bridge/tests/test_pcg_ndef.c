@@ -19,9 +19,9 @@ static int failures = 0;
 static void build_ntag(uint8_t mem[135 * 4], const char *payload) {
     memset(mem, 0, 135 * 4);
     mem[0] = 0x04; mem[1] = 0xAA; mem[2] = 0x1B; mem[3] = 0x2C;   /* UID pages0 */
-    mem[15] = 0x03;  /* ...lock bytes page */
+    mem[11] = 0x00;  /* ...lock bytes page */
     /* page 4 = Capability Container */
-    mem[16] = 0xE1; mem[17] = 0x10; mem[18] = 0x6E; mem[19] = 0x00;
+    mem[12] = 0xE1; mem[13] = 0x10; mem[14] = 0x3E; mem[15] = 0x00;
     /* page 5: NDEF TLV -> 0x03, len(1 byte), message... */
     const uint8_t *mime = (const uint8_t *)"application/vnd.pcg.identity+json";
     size_t plen = strlen(payload);
@@ -34,11 +34,11 @@ static void build_ntag(uint8_t mem[135 * 4], const char *payload) {
     memcpy(record + r, mime, 33); r += 33;
     memcpy(record + r, payload, plen); r += plen;
     /* NDEF TLV byte 0x03 + length + record */
-    mem[20] = 0x03;
-    mem[21] = (uint8_t)r;
-    memcpy(&mem[22], record, r);
+    mem[16] = 0x03;
+    mem[17] = (uint8_t)r;
+    memcpy(&mem[18], record, r);
     /* terminator at end */
-    mem[22 + r] = 0xFE;
+    mem[18 + r] = 0xFE;
 }
 
 int main(void) {

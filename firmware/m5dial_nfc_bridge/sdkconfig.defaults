@@ -13,6 +13,7 @@ CONFIG_IDF_TARGET_ESP32S3=y
 # TinyUSB: expose the M5Dial as a USB CDC (serial) device so the web app's
 # Web Serial path can talk pcg.reader.v1.
 CONFIG_TINYUSB_CDC_ENABLED=y
+CONFIG_TINYUSB_CDC_TX_BUFSIZE=4096
 
 CONFIG_ESPTOOLPY_FLASHSIZE_8MB=y
 CONFIG_ESPTOOLPY_FLASHMODE_DIO=y

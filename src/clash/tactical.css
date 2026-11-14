@@ -239,3 +239,5 @@ body { background:#111c1e; color:var(--table-ink); padding:0; font-family:Inter,
  .unit-col:has(.chip) .minion {height:54px;}.unit-col:has(.chip) .mname {font-size:8px;}
  .minion .portrait {bottom:52%;}
 }
+
+.nfc-flash{display:inline-block;color:#a8e8d3;text-underline-offset:3px;margin:4px 0}

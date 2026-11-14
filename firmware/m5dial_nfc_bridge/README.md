@@ -1,14 +1,16 @@
 # M5Dial NFC·USB 读卡桥 (ESP-IDF)
 
-> 2026-11-14 状态更正：本文件早期「只读」说明已过期。`main.c` 声明 `uid/ndef_read/ndef_write`，`nfc_read.c` 已有旧玩家身份写入与读回代码，但这不等于通过实机验收。最后的 2026-11-11 烧录记录中，镜像验证成功，应用 CDC 未出现，实体卡读写未执行。当前网页通过 USB 读取游戏牌原始 NDEF，不向本固件发送游戏牌写入；安卓网页已提供空白玩家身份卡初始化与读回验证。详见 [读卡状态](../../docs/READERS.md)。
+> 2026-11-14 新版 `2026.11.14-player-write.1`：固件与网页已接通空白 NTAG215 玩家身份写入，逐页写前检查 UID，写后读回 UID、完整用户区和身份内容再返回 `verified:true`。只接受标准、未锁定且无写保护的空白卡，不覆盖已有卡。ESP-IDF 5.3 编译和主机测试通过；本轮未接设备，实机烧录、CDC 稳定性及实体卡读写待验收。11 月 11 日旧镜像 CDC 未枚举的记录不代表本版测试结果。
+>
+> **在线烧录**：[M5Dial 烧录器](https://zhuzhe1983.github.io/pulse_card_game_web/dist/flash.html)（电脑 Chrome/Edge + USB）。页面显示版本、下载链接与 SHA-256，校验通过才启用烧录。烧录后进入 [牌桌](https://zhuzhe1983.github.io/pulse_card_game_web/dist/clash/?lang=zh-CN) → 刷卡 → 连接 M5Dial → 创建玩家身份卡（M5Dial）。
 
 把 **M5Dial**（ESP32-S3 + 内置 WS1850S NFC 前端 + GC9A01 圆屏）变成一个给 PULSE 网页游戏用的 **USB NFC 刷卡器**：
 
 - 刷到 NTAG215 卡 → 通过 USB 串口（TinyUSB CDC）输出 `pcg.reader.v1` JSON 行
-- 网页端用 **Web Serial**（`dist/clash/` 里的“刷卡 → 连接 M5Dial（USB）”按钮）连接，读取卡号、原始 NDEF 与旧 PULSE 身份
+- 网页端用 **Web Serial**（`dist/clash/` 里的“刷卡 → 连接 M5Dial（USB）”按钮）连接，读取卡号、原始 NDEF 与 PULSE 身份；新版可初始化空白 NTAG215 玩家身份卡
 - 圆屏显示 READY / 卡上有无身份
 
-> 出厂 M5Dial 的读卡器是 **WS1850S**（与 NXP MFRC522 寄存器/指令兼容），走内部 I2C：**SCL=G12, SDA=G11**，地址 `0x28`。详见 `main/rc522.c`。`docs/READERS.md` 有摄像头协议约定。
+> 出厂 M5Dial 的读卡器是 **WS1850S**（与 NXP MFRC522 寄存器/指令兼容），走内部 I2C：**SCL=G12, SDA=G11**，地址 `0x28`。详见 `main/rc522.c`。`docs/READERS.md` 有读卡协议约定。
 
 ## 依赖
 
@@ -55,7 +57,7 @@ USB-Serial-JTAG 在这份配置里关掉。只打开串口、不发 `hello` 时�
 
 ## 烧录
 
-M5Dial 原生 USB 走 **USB-Serial-JTAG**，直接 `idf.py flash` 即可；因为要用网页 flasher，建议烧 **merged 合并镜像**：
+M5Dial 下载模式通过 ROM USB 串口烧录，运行时使用 TinyUSB CDC。先断电，按住 Stamp-S3 的 G0 再接 USB，通电后松开 G0，进入下载模式。网页使用 **merged 合并镜像**：
 
 ```bash
 # 在已 export 的 ESP-IDF 5.3.x 环境里，从本目录生成 dist 镜像并自检
@@ -93,7 +95,7 @@ esptool.py --chip esp32s3 -p /dev/cu.usbmodemXXXX -b 460800 write_flash \
 
 从仓库根目录启动静态服务器，打开 `/dist/clash/`，点“刷卡 → 连接 M5Dial（USB）”。当前源码的握手能力为 `hello … capabilities ["uid","ndef_read","ndef_write"]`；是否能稳定握手仍需设备验证。刷一张 NTAG215（如已写 PULSE 身份）→ 收到 `card` 事件；没写身份 → 收到 `card {descriptor:null}`，屏幕显示“Card (no NDEF)”。
 
-旧设计把完整进度存在浏览器，卡里只带身份 NDEF。当前固件的写卡路径仅针对旧身份格式，未完成实机验收；不能用它写当前游戏牌 MIME。网页目前只读取 M5Dial 返回的 UID 和完整原始 NDEF。
+卡中只带玩家 ID、昵称和卡面编号，不保存游戏进度。新版网页按 `write_mode:blank-player-v1` 启用写卡，发送 `confirm:true,overwrite:false`；写后验证成功才保存当前玩家。游戏牌 MIME 仍通过安卓写入，M5Dial 可读游戏牌。
 
 ## 目录
 
@@ -111,3 +113,8 @@ esptool.py --chip esp32s3 -p /dev/cu.usbmodemXXXX -b 460800 write_flash \
 ## 说明
 
 `backup_original/` 保存了这台 M5Dial 出厂时读回的 flash 备份（boot 区），如需还原用 esptool 写回即可。
+## 本版验证
+
+主机测试：`IDF_PATH=/path/to/esp-idf bash tests/run_host_tests.sh`（只需 C 编译器与 IDF 内的 cJSON 源码，也可设置 `CJSON_DIR`）。覆盖 UID 变更、断卡、锁卡、型号与保护配置、部分读取、页写失败、读回损坏、NDEF 长度边界和协议校验。
+
+构建：导出 ESP-IDF 5.3 环境后运行 `bash tools/build_dist.sh`。脚本生成合并固件、`.sha256` 与 `dist/firmware/m5dial_nfc_bridge_manifest.json`；元数据明确保留 `hardware_tested:false`，直到实机验收。

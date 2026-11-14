@@ -35,5 +35,6 @@ sha256sum "$OUT" | awk '{print $1 "  m5dial_nfc_bridge_merged_dio.bin"}' \
   > "$OUT.sha256"
 
 python3 tests/check_flash_config.py
+python3 tools/release_manifest.py
 echo "merged image: $OUT"
 cat "$OUT.sha256"

@@ -106,7 +106,7 @@ static void rreg(uint8_t reg, uint8_t *out, size_t n)
     i2c_master_transmit(dev, &reg, 1, 100);
     i2c_master_receive(dev, out, n, 100);
 }
-static uint8_t rreg8(uint8_t reg) { uint8_t v; rreg(reg, &v, 1); return v; }
+static uint8_t rreg8(uint8_t reg) { uint8_t v = 0; rreg(reg, &v, 1); return v; }
 static void set_bits8(uint8_t reg, uint8_t mask)
 {
     wreg(reg, rreg8(reg) | mask);
@@ -279,10 +279,12 @@ static int read_ntag_page(uint8_t page, uint8_t blockOut[16])
     uint8_t crc[2];
     if (calc_crc(cmd, 2, crc) != RC_OK) return RC_ERROR;
     uint8_t buf[4] = { cmd[0], cmd[1], crc[0], crc[1] };
-    uint8_t len = 18, vb = 0;
-    int rc = transceive(buf, 4, blockOut, &len, &vb, 0, true);
+    uint8_t response[18];
+    uint8_t len = sizeof response, vb = 0;
+    int rc = transceive(buf, 4, response, &len, &vb, 0, true);
     if (rc != RC_OK) return rc;
-    if (len < 16) return RC_ERROR;
+    if (len != 18) return RC_ERROR;
+    memcpy(blockOut,response,16);
     return RC_OK;
 }
 
@@ -328,17 +330,31 @@ bool rc522_init(const pcg_rc522_conf_t *cfg)
 bool rc522_select(pcg_tag_id_t *out, uint32_t max_ms)
 {
     (void)max_ms;
+    /* Reset the RF field so a previously ACTIVE tag accepts REQA again. */
+    clear_bits8(REG_TX_CONTROL,0x03);
+    esp_rom_delay_us(5000);
+    antenna_on();
+    esp_rom_delay_us(5000);
     uint8_t atqa[2];
     if (request_reqa(atqa) != RC_OK) return false;
     if (select_uid(out->uid, &out->uid_len) != RC_OK) return false;
     return out->uid_len == 4 || out->uid_len == 7 || out->uid_len == 10;
 }
 
+bool rc522_get_version(uint8_t version[8])
+{
+    uint8_t cmd[3] = {0x60,0,0}, response[10], length = sizeof response, bits = 0;
+    if (calc_crc(cmd,1,cmd+1) != RC_OK) return false;
+    if (transceive(cmd,3,response,&length,&bits,0,true) != RC_OK || length != 10) return false;
+    memcpy(version,response,8);
+    return true;
+}
+
 int rc522_write_page(uint8_t page, const uint8_t data[4])
 {
     uint8_t buf[8], crc[2], resp[2];
     uint8_t rl = sizeof resp, vb = 0;
-    if (!data || page < 3 || page > 129) return -1;
+    if (!data || page < 4 || page > 129) return -1;
     buf[0] = 0xA2;
     buf[1] = page;
     memcpy(buf + 2, data, 4);
@@ -346,7 +362,7 @@ int rc522_write_page(uint8_t page, const uint8_t data[4])
     buf[6] = crc[0];
     buf[7] = crc[1];
     if (transceive(buf, 8, resp, &rl, &vb, 0, false) != RC_OK) return -1;
-    if (vb == 4 && (resp[0] & 0x0F) != 0x0A) return -1;
+    if (rl != 1 || vb != 4 || (resp[0] & 0x0F) != 0x0A) return -1;
     return 0;
 }
 

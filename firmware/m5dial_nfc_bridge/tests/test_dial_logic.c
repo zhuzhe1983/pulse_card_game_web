@@ -47,8 +47,8 @@ int main(void)
     CHECK(ui_model_apply(&ui, 1, 1, "error", "04AA", a, b, c) == UI_BEEP_ERR, "read error beeps");
     CHECK(ui_model_apply(&ui, 1, 1, "idle", "", a, b, c) == UI_BEEP_NONE, "removal does not beep");
 
-    uint8_t mem[256];
-    uint8_t out[256];
+    uint8_t mem[508];
+    uint8_t out[508];
     char err[64];
     char json[PCG_NDEF_MAX];
     memset(mem, 0, sizeof mem);

@@ -31,16 +31,12 @@ static int cc_ok(const uint8_t cc[4], int *cap)
 
 static int region_blank(const uint8_t *p, size_t n)
 {
-    size_t i;
-    if (!n) return 1;
-    if (p[0] == 0x00 || p[0] == 0xFE) {
-        for (i = 0; i < n && i < 16; i++) {
-            if (p[i] != 0x00 && p[i] != 0xFE) return 0;
-        }
-        return 1;
-    }
-    if (p[0] == 0x03 && n >= 2 && p[1] == 0x00) return 1;
-    return 0;
+    size_t i = 0;
+    while (i < n && p[i] == 0) i++;
+    if (i == n || p[i] == 0xfe) return 1;
+    if (n - i >= 2 && p[i] == 3 && p[i+1] == 0) return 1;
+    /* A standard empty NDEF record, as returned by Android's blank tags. */
+    return n - i >= 5 && p[i] == 3 && p[i+1] == 3 && p[i+2] == 0xd0 && p[i+3] == 0 && p[i+4] == 0;
 }
 
 pcg_ndef_kind_t pcg_ntag_classify(const uint8_t *mem, size_t len, int base_page,
@@ -82,22 +78,17 @@ pcg_ndef_kind_t pcg_ntag_classify(const uint8_t *mem, size_t len, int base_page,
 static int build_record(const char *json, uint8_t *rec, size_t rec_max, size_t *out_n)
 {
     static const char mime[] = "application/vnd.pcg.identity+json";
-    size_t plen, n;
-    if (!json || !strstr(json, "\"game\":\"pcg\"")) return -1;
-    plen = strlen(json);
-    if (plen == 0 || plen > 384) return -1;
-    n = 3 + 33 + plen;
-    if (plen > 255) n += 1;
+    size_t plen = json ? strlen(json) : 0;
+    if (!plen || plen > 384) return -1;
+    size_t header = plen <= 255 ? 3 : 6;
+    size_t n = header + sizeof(mime) - 1 + plen;
     if (n > rec_max) return -1;
-    rec[0] = 0xD2;
-    rec[1] = 33;
-    if (plen <= 255) {
-        rec[2] = (uint8_t)plen;
-        memcpy(rec + 3, mime, 33);
-        memcpy(rec + 36, json, plen);
-    } else {
-        return -1;
-    }
+    rec[0] = plen <= 255 ? 0xd2 : 0xc2;
+    rec[1] = sizeof(mime) - 1;
+    if (plen <= 255) rec[2] = (uint8_t)plen;
+    else { rec[2] = rec[3] = 0; rec[4] = (uint8_t)(plen >> 8); rec[5] = (uint8_t)plen; }
+    memcpy(rec + header, mime, sizeof(mime) - 1);
+    memcpy(rec + header + sizeof(mime) - 1, json, plen);
     *out_n = n;
     return 0;
 }
@@ -152,18 +143,21 @@ int pcg_ntag_plan_write(const uint8_t *mem, size_t len, int base_page,
         set_err(err, err_len, "capacity");
         return -1;
     }
-    need = 2 + rec_n + 1; /* TLV type, short length, record, terminator */
+    size_t tlv_header = rec_n >= 255 ? 4 : 2;
+    need = tlv_header + rec_n + 1; /* TLV type, short length, record, terminator */
     room = len - ndef_at;
     if (need > room || need > (size_t)cap) {
         set_err(err, err_len, "capacity");
         return -1;
     }
     memcpy(tmp, mem, len);
-    memset(tmp + ndef_at, 0x00, room);
+    if (room < (size_t)cap) { set_err(err, err_len, "incomplete memory"); return -1; }
+    memset(tmp + ndef_at, 0x00, (size_t)cap);
     tmp[ndef_at] = 0x03;
-    tmp[ndef_at + 1] = (uint8_t)rec_n;
-    memcpy(tmp + ndef_at + 2, rec, rec_n);
-    tmp[ndef_at + 2 + rec_n] = 0xFE;
+    tmp[ndef_at + 1] = rec_n >= 255 ? 255 : (uint8_t)rec_n;
+    if (tlv_header == 4) { tmp[ndef_at + 2] = (uint8_t)(rec_n >> 8); tmp[ndef_at + 3] = (uint8_t)rec_n; }
+    memcpy(tmp + ndef_at + tlv_header, rec, rec_n);
+    tmp[ndef_at + tlv_header + rec_n] = 0xFE;
     if (pcg_ntag_classify(tmp, len, base_page, NULL, 0) != PCG_NDEF_PULSE) {
         set_err(err, err_len, "readback failed");
         return -1;
@@ -196,7 +190,7 @@ void pcg_ntag_facts(const uint8_t *mem, size_t len, int base_page,
                     pcg_tag_facts_t *out, char *json, size_t json_len)
 {
     int cc_at, ndef_at, cap = 0;
-    uint8_t msg[240];
+    uint8_t msg[512];
     size_t mlen;
     memset(out, 0, sizeof *out);
     out->capacity = -1;
@@ -248,7 +242,8 @@ int pcg_ntag_dirty_pages(const uint8_t *before, const uint8_t *after, size_t len
         int page = base_page + (int)i;
         if (memcmp(before + i * 4, after + i * 4, 4) == 0) continue;
         if (page < 4 || page > 129) return -1;
-        if (count < max_pages && pages) pages[count] = (uint8_t)page;
+        if (count >= max_pages) return -1;
+        if (pages) pages[count] = (uint8_t)page;
         count++;
     }
     return count;

@@ -64,7 +64,7 @@ void app_main(void)
     /* uid + ndef_read + ndef_write. Writes still require overwrite:true from
      * the host, and the page planner refuses UID, lock and unformatted tags.
      * A read-only host that never sends write keeps the previous behavior. */
-    pcg_proto_t proto;
+    static pcg_proto_t proto;
     pcg_proto_init(&proto, "PULSE M5Dial NFC bridge", 1 | 2 | 4, NULL, NULL, NULL);
     pcg_proto_set_reset(&proto, reset_name());
     pcg_proto_set_ready(&proto, nfc_ok);

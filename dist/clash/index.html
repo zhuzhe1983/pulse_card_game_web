@@ -949,6 +949,8 @@ body { background:#111c1e; color:var(--table-ink); padding:0; font-family:Inter,
  .minion .portrait {bottom:52%;}
 }
 
+.nfc-flash{display:inline-block;color:#a8e8d3;text-underline-offset:3px;margin:4px 0}
+
 /* Electronics workstation. ImageGen bitmaps provide the physical surfaces;
    DOM text and state glows remain live, legible and accessible. */
 :root { --table-ink:#e4f0f2; --table-muted:#a0b9c2; --table-mint:#9ce7ed; }
@@ -1071,7 +1073,7 @@ html:lang(en) .hand-heading small { letter-spacing:0; }
 .player-panel input { width:100%; min-height:40px; padding:6px 8px; color:#f7fffb; background:#102018; border:1px solid #8d98a0; border-radius:6px; }
 .player-id { overflow-wrap:anywhere; }
 </style>
-<script src="../../shared/locales/en.js?v=a648295e4dac"></script>
+<script src="../../shared/locales/en.js?v=ccd7475ca693"></script>
 <script src="../../shared/i18n.js?v=58fd26c9bace"></script>
 </head>
 <body>
@@ -2476,6 +2478,16 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
   const MAX_PAYLOAD = 384;
   const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   const encoder = new TextEncoder();
+  const writeErrors = {
+    'card removed or changed': '卡片已移开或更换，请移开再刷。',
+    'NTAG215 required': '需要 NTAG215 卡，请换卡后重试。',
+    'standard NTAG215 CC required': '需要 NTAG215 卡，请换卡后重试。',
+    'card locked or protected': '卡片已锁定或受保护，请换空白卡。',
+    'card is not blank': '卡上已有内容，请换一张空白卡。',
+    'readback failed': '写卡未通过读回校验，请移开再刷检查。',
+    'page write failed': '写入失败，请保持卡片贴近读卡器，移开再刷检查。',
+    'incomplete memory': '写入失败，请保持卡片贴近读卡器，移开再刷检查。'
+  };
 
   class ReaderError extends Error {
     constructor(code, message) { super(message || code); this.name = 'ReaderError'; this.code = code; }
@@ -2592,15 +2604,15 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
   }
 
   class ReaderManager {
-    constructor({ onCard = () => {}, onStatus = () => {} } = {}) {
-      this.onCard = onCard; this.onStatus = onStatus;
+    constructor({ onCard = () => {}, onStatus = () => {}, onRemoved = () => {} } = {}) {
+      this.onCard = onCard; this.onStatus = onStatus; this.onRemoved = onRemoved;
       this.state = { state: 'disconnected', source: null, message: '尚未连接读卡器', canWrite: false };
       this._epoch = 0; this._pending = new Map(); this._source = null;
       this._lastSignature = ''; this._lastAt = 0; this._lastUID = null;
       this._writeBusy = false;
     }
     _status(state, source, message, canWrite = false) {
-      this.state = { state, source, message, canWrite: !!canWrite };
+      this.state = { state, source, message, canWrite: !!canWrite, firmware: this._firmware || null, writeMode: this._writeMode || null };
       this.onStatus(this.state);
     }
     _secure() {
@@ -2615,6 +2627,8 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
       if (signature === this._lastSignature && (continuous || now - this._lastAt < 900)) return null;
       this._lastSignature = signature; this._lastAt = now; this._lastUID = uid;
       const card = { uid, source: event.source, descriptor, tech: 'nfc-a', ndef: event.ndef || (descriptor ? 'pulse' : 'unknown'), tag: object(event.tag) ? event.tag : null };
+      this._lastCard = card;
+      if (this._writeBusy) return card;
       try {
         Promise.resolve(this.onCard(card)).catch(error => this._status('error', event.source, error.message || '处理刷卡结果失败。', this.state.canWrite));
       } catch (error) { this._status('error', event.source, error.message || '处理刷卡结果失败。', this.state.canWrite); }
@@ -2638,13 +2652,15 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
     _bridgeMessage(message) {
       if (message.type === 'hello') {
         if (message.protocol !== PROTOCOL || !Array.isArray(message.capabilities) || !message.capabilities.includes('uid') || message.capabilities.some(x => !['uid', 'ndef_read', 'ndef_write'].includes(x))) fail('BRIDGE_VERSION', '读卡桥协议不兼容。');
+        this._firmware = typeof message.firmware === 'string' ? message.firmware : null;
+        this._writeMode = message.write_mode === 'blank-player-v1' ? message.write_mode : null;
         this._bridgeReady = true;
         this._canWrite = message.capabilities.includes('ndef_read') && message.capabilities.includes('ndef_write');
         if (this._hello) { this._hello.resolve(message); this._hello = null; }
         return;
       }
       if (!this._bridgeReady) fail('BRIDGE_HANDSHAKE', '读卡桥必须先完成 hello 握手。');
-      if (message.type === 'removed') { this._lastSignature = ''; this._lastUID = null; return; }
+      if (message.type === 'removed') { this._lastSignature = ''; this._lastUID = null; this._lastCard = null; this.onRemoved(); return; }
       if (message.type === 'card') {
         if (message.tech !== undefined && message.tech !== 'nfc-a') fail('CARD_TECH', '当前版本只接收 NFC-A 卡。');
         this._emitCard({ uid: message.uid, source: this._source, descriptor: message.descriptor == null ? null : message.descriptor, ndef: typeof message.ndef === 'string' ? message.ndef : '', tag: message.tag }, true);
@@ -2652,12 +2668,14 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
         const pending = this._pending.get(message.request_id);
         if (!pending) return;
         this._pending.delete(message.request_id); clearTimeout(pending.timer);
-        if (message.ok !== true) pending.reject(new ReaderError('WRITE_FAILED', typeof message.error === 'string' ? message.error.slice(0,160) : '读卡桥写入失败。'));
+        if (message.ok !== true) pending.reject(new ReaderError('WRITE_FAILED', writeErrors[message.error] || (typeof message.error === 'string' ? message.error.slice(0,160) : '读卡桥写入失败。')));
         else {
           try {
+            if (pending.requireVerified && message.verified !== true) fail('WRITE_VERIFY', '固件未返回读回校验结果。');
             const uid = normalizeUID(message.uid);
             const descriptor = parseDescriptor(message.descriptor);
             if (uid !== pending.uid || JSON.stringify(descriptor) !== JSON.stringify(pending.descriptor)) fail('WRITE_VERIFY', '读回身份与待写内容不一致，未确认写入。');
+            this._lastCard = Object.assign({}, this._lastCard, { uid, descriptor, ndef: 'pulse' });
             pending.resolve({ verified: true, uid, descriptor });
           } catch (error) { pending.reject(error); }
         }
@@ -2813,10 +2831,15 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
         await this.disconnect(); this._status('error', 'webnfc', error.message || 'NFC 扫描失败。'); throw error;
       }
     }
-    async writePlayer(value, { overwrite = false } = {}) {
+    async writePlayer(value, { overwrite = false, blankOnly = false } = {}) {
       const descriptor = parseDescriptor(value);
       if (descriptor.type !== 'player') fail('WRITE_PLAYER_ONLY', '此操作只写入玩家身份卡。');
       if (!this.state.canWrite || !this._source) fail('WRITE_UNAVAILABLE', '当前读卡方式不支持写入。可使用 Android Web NFC 或支持写入的 PCG 读卡桥。');
+      if (blankOnly && this._source !== 'webnfc') {
+        if (this._writeMode !== 'blank-player-v1') fail('WRITE_UPDATE_REQUIRED', '请先升级 M5Dial 写卡固件。');
+        const card = this._lastCard, tag = card && card.tag;
+        if (overwrite || !card || card.ndef !== 'blank' || !tag || tag.type !== 'NTAG215' || tag.cc !== 'E1103E00' || tag.capacity !== 496 || tag.writable !== true || tag.lock !== 'open') fail('WRITE_NEEDS_BLANK', '请先刷一张空白、可写的 NTAG215 卡。');
+      }
       if (this._writeBusy) fail('WRITE_BUSY', '已有一次写卡操作正在进行。');
       this._writeBusy = true;
       try {
@@ -2836,12 +2859,12 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
         let pending;
         const promise = new Promise((resolve, reject) => {
           const timer = setTimeout(() => { this._pending.delete(requestId); reject(new ReaderError('WRITE_TIMEOUT', '写卡没有收到读回确认，请重新刷卡检查。')); }, 20000);
-          pending = { resolve, reject, timer, uid, descriptor };
+          pending = { resolve, reject, timer, uid, descriptor, requireVerified: blankOnly };
           this._pending.set(requestId, pending);
         });
         promise.catch(() => {});
         try {
-          await this._send({ type: 'write', request_id: requestId, expected_uid: uid, mime: MIME, descriptor, overwrite: !!overwrite });
+          await this._send({ type: 'write', request_id: requestId, expected_uid: uid, mime: MIME, descriptor, overwrite: !!overwrite, ...(blankOnly ? { confirm: true } : {}) });
           const result = await promise;
           this._lastSignature = '';
           return result;
@@ -2860,7 +2883,8 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
       for (const pending of this._pending.values()) { clearTimeout(pending.timer); pending.reject(error); }
       this._pending.clear();
       this._source = null; this._send = null; this._bridgeReady = false; this._canWrite = false;
-      this._lastUID = null; this._lastSignature = '';
+      this._lastUID = null; this._lastSignature = ''; this._lastCard = null; this._writeMode = null; this._firmware = null;
+      this.onRemoved();
       if (usb && usb.opened) { try { await usb.close(); } catch (_) {} }
       if (reader) { try { await reader.cancel(); } catch (_) {} }
       if (readTask) { try { await readTask; } catch (_) {} }
@@ -4018,17 +4042,24 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
     onIdentity: recognizePlayer
   });
 
-  let serialBusy = false;
+  let serialBusy = false, serialCard = null, playerWriteBusy = false;
+  function serialPlayerWriteEnabled() { return serialReader.state.canWrite && serialReader.state.writeMode === 'blank-player-v1'; }
+  function serialBlankCard() {
+    const tag = serialCard && serialCard.tag;
+    return serialCard && serialCard.ndef === 'blank' && tag && tag.type === 'NTAG215' && tag.cc === 'E1103E00' && tag.capacity === 496 && tag.writable === true && tag.lock === 'open';
+  }
   const serialReader = new root.PCGReaders.ReaderManager({
+    onRemoved() { serialCard = null; if (document.body.dataset.ready === '1') render(); },
     onStatus(state) {
       ui.nfcStatus = state.message;
       if (document.body.dataset.ready === '1') render();
     },
     onCard(event) {
+      serialCard = event;
       const found = Nfc.classifyBridge(event, lookupRid);
       ui.nfcStatus = found.kind === 'ready' ? '读到 ' + found.name
         : found.kind === 'identity' ? '已识别玩家身份卡'
-        : found.kind === 'blank' ? '这是空白卡，请用安卓 NFC 初始化游戏牌'
+        : found.kind === 'blank' ? '已读到空白卡，可以创建玩家身份'
         : found.kind === 'failure' ? Nfc.TEXT.readFail
         : '未读到游戏牌记录，请先用安卓 NFC 写入游戏牌';
       render();
@@ -4038,7 +4069,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
   });
 
   function playFromNfc(found) {
-    if (ui.nfcPanel || ui.identityPanel || nfcSession.busy()) return;
+    if (ui.nfcPanel || ui.identityPanel || nfcSession.busy() || playerWriteBusy) return;
     const card = cards[found.templateId];
     const decision = Nfc.decideTap({
       canAct: canAct(),
@@ -4067,29 +4098,32 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
     const support = nfcSession.support;
     const serial = root.PCGReaders.capabilities();
     const connected = root.PCGReaders.lampOn(serialReader.state.state);
-    const busy = serialBusy || nfcSession.busy();
+    const busy = serialBusy || playerWriteBusy || nfcSession.busy();
+    const playerSetup = connected ? serialPlayerWriteEnabled() : support.enabled;
     return `<strong>刷卡与玩家身份</strong>${currentPlayer ? `<p class="player-current">当前玩家：<b data-i18n-ignore>${esc(currentPlayer.name || '玩家')}</b><small>ID <span data-i18n-ignore>${esc(currentPlayer.id)}</span></small></p>` : '<p class="nfc-help">刷玩家卡识别身份，刷游戏牌出牌。</p>'}<p class="nfc-help">刷卡使用手牌中的同名牌，需要目标时再点选目标。</p>
       <button type="button" data-action="nfc-serial"${!serial.secure || !serial.serial || connected || busy || nfcSession.active() ? ' disabled' : ''}>${connected ? 'M5Dial 已连接' : '连接 M5Dial（USB）'}</button>
       <button type="button" class="nfc-entry" data-action="nfc-start" data-nfc="${support.enabled ? 'on' : 'off'}"${!support.enabled || nfcSession.active() || connected || busy ? ' disabled' : ''}>${nfcSession.active() ? '安卓 NFC 已开启' : '开始安卓 NFC 刷卡'}</button>
       <button type="button" data-action="nfc-stop"${!connected && !serialBusy && !nfcSession.active() ? ' disabled' : ''}>停止刷卡 / 断开</button>
       <p class="nfc-help">电脑：Chrome / Edge + USB 连接 M5Dial。手机：开启 NFC，用安卓 Chrome 打开 HTTPS 网站。</p>
       ${!support.enabled ? '<p class="nfc-help">本浏览器不能使用手机 NFC，可用 M5Dial 或点选出牌。</p>' : ''}
-      <button type="button" data-action="nfc-player-init"${!support.enabled || connected || busy ? ' disabled' : ''}>${ui.identityPanel ? '返回刷卡' : '创建玩家身份卡（安卓 NFC）'}</button>
+      <button type="button" data-action="nfc-player-init"${!playerSetup || busy ? ' disabled' : ''}>${ui.identityPanel ? '返回刷卡' : connected ? '创建玩家身份卡（M5Dial）' : '创建玩家身份卡（安卓 NFC）'}</button>
       <button type="button" class="nfc-init" data-action="nfc-init"${!support.enabled || connected || busy ? ' disabled' : ''}>${ui.nfcPanel ? '返回刷卡出牌' : '初始化游戏牌（安卓 NFC）'}</button>
-      <p class="nfc-help">M5Dial 可读取玩家卡和游戏牌，写卡仍待实机验证。</p>
+      <a class="nfc-flash" href="../flash.html" target="_blank" rel="noopener">M5Dial 固件烧录 / 升级</a>
+      ${connected ? `<p class="nfc-help">固件版本：<span data-i18n-ignore>${esc(serialReader.state.firmware || '—')}</span></p>${serialPlayerWriteEnabled() ? '<p class="nfc-help">已支持空白 NTAG215 玩家身份卡写入，写后自动读回校验。</p>' : '<p class="nfc-help">此固件不支持新版写卡，请先升级。</p>'}` : '<p class="nfc-help">M5Dial 连接后可创建玩家身份卡；请先安装新版写卡固件。</p>'}
       <p class="nfc-status" role="status" aria-live="polite">${esc(ui.nfcStatus || '选择一种刷卡方式')}</p>`;
   }
 
   function playerPanel() {
     if (!ui.identityPanel) return '';
-    const canWrite = playerDraft && nfcSession.active() && !nfcSession.busy() && nfcSession.lastKind() === 'blank';
-    const occupied = ['identity', 'ready', 'unknown'].includes(nfcSession.lastKind());
+    const serial = root.PCGReaders.lampOn(serialReader.state.state);
+    const canWrite = playerDraft && !playerWriteBusy && (serial ? serialPlayerWriteEnabled() && serialBlankCard() : nfcSession.active() && !nfcSession.busy() && nfcSession.lastKind() === 'blank');
+    const occupied = serial ? serialCard && serialCard.ndef !== 'blank' : ['identity', 'ready', 'unknown'].includes(nfcSession.lastKind());
     const options = Array.from({ length: 9 }, (_, i) => { const value = '0' + (i + 1); return `<option value="${value}"${value === playerSkin ? ' selected' : ''}>${value}</option>`; }).join('');
     return `<section class="nfc-panel player-panel" data-player-panel="1">
       <strong>初始化空白玩家卡</strong><p>身份卡保存玩家 ID、昵称和卡面编号，不保存对局进度或收藏。</p>
-      ${playerDraft ? `<p>待写入玩家：<b data-i18n-ignore>${esc(playerDraft.name)}</b></p><p>卡面编号：<span data-i18n-ignore>${esc(playerDraft.skin)}</span></p><small class="player-id" data-i18n-ignore>ID ${esc(playerDraft.id)}</small><button type="button" data-action="nfc-player-edit"${nfcSession.busy() ? ' disabled' : ''}>重新填写</button>`
+      ${playerDraft ? `<p>待写入玩家：<b data-i18n-ignore>${esc(playerDraft.name)}</b></p><p>卡面编号：<span data-i18n-ignore>${esc(playerDraft.skin)}</span></p><small class="player-id" data-i18n-ignore>ID ${esc(playerDraft.id)}</small><button type="button" data-action="nfc-player-edit"${nfcSession.busy() || playerWriteBusy ? ' disabled' : ''}>重新填写</button>`
       : '<label>玩家昵称<input type="text" data-player-name autocomplete="nickname" maxlength="48" placeholder="最多 24 字" value="' + esc(playerName) + '"></label><label>卡面编号<select data-player-skin>' + options + '</select></label><button type="button" data-action="nfc-player-prepare">生成玩家身份</button>'}
-      <p>请先刷空白卡，再确认写入；写入后移开并重刷同一张卡。</p>
+      <p>${serial ? '请放上一张空白、可写的 NTAG215 卡，再确认写入。保持卡片不动，设备会自动读回校验。' : '请先刷空白卡，再确认写入；写入后移开并重刷同一张卡。'}</p>${serial && serialCard ? `<p>UID <span data-i18n-ignore>${esc(serialCard.uid)}</span> · ${esc(serialCard.tag && serialCard.tag.type || '')}</p>` : ''}
       ${occupied ? '<p>卡上已有内容，不能初始化玩家身份卡。请换一张空白卡。</p>' : ''}
       <button type="button" data-action="nfc-player-write"${canWrite ? '' : ' disabled'}>确认写入玩家身份</button>
     </section>`;
@@ -4612,7 +4646,7 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
       if (ui.identityPanel) {
         playerDraft = null; playerName = ''; playerSkin = '01';
         nfcSession.selectIdentity(null);
-        if (!nfcSession.active()) nfcSession.start();
+        if (!root.PCGReaders.lampOn(serialReader.state.state) && !nfcSession.active()) nfcSession.start();
       }
       render();
       if (ui.identityPanel) $('.player-panel').scrollIntoView({ block: 'nearest' });
@@ -4627,7 +4661,21 @@ globalThis.PCGClashScene={"status":"ready","slots":{"arena_background":"scene/ra
       return render();
     }
     if (action === 'nfc-player-edit') { playerDraft = null; nfcSession.selectIdentity(null); return render(); }
-    if (action === 'nfc-player-write') return nfcSession.writeCard();
+    if (action === 'nfc-player-write') {
+      if (!root.PCGReaders.lampOn(serialReader.state.state)) return nfcSession.writeCard();
+      if (!playerDraft || playerWriteBusy || !serialBlankCard() || !serialPlayerWriteEnabled()) return;
+      playerWriteBusy = true;
+      ui.nfcStatus = '正在写入玩家身份，请保持卡片不动…';
+      render();
+      const draft = playerDraft;
+      serialReader.writePlayer(draft, { blankOnly: true, overwrite: false }).then(result => {
+        ui.nfcStatus = '玩家身份卡写入并校验成功';
+        serialCard = null;
+        recognizePlayer({ descriptor: result.descriptor }, { verified: true });
+      }).catch(error => { ui.nfcStatus = error.message || '写入未确认，请重新刷卡检查'; serialCard = null; })
+        .finally(() => { playerWriteBusy = false; render(); });
+      return;
+    }
     if (action === 'nfc-init') {
       ui.identityPanel = false;
       ui.nfcPanel = !ui.nfcPanel;

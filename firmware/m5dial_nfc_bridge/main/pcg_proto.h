@@ -13,6 +13,8 @@
 #include <stdint.h>
 #include "pcg_ndef.h"
 
+#define PCG_FIRMWARE_VERSION "2026.11.14-player-write.1"
+#define PCG_WRITE_MODE "blank-player-v1"
 #define PCG_PROTO_LINE_MAX 4096   /* matches the web JSON-line cap */
 
 typedef struct pcg_proto pcg_proto_t;
@@ -37,6 +39,8 @@ typedef struct {
 typedef struct {
     bool ok;
     char error[64];
+    char uid[24];
+    char descriptor[PCG_NDEF_MAX];
 } pcg_write_result_t;
 
 typedef void (*pcg_send_fn)(pcg_proto_t *p, const char *line);

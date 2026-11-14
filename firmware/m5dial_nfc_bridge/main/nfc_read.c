@@ -8,6 +8,7 @@
 #include "pcg_ndef.h"
 #include "ntag_layout.h"
 #include "nfc_track.h"
+#include "pcg_writer.h"
 #include "session_gate.h"
 #include "display_gc9a01.h"
 #include "freertos/FreeRTOS.h"
@@ -27,9 +28,9 @@ static nfc_track_t track;
 static session_gate_t gate;
 static pcg_card_t snap;
 static int have_snap;
-static volatile int hold;
+static SemaphoreHandle_t nfc_mu;
 static SemaphoreHandle_t gate_mu;
-static char last_uid[24];
+
 
 static const char hexd[] = "0123456789ABCDEF";
 
@@ -43,14 +44,21 @@ static void uid_to_hex(const uint8_t *uid, uint8_t len, char *out)
 }
 
 /* Buffer starts at page 3 (CC). Returns bytes copied. */
+static size_t read_bytes(void *ctx, uint32_t addr, uint8_t *dst, size_t length)
+{
+    (void)ctx;
+    size_t copied = 0;
+    while (copied < length) {
+        size_t chunk = length - copied > 16 ? 16 : length - copied;
+        if (rc522_read_memory(dst + copied,chunk,addr + copied) != chunk) break;
+        copied += chunk;
+    }
+    return copied;
+}
 static size_t read_tag_memory(uint8_t *dst, size_t dst_len)
 {
-    size_t out = 0;
-    for (uint8_t page = 3; page < 130 && out + 16 <= dst_len; page = (uint8_t)(page + 4)) {
-        if (rc522_read_memory(dst + out, 16, (uint32_t)page * 4) != 16) break;
-        out += 16;
-    }
-    return out;
+    if (dst_len < 508) return 0;
+    return read_bytes(NULL,12,dst,508);
 }
 
 static bool read_tag(pcg_card_t *card)
@@ -110,7 +118,11 @@ static sg_evt_t gate_call(sg_evt_t (*fn)(session_gate_t *), const char *uid)
 static void on_session(pcg_proto_t *p)
 {
     (void)p;
+    xSemaphoreTake(nfc_mu, portMAX_DELAY);
+    session_gate_reset(&gate);
+    if (have_snap) gate_call(NULL,snap.uid);
     publish(gate_call(session_gate_on_hello, NULL));
+    xSemaphoreGive(nfc_mu);
 }
 
 static void nfc_task(void *arg)
@@ -121,10 +133,7 @@ static void nfc_task(void *arg)
         uint32_t now;
         pcg_card_t card;
         nfc_evt_t ev;
-        if (hold) {
-            vTaskDelay(pdMS_TO_TICKS(POLL_DELAY_MS));
-            continue;
-        }
+        xSemaphoreTake(nfc_mu, portMAX_DELAY);
         now = (uint32_t)(xTaskGetTickCount() * portTICK_PERIOD_MS);
         memset(&card, 0, sizeof card);
         if (read_tag(&card)) {
@@ -132,7 +141,7 @@ static void nfc_task(void *arg)
             if (ev == NFC_EVT_NEW) {
                 snap = card;
                 have_snap = 1;
-                snprintf(last_uid, sizeof last_uid, "%s", card.uid);
+
                 display_note_card(card.ndef_kind, card.uid);
                 publish(gate_call(NULL, card.uid));
                 ESP_LOGI(TAG, "card %s ndef=%s type=%s", card.uid, card.ndef_kind, card.tag_type);
@@ -141,86 +150,52 @@ static void nfc_task(void *arg)
             ev = nfc_track_step(&track, 0, NULL, now, REMOVED_GRACE_MS);
             if (ev == NFC_EVT_GONE) {
                 have_snap = 0;
-                last_uid[0] = 0;
+
                 display_note_card("idle", "");
                 publish(gate_call(session_gate_on_gone, NULL));
             }
         }
+        xSemaphoreGive(nfc_mu);
         vTaskDelay(pdMS_TO_TICKS(POLL_DELAY_MS));
     }
 }
 
+static bool select_card(void *ctx, char uid[24])
+{
+    (void)ctx;
+    pcg_tag_id_t id;
+    if (!rc522_select(&id,200)) return false;
+    uid_to_hex(id.uid,id.uid_len,uid);
+    return true;
+}
+static bool get_version(void *ctx, uint8_t version[8]) { (void)ctx; return rc522_get_version(version); }
+static int write_page(void *ctx, uint8_t page, const uint8_t data[4]) { (void)ctx; return rc522_write_page(page,data); }
 static bool write_card(pcg_proto_t *p, const char *request_id,
                        const char *expected_uid, bool overwrite,
                        const char *descriptor_json, pcg_write_result_t *out)
 {
-    uint8_t mem[PCG_NTAG_MAX_BYTES], planned[PCG_NTAG_MAX_BYTES], check[PCG_NTAG_MAX_BYTES];
-    uint8_t pages[40];
-    char err[64] = "", json[384];
-    size_t got, json_n;
-    int dirty, i;
-    const char *ds;
-    (void)p; (void)request_id;
-    out->ok = false;
-    out->error[0] = 0;
-    if (!expected_uid || !last_uid[0] || strcmp(expected_uid, last_uid) != 0) {
-        snprintf(out->error, sizeof out->error, "card removed");
-        return true;
+    (void)request_id;
+    if (overwrite) { memset(out,0,sizeof *out); strcpy(out->error,"blank cards only"); return true; }
+    const pcg_tag_io_t io = {NULL,select_card,get_version,read_bytes,write_page};
+    xSemaphoreTake(nfc_mu, portMAX_DELAY);
+    pcg_write_blank_player(&io,expected_uid,descriptor_json,out);
+    if (out->ok) {
+        have_snap = read_tag(&snap);
+        snprintf(p->presence_ndef,sizeof p->presence_ndef,"pulse");
+        display_note_card("pulse",out->uid);
     }
-    ds = descriptor_json ? strstr(descriptor_json, "{") : NULL;
-    if (!ds) {
-        snprintf(out->error, sizeof out->error, "descriptor missing");
-        return true;
-    }
-    json_n = 0;
-    while (ds[json_n] && ds[json_n] != '}' && json_n + 1 < sizeof json) json_n++;
-    if (ds[json_n] != '}') {
-        snprintf(out->error, sizeof out->error, "descriptor truncated");
-        return true;
-    }
-    memcpy(json, ds, json_n + 1);
-    json[json_n + 1] = 0;
-
-    hold = 1;
-    vTaskDelay(pdMS_TO_TICKS(POLL_DELAY_MS + 20));
-    got = read_tag_memory(mem, sizeof mem);
-    if (got < 20 || pcg_ntag_plan_write(mem, got, 3, json, overwrite ? 1 : 0,
-                                        expected_uid, last_uid, planned, err, sizeof err) != 0) {
-        snprintf(out->error, sizeof out->error, "%s", err[0] ? err : "write rejected");
-        hold = 0;
-        return true;
-    }
-    dirty = pcg_ntag_dirty_pages(mem, planned, got, 3, pages, 40);
-    if (dirty < 0) {
-        snprintf(out->error, sizeof out->error, "refusing lock or uid write");
-        hold = 0;
-        return true;
-    }
-    for (i = 0; i < dirty; i++) {
-        const uint8_t *bytes = planned + (size_t)(pages[i] - 3) * 4;
-        if (rc522_write_page(pages[i], bytes) != 0) {
-            snprintf(out->error, sizeof out->error, "page write failed");
-            hold = 0;
-            return true;
-        }
-    }
-    got = read_tag_memory(check, sizeof check);
-    if (got < 20 || memcmp(check + 4, planned + 4, got - 4) != 0) {
-        snprintf(out->error, sizeof out->error, "readback failed");
-        hold = 0;
-        return true;
-    }
-    hold = 0;
-    out->ok = true;
+    xSemaphoreGive(nfc_mu);
     return true;
 }
 
 void nfc_read_start(pcg_proto_t *proto)
 {
     g_proto = proto;
+    nfc_mu = xSemaphoreCreateMutex();
+    configASSERT(nfc_mu);
     proto->write_card = write_card;
     proto->on_session = on_session;
     session_gate_reset(&gate);
     if (!gate_mu) gate_mu = xSemaphoreCreateMutex();
-    xTaskCreatePinnedToCore(nfc_task, "nfc", 8192, NULL, 6, NULL, 0);
+    xTaskCreatePinnedToCore(nfc_task, "nfc", 12288, NULL, 6, NULL, 0);
 }

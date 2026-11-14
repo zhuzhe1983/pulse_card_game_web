@@ -72,8 +72,8 @@ async function run() {
     async transferOut(endpoint, bytes) {
       assert.equal(endpoint,2);
       const message = JSON.parse(new TextDecoder().decode(bytes)); this.sent.push(message);
-      if (message.type === 'hello') this.inject({type:'hello',protocol:R.PROTOCOL,capabilities:['uid','ndef_read','ndef_write']});
-      if (message.type === 'write') this.inject({type:'write_result',request_id:message.request_id,ok:true,uid:message.expected_uid,descriptor:message.descriptor});
+      if (message.type === 'hello') this.inject({type:'hello',protocol:R.PROTOCOL,capabilities:['uid','ndef_read','ndef_write'],...this.helloReply});
+      if (message.type === 'write') this.inject({type:'write_result',request_id:message.request_id,ok:true,uid:message.expected_uid,descriptor:message.descriptor,...this.writeReply});
       return {status:'ok',bytesWritten:bytes.length};
     }
     transferIn(endpoint) {
@@ -101,6 +101,28 @@ async function run() {
     assert.equal(fake.sent.at(-1).expected_uid,'04AA1B2C3D4E5F');
     fake.inject({type:'removed'}); fake.inject({type:'card',uid:'04AA1B2C3D4E5F'}); await waitTick();
     assert.equal(cards.length,count+1);
+    await assert.rejects(manager.writePlayer(player,{blankOnly:true}), e => e.code === 'WRITE_UPDATE_REQUIRED');
+    await manager.disconnect();
+    fake.helloReply = {firmware:'test-player-write',write_mode:'blank-player-v1'};
+    await manager.connectUSB();
+    assert.equal(manager.state.writeMode,'blank-player-v1');
+    await assert.rejects(manager.writePlayer(player,{blankOnly:true}), e => e.code === 'WRITE_NEEDS_BLANK');
+    const blank = {type:'card',uid:'04AA1B2C3D4E5F',ndef:'blank',tag:{type:'NTAG215',cc:'E1103E00',capacity:496,writable:true,lock:'open'}};
+    fake.inject(blank); await waitTick();
+    await assert.rejects(manager.writePlayer(player,{blankOnly:true,overwrite:true}), e => e.code === 'WRITE_NEEDS_BLANK');
+    await assert.rejects(manager.writePlayer(player,{blankOnly:true}), e => e.code === 'WRITE_VERIFY');
+    fake.writeReply = {verified:true,uid:'04AA1B2C3D4E60'};
+    await assert.rejects(manager.writePlayer(player,{blankOnly:true}), e => e.code === 'WRITE_VERIFY');
+    fake.writeReply = {verified:true,descriptor:{...player,name:'different'}};
+    await assert.rejects(manager.writePlayer(player,{blankOnly:true}), e => e.code === 'WRITE_VERIFY');
+    fake.writeReply = {ok:false,error:'card locked or protected'};
+    await assert.rejects(manager.writePlayer(player,{blankOnly:true}), e => e.code === 'WRITE_FAILED' && /锁定/.test(e.message));
+    fake.writeReply = {verified:true};
+    assert.equal((await manager.writePlayer(player,{blankOnly:true})).verified,true);
+    assert.equal(fake.sent.at(-1).confirm,true); assert.equal(fake.sent.at(-1).overwrite,false);
+    await assert.rejects(manager.writePlayer(player,{blankOnly:true}), e => e.code === 'WRITE_NEEDS_BLANK');
+    fake.inject(blank); fake.inject({type:'removed'}); await waitTick();
+    await assert.rejects(manager.writePlayer(player,{blankOnly:true}), e => e.code === 'WRITE_NEEDS_BLANK');
     await manager.disconnect();
     assert.equal(fake.opened,false); assert.equal(manager.state.canWrite,false);
   } finally {

@@ -7,6 +7,16 @@
   const MAX_PAYLOAD = 384;
   const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   const encoder = new TextEncoder();
+  const writeErrors = {
+    'card removed or changed': '卡片已移开或更换，请移开再刷。',
+    'NTAG215 required': '需要 NTAG215 卡，请换卡后重试。',
+    'standard NTAG215 CC required': '需要 NTAG215 卡，请换卡后重试。',
+    'card locked or protected': '卡片已锁定或受保护，请换空白卡。',
+    'card is not blank': '卡上已有内容，请换一张空白卡。',
+    'readback failed': '写卡未通过读回校验，请移开再刷检查。',
+    'page write failed': '写入失败，请保持卡片贴近读卡器，移开再刷检查。',
+    'incomplete memory': '写入失败，请保持卡片贴近读卡器，移开再刷检查。'
+  };
 
   class ReaderError extends Error {
     constructor(code, message) { super(message || code); this.name = 'ReaderError'; this.code = code; }
@@ -123,15 +133,15 @@
   }
 
   class ReaderManager {
-    constructor({ onCard = () => {}, onStatus = () => {} } = {}) {
-      this.onCard = onCard; this.onStatus = onStatus;
+    constructor({ onCard = () => {}, onStatus = () => {}, onRemoved = () => {} } = {}) {
+      this.onCard = onCard; this.onStatus = onStatus; this.onRemoved = onRemoved;
       this.state = { state: 'disconnected', source: null, message: '尚未连接读卡器', canWrite: false };
       this._epoch = 0; this._pending = new Map(); this._source = null;
       this._lastSignature = ''; this._lastAt = 0; this._lastUID = null;
       this._writeBusy = false;
     }
     _status(state, source, message, canWrite = false) {
-      this.state = { state, source, message, canWrite: !!canWrite };
+      this.state = { state, source, message, canWrite: !!canWrite, firmware: this._firmware || null, writeMode: this._writeMode || null };
       this.onStatus(this.state);
     }
     _secure() {
@@ -146,6 +156,8 @@
       if (signature === this._lastSignature && (continuous || now - this._lastAt < 900)) return null;
       this._lastSignature = signature; this._lastAt = now; this._lastUID = uid;
       const card = { uid, source: event.source, descriptor, tech: 'nfc-a', ndef: event.ndef || (descriptor ? 'pulse' : 'unknown'), tag: object(event.tag) ? event.tag : null };
+      this._lastCard = card;
+      if (this._writeBusy) return card;
       try {
         Promise.resolve(this.onCard(card)).catch(error => this._status('error', event.source, error.message || '处理刷卡结果失败。', this.state.canWrite));
       } catch (error) { this._status('error', event.source, error.message || '处理刷卡结果失败。', this.state.canWrite); }
@@ -169,13 +181,15 @@
     _bridgeMessage(message) {
       if (message.type === 'hello') {
         if (message.protocol !== PROTOCOL || !Array.isArray(message.capabilities) || !message.capabilities.includes('uid') || message.capabilities.some(x => !['uid', 'ndef_read', 'ndef_write'].includes(x))) fail('BRIDGE_VERSION', '读卡桥协议不兼容。');
+        this._firmware = typeof message.firmware === 'string' ? message.firmware : null;
+        this._writeMode = message.write_mode === 'blank-player-v1' ? message.write_mode : null;
         this._bridgeReady = true;
         this._canWrite = message.capabilities.includes('ndef_read') && message.capabilities.includes('ndef_write');
         if (this._hello) { this._hello.resolve(message); this._hello = null; }
         return;
       }
       if (!this._bridgeReady) fail('BRIDGE_HANDSHAKE', '读卡桥必须先完成 hello 握手。');
-      if (message.type === 'removed') { this._lastSignature = ''; this._lastUID = null; return; }
+      if (message.type === 'removed') { this._lastSignature = ''; this._lastUID = null; this._lastCard = null; this.onRemoved(); return; }
       if (message.type === 'card') {
         if (message.tech !== undefined && message.tech !== 'nfc-a') fail('CARD_TECH', '当前版本只接收 NFC-A 卡。');
         this._emitCard({ uid: message.uid, source: this._source, descriptor: message.descriptor == null ? null : message.descriptor, ndef: typeof message.ndef === 'string' ? message.ndef : '', tag: message.tag }, true);
@@ -183,12 +197,14 @@
         const pending = this._pending.get(message.request_id);
         if (!pending) return;
         this._pending.delete(message.request_id); clearTimeout(pending.timer);
-        if (message.ok !== true) pending.reject(new ReaderError('WRITE_FAILED', typeof message.error === 'string' ? message.error.slice(0,160) : '读卡桥写入失败。'));
+        if (message.ok !== true) pending.reject(new ReaderError('WRITE_FAILED', writeErrors[message.error] || (typeof message.error === 'string' ? message.error.slice(0,160) : '读卡桥写入失败。')));
         else {
           try {
+            if (pending.requireVerified && message.verified !== true) fail('WRITE_VERIFY', '固件未返回读回校验结果。');
             const uid = normalizeUID(message.uid);
             const descriptor = parseDescriptor(message.descriptor);
             if (uid !== pending.uid || JSON.stringify(descriptor) !== JSON.stringify(pending.descriptor)) fail('WRITE_VERIFY', '读回身份与待写内容不一致，未确认写入。');
+            this._lastCard = Object.assign({}, this._lastCard, { uid, descriptor, ndef: 'pulse' });
             pending.resolve({ verified: true, uid, descriptor });
           } catch (error) { pending.reject(error); }
         }
@@ -344,10 +360,15 @@
         await this.disconnect(); this._status('error', 'webnfc', error.message || 'NFC 扫描失败。'); throw error;
       }
     }
-    async writePlayer(value, { overwrite = false } = {}) {
+    async writePlayer(value, { overwrite = false, blankOnly = false } = {}) {
       const descriptor = parseDescriptor(value);
       if (descriptor.type !== 'player') fail('WRITE_PLAYER_ONLY', '此操作只写入玩家身份卡。');
       if (!this.state.canWrite || !this._source) fail('WRITE_UNAVAILABLE', '当前读卡方式不支持写入。可使用 Android Web NFC 或支持写入的 PCG 读卡桥。');
+      if (blankOnly && this._source !== 'webnfc') {
+        if (this._writeMode !== 'blank-player-v1') fail('WRITE_UPDATE_REQUIRED', '请先升级 M5Dial 写卡固件。');
+        const card = this._lastCard, tag = card && card.tag;
+        if (overwrite || !card || card.ndef !== 'blank' || !tag || tag.type !== 'NTAG215' || tag.cc !== 'E1103E00' || tag.capacity !== 496 || tag.writable !== true || tag.lock !== 'open') fail('WRITE_NEEDS_BLANK', '请先刷一张空白、可写的 NTAG215 卡。');
+      }
       if (this._writeBusy) fail('WRITE_BUSY', '已有一次写卡操作正在进行。');
       this._writeBusy = true;
       try {
@@ -367,12 +388,12 @@
         let pending;
         const promise = new Promise((resolve, reject) => {
           const timer = setTimeout(() => { this._pending.delete(requestId); reject(new ReaderError('WRITE_TIMEOUT', '写卡没有收到读回确认，请重新刷卡检查。')); }, 20000);
-          pending = { resolve, reject, timer, uid, descriptor };
+          pending = { resolve, reject, timer, uid, descriptor, requireVerified: blankOnly };
           this._pending.set(requestId, pending);
         });
         promise.catch(() => {});
         try {
-          await this._send({ type: 'write', request_id: requestId, expected_uid: uid, mime: MIME, descriptor, overwrite: !!overwrite });
+          await this._send({ type: 'write', request_id: requestId, expected_uid: uid, mime: MIME, descriptor, overwrite: !!overwrite, ...(blankOnly ? { confirm: true } : {}) });
           const result = await promise;
           this._lastSignature = '';
           return result;
@@ -391,7 +412,8 @@
       for (const pending of this._pending.values()) { clearTimeout(pending.timer); pending.reject(error); }
       this._pending.clear();
       this._source = null; this._send = null; this._bridgeReady = false; this._canWrite = false;
-      this._lastUID = null; this._lastSignature = '';
+      this._lastUID = null; this._lastSignature = ''; this._lastCard = null; this._writeMode = null; this._firmware = null;
+      this.onRemoved();
       if (usb && usb.opened) { try { await usb.close(); } catch (_) {} }
       if (reader) { try { await reader.cancel(); } catch (_) {} }
       if (readTask) { try { await readTask; } catch (_) {} }

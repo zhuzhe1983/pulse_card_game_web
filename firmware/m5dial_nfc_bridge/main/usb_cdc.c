@@ -11,6 +11,7 @@
 #include "esp_mac.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
+#include "freertos/queue.h"
 #include "freertos/task.h"
 #include "tinyusb.h"
 #include "tusb_cdc_acm.h"
@@ -21,28 +22,25 @@
 static const char *TAG = "usbcdc";
 static pcg_proto_t *g = NULL;
 
-#define RX_CAP 2048
-static uint8_t rx_ring[RX_CAP];
-static size_t rx_r, rx_w;
+#define RX_CAP 4096
+static QueueHandle_t rx_queue;
+static volatile bool rx_overflow;
 static TaskHandle_t proto_task;
 static SemaphoreHandle_t tx_mu;
 
-/* The RX callback runs on the TinyUSB task (4096-byte stack). Parsing hello
- * used to allocate a 4096-byte reply there. The host still received the
- * reply, then the smashed task faulted and the CDC device dropped
- * (Errno 6 / re-enumerate) about a second later. Bytes only are queued here. */
+/* Keep protocol parsing and large replies off the TinyUSB callback stack. */
 void tinyusb_cdc_rx_callback(int itf, cdcacm_event_t *event)
 {
     uint8_t buf[64];
     size_t got = 0;
     (void)event;
-    if (tinyusb_cdcacm_read(itf, buf, sizeof buf, &got) != ESP_OK) return;
-    for (size_t i = 0; i < got; i++) {
-        size_t next = (rx_w + 1) % RX_CAP;
-        if (next == rx_r) break;
-        rx_ring[rx_w] = buf[i];
-        rx_w = next;
-    }
+    do {
+        if (tinyusb_cdcacm_read(itf,buf,sizeof buf,&got) != ESP_OK) return;
+        for (size_t i = 0; i < got; i++) {
+            if (xQueueSend(rx_queue,buf+i,0) != pdTRUE) rx_overflow = true;
+        }
+    } while (got == sizeof buf);
+
     if (proto_task) xTaskNotifyGive(proto_task);
 }
 
@@ -50,12 +48,14 @@ static void proto_task_fn(void *arg)
 {
     static char line[PCG_PROTO_LINE_MAX];
     size_t n = 0;
+    bool dropping = false;
     (void)arg;
     while (1) {
         ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(200));
-        while (rx_r != rx_w) {
-            uint8_t c = rx_ring[rx_r];
-            rx_r = (rx_r + 1) % RX_CAP;
+        uint8_t c;
+        while (xQueueReceive(rx_queue,&c,0) == pdTRUE) {
+            if (rx_overflow) { dropping = true; n = 0; rx_overflow = false; }
+            if (dropping) { if (c == '\n') dropping = false; continue; }
             if (c == '\n' || c == '\r') {
                 if (n) {
                     line[n] = 0;
@@ -65,7 +65,7 @@ static void proto_task_fn(void *arg)
             } else if (n + 1 < sizeof line) {
                 line[n++] = (char)c;
             } else {
-                n = 0;
+                n = 0; dropping = true;
             }
         }
     }
@@ -77,6 +77,7 @@ static void on_line_state(int itf, cdcacm_event_t *event)
     /* Opening the port asserts DTR. That is not a reset. USB-Serial-JTAG is
      * left disabled in sdkconfig so this edge cannot reboot the chip. */
     int open = event && event->line_state_changed_data.dtr;
+    if (!open && g) g->session = false;
     display_note_usb(open);
     ESP_LOGI(TAG, "CDC DTR %s", open ? "open" : "closed");
 }
@@ -86,7 +87,13 @@ static void cdc_send(pcg_proto_t *proto, const char *line)
     (void)proto;
     size_t n = strlen(line);
     if (tx_mu) xSemaphoreTake(tx_mu, portMAX_DELAY);
-    tinyusb_cdcacm_write_queue(TINYUSB_CDC_ACM_0, (const uint8_t *)line, n);
+    size_t sent = 0;
+    while (sent < n) {
+        size_t queued = tinyusb_cdcacm_write_queue(TINYUSB_CDC_ACM_0, (const uint8_t *)line + sent, n - sent);
+        if (!queued) break;
+        sent += queued;
+        if (tinyusb_cdcacm_write_flush(TINYUSB_CDC_ACM_0, pdMS_TO_TICKS(500)) != ESP_OK) break;
+    }
     tinyusb_cdcacm_write_queue(TINYUSB_CDC_ACM_0, (const uint8_t *)"\n", 1);
     /* Short wait, and not from the USB callback. timeout 0 returns before
      * the endpoint is idle, which dropped the tail of the hello line. */
@@ -97,11 +104,13 @@ static void cdc_send(pcg_proto_t *proto, const char *line)
 int usb_cdc_start(pcg_proto_t *proto)
 {
     g = proto;
+    rx_queue = xQueueCreate(RX_CAP,1);
+    if (!rx_queue) return -1;
 
     uint8_t mac[6];
     static char serial[13];
     static const char lang[] = { 0x09, 0x04 };
-    const char *strings[5];
+    static const char *strings[5];
     if (esp_read_mac(mac, ESP_MAC_WIFI_STA) != ESP_OK) {
         snprintf(serial, sizeof serial, "123456");
     } else {
@@ -128,7 +137,7 @@ int usb_cdc_start(pcg_proto_t *proto)
     tinyusb_config_cdcacm_t acm_cfg = {
         .usb_dev = TINYUSB_USBDEV_0,
         .cdc_port = TINYUSB_CDC_ACM_0,
-        .rx_unread_buf_sz = 64,
+        .rx_unread_buf_sz = 512,
         .callback_rx = &tinyusb_cdc_rx_callback,
         .callback_rx_wanted_char = NULL,
         .callback_line_state_changed = on_line_state,
@@ -139,7 +148,7 @@ int usb_cdc_start(pcg_proto_t *proto)
 
     tx_mu = xSemaphoreCreateMutex();
     proto->send = cdc_send;
-    if (xTaskCreate(proto_task_fn, "pcg", 6144, NULL, 8, &proto_task) != pdPASS)
+    if (xTaskCreate(proto_task_fn, "pcg", 16384, NULL, 8, &proto_task) != pdPASS)
         return -1;
 
     ESP_LOGI(TAG, "CDC up; speak pcg.reader.v1");

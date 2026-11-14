@@ -13,87 +13,52 @@
 size_t pcg_ndef_extract(const uint8_t *mem, size_t mem_len,
                         uint8_t *out, size_t out_len)
 {
-    size_t i = 0;
-    if (!mem || !mem_len) return 0;
-    if (!(mem[0] == 0x03 || mem[0] == 0x00 || mem[0] == 0xFE)) {
-        i = 16;                         /* whole-tag image: page 4 */
-        if (mem_len < i + 1) return 0;
-    }
-    size_t end = i + 32;
-    if (end > mem_len) end = mem_len;
-
-    for (; i < end; ) {
-        uint8_t t = mem[i];
-        if (t == 0xFE) return 0;        /* terminator before NDEF TLV */
-        if (t == 0x03) {
-            size_t j = i + 1;
-            if (j >= mem_len) return 0;
-            uint32_t n = mem[j++];
-            if (n == 0xFF) {            /* extended 2-byte length */
-                if (j + 2 > mem_len) return 0;
-                n = ((uint32_t)mem[j]) << 8 | mem[j + 1];
-                j += 2;
-            }
-            size_t w = 0;
-            while (n > 0 && j < mem_len && w < out_len) {
-                uint8_t b = mem[j++];
-                --n;
-                if (b == 0xFE) break;   /* terminator closes message */
-                out[w++] = b;
-            }
-            return w;
+    if (!mem || !out || !mem_len) return 0;
+    size_t i = (mem[0] == 0 || mem[0] == 1 || mem[0] == 2 || mem[0] == 3 || mem[0] == 0xfd || mem[0] == 0xfe) ? 0 : 16;
+    while (i < mem_len) {
+        uint8_t type = mem[i++];
+        if (type == 0) continue;
+        if (type == 0xfe || i >= mem_len) return 0;
+        size_t length = mem[i++];
+        if (length == 0xff) {
+            if (mem_len - i < 2) return 0;
+            length = ((size_t)mem[i] << 8) | mem[i + 1]; i += 2;
         }
-        ++i;
+        if (length > mem_len - i) return 0;
+        if (type == 3) {
+            if (length > out_len) return 0;
+            memcpy(out, mem + i, length);
+            return length;
+        }
+        i += length;
     }
     return 0;
 }
 
-/* Parse the first record of an NDEF message whose type is the PULSE identity
- * MIME; copy its payload bytes (the identity JSON) verbatim into out.
- *
- * Record header:
- *   flags[1]  (MB 0x80, ME 0x40, SR 0x10, IL 0x08, TNF low 3 bits)
- *   typeLen[1]
- *   payloadLen[ SR ? 1 : 2 ]
- *   [ idLen[1] if IL ]
- *   type[typeLen]
- *   [ id[idLen] if IL ]
- *   payload[payloadLen]
- */
-bool pcg_ndef_parse_message(const uint8_t *msg, size_t len,
-                            char *out, size_t out_len)
+/* NDEF long records use a FOUR-byte payload length. Never truncate JSON. */
+bool pcg_ndef_parse_message(const uint8_t *msg, size_t len, char *out, size_t out_len)
 {
-    if (len < 2) return false;
-    uint8_t flags = msg[0];
-    size_t tn = msg[1];
-    bool sr = (flags & 0x10) != 0;
-    bool il = (flags & 0x08) != 0;
-    size_t off = sr ? 3 : 4;            /* past flags/typeLen/payloadLen */
-    size_t plen;
-    if (sr) {
-        plen = len > 2 ? msg[2] : 0;
-    } else {
-        if (len < 4) return false;
-        plen = ((size_t)msg[2]) << 8 | msg[3];
+    if (!msg || !out || !out_len || len < 3) return false;
+    size_t pos = 0, records = 0; bool found = false, ended = false;
+    while (pos < len && !ended) {
+        if (len - pos < 3) return false;
+        uint8_t flags = msg[pos++]; size_t tn = msg[pos++];
+        if (!!(flags & 0x80) != (records == 0) || (flags & 0x20) || (flags & 7) >= 6) return false;
+        size_t plen = msg[pos++];
+        if (!(flags & 0x10)) {
+            if (len - pos < 3) return false;
+            plen = (plen << 24) | ((size_t)msg[pos] << 16) | ((size_t)msg[pos+1] << 8) | msg[pos+2]; pos += 3;
+        }
+        size_t idlen = 0;
+        if (flags & 8) { if (pos == len) return false; idlen = msg[pos++]; }
+        if (tn > len - pos || idlen > len - pos - tn || plen > len - pos - tn - idlen) return false;
+        if ((flags & 7) == 2 && tn == PCG_MIME_LEN && memcmp(msg + pos, PCG_MIME, tn) == 0) {
+            if (found || !plen || plen >= out_len || memchr(msg + pos + tn + idlen, 0, plen)) return false;
+            memcpy(out, msg + pos + tn + idlen, plen); out[plen] = 0; found = true;
+        }
+        pos += tn + idlen + plen; records++; ended = !!(flags & 0x40);
     }
-    size_t idl = 0;
-    if (il) {
-        if (off >= len) return false;
-        idl = msg[off];
-        off += 1;
-    }
-    if (off + tn > len) return false;              /* need the type bytes */
-    const uint8_t *tstart = msg + off;
-    if (tn != PCG_MIME_LEN || memcmp(tstart, PCG_MIME, PCG_MIME_LEN) != 0)
-        return false;
-    off += tn;                                      /* past type */
-    if (off + idl > len) return false;            /* id field */
-    off += idl;
-    if (off + plen > len) return false;           /* payload fits */
-    size_t cp = (plen < out_len - 1) ? plen : (out_len - 1);
-    memcpy(out, msg + off, cp);
-    out[cp] = '\0';
-    return true;
+    return ended && pos == len && found;
 }
 
 /* Lightweight field readers for the display layer: pull a quoted JSON string

@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
-# Host-side unit tests for pcg_ndef / pcg_proto — no ESP-IDF required.
-# Requires a C compiler (cc/clang/gcc). Run from firmware/m5dial_nfc_bridge.
+# Host-side tests; no device or cross compiler required.
+# Needs cc and cJSON source: export IDF_PATH or CJSON_DIR. Run in this directory.
 set -e
 cc -std=c11 -Wall -I main main/pcg_ndef.c tests/test_pcg_ndef.c  -o /tmp/pcg_ndef_test
-cc -std=c11 -Wall -I main main/pcg_proto.c tests/test_pcg_proto.c -o /tmp/pcg_proto_test
-cc -std=c11 -Wall -I main main/pcg_ndef.c main/pcg_proto.c tests/test_pcg_ndef.c -o /tmp/pcg_combined_test
+CJSON_DIR="${CJSON_DIR:-${IDF_PATH:?Set IDF_PATH or CJSON_DIR}/components/json/cJSON}"
+COMMON=(-std=c11 -Wall -Wextra -Werror -I main -I "$CJSON_DIR")
+cc "${COMMON[@]}" main/pcg_proto.c main/pcg_identity.c "$CJSON_DIR/cJSON.c" tests/test_pcg_proto.c -o /tmp/pcg_proto_test
+cc "${COMMON[@]}" main/pcg_writer.c main/pcg_identity.c main/pcg_ndef.c main/ntag_layout.c "$CJSON_DIR/cJSON.c" tests/test_writer.c -o /tmp/pcg_writer_test
+/tmp/pcg_writer_test
 cc -std=c11 -Wall -I main main/gc9a01_seq.c main/nfc_track.c main/session_gate.c main/ui_model.c main/ntag_layout.c main/pcg_ndef.c tests/test_dial_logic.c -o /tmp/pcg_dial_test
 echo "-- ndef --"; /tmp/pcg_ndef_test
 echo "-- proto --"; /tmp/pcg_proto_test

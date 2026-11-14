@@ -13,7 +13,7 @@
 - `src/clash/scene/raster-v1/`：ImageGen 生成的 6 个界面组件和 12 张技能插画；manifest 保留提示词，source/ 保留 PNG 原稿。构建仅复制运行资产，不复制 source/。
 - `wiki/data/design-pack.json`：基线牌表加 balance 覆盖的生成结果；产品原图不改。
 - `dist/clash/`：生成页面；需要根目录下的 `wiki/`、`shared/` 配套资源。
-- `src/readers.js`、`firmware/`、`dist/flash.html`：硬件资产；readers.js 已接到牌桌读取游戏牌，固件未改。
+- `src/readers.js`、`firmware/`、`dist/flash.html`：硬件资产；`2026.11.14-player-write.1` 固件现支持空白 NTAG215 玩家身份写入并自动读回。网页按 hello.write_mode=blank-player-v1 启用按钮，旧固件仅能读。固件已编译、主机与模拟硬件浏览器测试通过；用户本轮不便接设备，实机烧录/读写待验收。
 
 `content/clash/` 内原教学数据和规则副本属于 baseline 回归，不覆盖本版数值。`SOURCE.json` 区分历史来源和当前 profile。固定教学的当前短牌库在 app.js，不等于旧 fixture 的 20 生命教学局。
 
@@ -27,6 +27,7 @@ python3 tools/serve.py --port 8026
 PULSE_TEST_URL=http://127.0.0.1:8026 node tests/tactical.browser.cjs
 PULSE_TEST_URL=http://127.0.0.1:8026 node tests/i18n.browser.cjs
 PULSE_TEST_URL=http://127.0.0.1:8026 node tests/nfc.browser.cjs
+PULSE_TEST_URL=http://127.0.0.1:8026 node tests/flasher.browser.cjs
 node tools/audit_clash.cjs > docs/review/clash-tactical-v1.json
 ```
 
