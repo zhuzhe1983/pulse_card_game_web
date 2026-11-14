@@ -1,18 +1,19 @@
 {
-  "source_commit": "842afff8b5d0a2bb8955f113ef46ac1c8004496a",
+  "source_commit": "4f5b5980b9d9564a0a7b7abc27a2780024464889",
   "rules": "tactical-v1",
   "visual_theme": "electronics-workbench",
   "languages": [
     "zh-CN",
     "en"
   ],
-  "generated_at": "2026-11-14T08:08:47.684155+00:00",
+  "generated_at": "2026-11-14T08:15:17.382073+00:00",
   "source_repository": "https://github.com/zhuzhe1983/pulse_card_game_web",
   "spec_commit": "34173938be0995eaa1d818b0594ead7946dda4cc",
   "nfc": {
     "android_game_card_read_write": "implemented_hardware_acceptance_pending",
     "m5dial_game_card_read": "implemented_hardware_acceptance_pending",
     "m5dial_game_card_write": "not_connected",
-    "player_identity_setup": "not_available"
+    "player_identity_setup": "android_blank_tag_write_and_readback_implemented_hardware_acceptance_pending",
+    "m5dial_player_identity_read": "implemented_hardware_acceptance_pending"
   }
 }
