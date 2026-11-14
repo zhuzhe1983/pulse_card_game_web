@@ -17,7 +17,9 @@
   button{background:#238636;color:#fff;border:0;border-radius:6px;padding:10px 16px;font-size:14px;cursor:pointer}
   button:disabled{background:#2ea04355;color:#8b949e;cursor:not-allowed}
   button.secondary{background:#21262d;color:var(--fg);border:1px solid var(--border)}
-  .firmware{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+  a{color:var(--accent)}
+  button.secondary:disabled{opacity:.45;cursor:not-allowed}
+  .firmware{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;overflow-wrap:anywhere}
   select,input[type=file]{padding:8px;background:#0d1117;border:1px solid var(--border);border-radius:6px;color:var(--fg)}
   .log{background:#0d1117;border:1px solid var(--border);border-radius:8px;padding:12px;height:220px;overflow:auto;
        font-family:ui-monospace,Menlo,monospace;font-size:12px;white-space:pre-wrap;word-break:break-all}
@@ -33,23 +35,25 @@
 <div class="card">
   <h1>PULSE · M5Dial 固件烧录器</h1>
   <span class="tag">m5dial_nfc_bridge · pcg.reader.v1 · ESP32-S3FN8 · 8MB · DIO · 80MHz · 无 PSRAM</span>
+  <p><b>空白 NTAG215 → 玩家身份卡</b>：写入玩家 ID、昵称和卡面编号，写后自动读回校验。新版固件已完成编译和自动测试，实机验收待补。</p>
   <p>把 M5Dial（原版 Stamp-S3 或 v1.1 Stamp-S3A）通过 USB-C 连到电脑，在下方选择串口并烧录。两版都是 8MB Flash，官方未列 PSRAM。固件会在屏幕上显示指示灯状态，并通过 USB 串口对话 <b>pcg.reader.v1</b>。</p>
 
   <div class="row">
-    <button id="btn-connect" class="secondary">连接设备</button>
+    <button id="btn-connect" class="secondary" disabled>连接设备</button>
+    <button id="btn-disconnect" class="secondary" disabled>断开设备</button>
     <span class="status" id="conn-status">未连接</span>
   </div>
 
   <div class="row firmware">
-    <label for="firm">固件：</label>
+    <span>固件：</span>
     <span id="firm-name">m5dial_nfc_bridge_merged_dio.bin</span>
     （<span id="firm-size">-</span>）
   </div>
 
-  <div class="row">
-    <button id="btn-flash">烧录固件</button>
-    <button id="btn-erase" class="secondary">擦除 Flash</button>
-  </div>
+  <p>版本：<b id="firm-version">加载中…</b></p>
+  <p class="firmware">SHA-256：<span id="firm-hash">加载中…</span></p>
+  <p><a id="download" href="firmware/m5dial_nfc_bridge_merged_dio.bin" download>下载合并固件 .bin</a> · <a href="clash/?lang=zh-CN">进入网站刷卡</a></p>
+  <div class="row"><button id="btn-flash" disabled>烧录固件</button></div>
 
   <div class="bar"><div id="bar"></div></div>
   <div class="row"><span class="status" id="prog">就绪</span></div>
@@ -58,14 +62,12 @@
 
   <div class="note">
     首次使用需要 Chrome/Edge 并通过 <b>localhost</b> 或 <b>HTTPS</b> 打开本页（Web Serial 要求安全上下文）。<br>
-    若 M5Dial 没出现在列表，重新插拔 USB 或按住复位，然后点“连接设备”。烧录参数固定为 DIO / 80MHz / 8MB；镜像头不是这组参数时本页会拒绝烧录。
+    先在游戏网页断开 M5Dial，关闭占用串口的程序。若无法连接，先断电，按住 Stamp-S3 上的 G0 按键，再插入 USB 数据线，通电后松开 G0，进入下载模式（<a href="https://docs.m5stack.com/en/core/Dial#download-mode" target="_blank" rel="noopener">官方说明</a>）。<br>
+    烧录会替换设备上的现有程序；参数为 DIO / 80MHz / 8MB。本页校验固件摘要和镜像头，烧录结束后释放串口。若设备仍在下载模式，按 RST 或重新插拔 USB，再到游戏网页连接。
   </div>
 </div>
 
 <script type="module">
-import { ESPLoader, Transport } from
-  'https://unpkg.com/esptool-js@0.7.1/bundle.js';
-
 const $ = id => document.getElementById(id);
 const logEl = $('log');
 function log(msg, cls='info'){
@@ -86,12 +88,20 @@ const FLASH_SIZE = '8MB';
 const FLASH_LIMIT = 8 * 1024 * 1024;
 
 let transport = null;
-let firmwareUrl = null;
+let firmwareData = null;
+let busy = false;
+let flasher = null;
 let loader = null;
 
 const btnConnect = $('btn-connect');
 const btnFlash = $('btn-flash');
-const btnErase = $('btn-erase');
+const btnDisconnect = $('btn-disconnect');
+const supported = isSecureContext && 'serial' in navigator;
+function controls() {
+  btnConnect.disabled = !supported || busy || !!loader || !firmwareData;
+  btnFlash.disabled = !supported || busy || !firmwareData;
+  btnDisconnect.disabled = busy || !transport;
+}
 
 function terminal() {
   return {
@@ -118,87 +128,87 @@ function assertFlashImage(data) {
   }
 }
 
+async function disconnect() {
+  const active = transport;
+  transport = null; loader = null;
+  if (active) await active.disconnect();
+}
 async function connect() {
-  const rawPort = await navigator.serial.requestPort();
-  transport = new Transport(rawPort, false);
-  loader = new ESPLoader({
-    transport,
-    baudrate: 115200,
-    romBaudrate: 115200,
-    terminal: terminal(),
-  });
-  setConn('已连接串口，读取芯片…');
-  const chip = await loader.main('default_reset');
-  log('芯片：' + chip, 'ok');
-  log('烧录参数：DIO / 80MHz / 8MB', 'info');
+  if (loader) return loader;
+  // Request the port directly from the click, before loading external code.
+  const rawPort = await navigator.serial.requestPort({ filters: [{ usbVendorId: 0x303a }] });
+  flasher ||= await import('https://unpkg.com/esptool-js@0.7.1/bundle.js');
+  transport = new flasher.Transport(rawPort, false);
+  const candidate = new flasher.ESPLoader({ transport, baudrate: 115200, romBaudrate: 115200, terminal: terminal() });
+  setConn('已选择串口，读取芯片…');
+  await candidate.main('default_reset');
+  if (candidate.chip?.CHIP_NAME !== 'ESP32-S3') throw new Error('请选择 M5Dial（ESP32-S3）');
+  loader = candidate;
+  log('已连接 ESP32-S3，烧录参数 DIO / 80MHz / 8MB', 'ok');
   return loader;
 }
-
 btnConnect.addEventListener('click', async () => {
-  try {
-    await connect();
-    setConn('已连接：可烧录');
-  } catch (e) {
-    log('连接失败：' + e.message, 'err');
-    setConn('连接失败');
-  }
+  if (busy) return;
+  busy = true; controls();
+  try { await connect(); setConn('已连接：可烧录'); }
+  catch (error) {
+    log('连接失败：' + error.message, 'err'); setConn('连接失败');
+    try { await disconnect(); } catch (e) { log('请重新插拔 USB：' + e.message, 'warn'); }
+  } finally { busy = false; controls(); }
 });
-
+btnDisconnect.addEventListener('click', async () => {
+  busy = true; controls();
+  try { await disconnect(); setConn('已断开'); }
+  catch (error) { log('请重新插拔 USB：' + error.message, 'warn'); }
+  finally { busy = false; controls(); }
+});
 btnFlash.addEventListener('click', async () => {
-  if (!firmwareUrl) { log('固件文件未就绪', 'warn'); return; }
-  setProg('准备烧录…', 0);
+  if (busy || !firmwareData) return;
+  busy = true; controls(); setProg('准备烧录…', 0);
   try {
     const active = await connect();
-    const resp = await fetch(firmwareUrl);
-    if (!resp.ok) throw new Error('固件下载失败 ' + resp.status);
-    const data = new Uint8Array(await resp.arrayBuffer());
-    assertFlashImage(data);
-    log('镜像头检查通过：bootloader 与 app 均为 DIO / 80MHz / 8MB', 'ok');
     await active.writeFlash({
-      fileArray: [{ data, address: 0x0 }],
-      flashMode: FLASH_MODE,
-      flashFreq: FLASH_FREQ,
-      flashSize: FLASH_SIZE,
-      eraseAll: false,
-      compress: true,
+      fileArray: [{ data: firmwareData, address: 0x0 }],
+      flashMode: FLASH_MODE, flashFreq: FLASH_FREQ, flashSize: FLASH_SIZE,
+      eraseAll: false, compress: true,
       reportProgress: (_file, written, total) => {
         const pct = total ? Math.floor(written / total * 100) : 0;
         setProg('已写 ' + pct + '%', pct);
-      },
+      }
     });
-    setProg('完成', 100);
-    log('烧录完成 ✓' + ` (${data.length} bytes，${FLASH_MODE} ${FLASH_FREQ} ${FLASH_SIZE})`, 'ok');
-    setConn('完成，设备即将重启');
+    setProg('烧录完成', 100); log('烧录完成，正在重启设备。', 'ok');
     await active.after('hard_reset');
-  } catch(e){
-    log('烧录失败：' + e.message, 'err');
-    setConn('烧录失败');
+    setConn('已完成：可进入游戏网页连接 M5Dial');
+  } catch (error) {
+    log('烧录失败：' + error.message, 'err'); setConn('烧录失败'); setProg('未完成，请检查连接后重试', 0);
+  } finally {
+    try { await disconnect(); } catch (error) { log('请重新插拔 USB：' + error.message, 'warn'); }
+    busy = false; controls();
   }
 });
-
-btnErase.addEventListener('click', async () => {
-  setProg('擦除…',0);
+async function loadFirmware() {
   try {
-    const active = await connect();
-    await active.eraseFlash();
-    setProg('擦除完成',100); log('Flash 已擦除 ✓','ok');
-  } catch(e){ log('擦除失败：'+e.message,'err'); }
-});
-
-// default firmware = merged DIO bin next to this page
-const defaultUrl = new URL('firmware/m5dial_nfc_bridge_merged_dio.bin', document.baseURI).href;
-firmwareUrl = defaultUrl;
-$('firm-name').textContent = 'm5dial_nfc_bridge_merged_dio.bin';
-fetch(defaultUrl).then(r => {
-  if (!r.ok) throw new Error(String(r.status));
-  return r.arrayBuffer();
-}).then(b => {
-  $('firm-size').textContent = (b.byteLength/1024).toFixed(1)+' KB';
-  try { assertFlashImage(new Uint8Array(b)); log('本地固件头：DIO / 80MHz / 8MB', 'ok'); }
-  catch (e) { log(e.message, 'err'); }
-}).catch(() => log('找不到固件文件（firmware/…）','warn'));
-
-log('准备就绪。点击“连接设备”，然后“烧录固件”。','info');
+    const manifestResponse = await fetch('firmware/m5dial_nfc_bridge_manifest.json', { cache: 'no-store' });
+    if (!manifestResponse.ok) throw new Error('版本信息下载失败');
+    const manifest = await manifestResponse.json();
+    if (manifest.file !== 'm5dial_nfc_bridge_merged_dio.bin' || !/^[a-f0-9]{64}$/.test(manifest.sha256)) throw new Error('版本信息不完整');
+    const response = await fetch('firmware/' + manifest.file, { cache: 'no-store' });
+    if (!response.ok) throw new Error('固件下载失败 ' + response.status);
+    const data = new Uint8Array(await response.arrayBuffer());
+    if (data.length !== manifest.bytes) throw new Error('固件大小与版本信息不一致');
+    const hash = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', data)), b => b.toString(16).padStart(2, '0')).join('');
+    if (hash !== manifest.sha256) throw new Error('固件摘要不匹配，请刷新后重试');
+    assertFlashImage(data);
+    firmwareData = data;
+    $('firm-version').textContent = manifest.version;
+    $('firm-hash').textContent = hash;
+    $('firm-size').textContent = (data.length / 1024).toFixed(1) + ' KB';
+    log('固件摘要与镜像头检查通过。连接设备后即可烧录。', 'ok');
+    if (!supported) log('烧录需要电脑上的 Chrome / Edge，通过 HTTPS 打开本页。', 'warn');
+  } catch (error) { log(error.message, 'err'); setProg('固件未就绪', 0); }
+  controls();
+}
+loadFirmware();
 </script>
 <p class="pulse-credit">这就是傻子 Grok Bot 做的网站</p>
 </body>

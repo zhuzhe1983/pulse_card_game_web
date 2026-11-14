@@ -1,8 +1,10 @@
 # NFC 与读卡器现状
 
-2026-11-14：当前牌桌提供「刷卡」入口，可连接 M5Dial USB 串口读取玩家身份卡或游戏牌，也可在支持 Web NFC 的安卓 Chrome 中初始化空白玩家身份卡、读写游戏牌。下面明确区分软件实现和硬件验收。
+2026-11-14：当前牌桌提供「刷卡」入口，可连接 M5Dial USB 串口读取玩家身份卡或游戏牌，新版 M5Dial 固件可初始化空白 NTAG215 玩家身份卡；支持 Web NFC 的安卓 Chrome 可初始化空白玩家身份卡、读写游戏牌。下面明确区分软件实现和硬件验收。
 
 **玩家身份卡操作**：在安卓 NFC 手机的 Chrome 中打开 HTTPS 牌桌 →「刷卡」→「创建玩家身份卡（安卓 NFC）」→填写昵称并选卡面编号→「生成玩家身份」→刷空白 NDEF 卡→「确认写入玩家身份」→移开并重刷同一张卡。看到「玩家身份卡写入并校验成功」后才算完成；写入返回成功本身还不够。已有内容的卡不会在此入口被覆盖。
+
+**M5Dial 玩家卡操作**：电脑 Chrome/Edge 打开 [烧录页](https://zhuzhe1983.github.io/pulse_card_game_web/dist/flash.html)，安装 `2026.11.14-player-write.1`；进入牌桌 → 刷卡 → 连接 M5Dial（USB）→ 创建玩家身份卡（M5Dial）→ 填昵称、选卡面、生成身份 → 放上空白可写 NTAG215 → 确认写入。保持卡片不动，设备自动读回后页面显示成功。旧固件不会启用写卡，异常/超时不保存新身份，也不自动重试。
 
 卡中保存独立 UUID、昵称和卡面编号。身份只用于游戏中的玩家识别，不是安全账号登录；不同设备可以读出同一身份，但不会同步对局或收藏。本机记住最近识别的玩家，浏览器禁止存储时仍可用实体卡识别。
 
@@ -11,15 +13,15 @@
 | 安卓网页读游戏牌 | 已修复真实入口缺少 `NDEFReader` 工厂的问题；需要 NFC 手机、开启 NFC、Chrome、HTTPS 和用户授权 |
 | 安卓初始化游戏牌 | 选图册牌 → 读卡 → 明确点击写入；空白卡使用 `overwrite:false`，已有内容需点「仍然覆写」；移开后重刷同一 UID 和内容验证；20 秒未验证则失败 |
 | M5Dial 网页刷卡 | 已接入 `pcg.reader.v1` 串口；默认 115200，过滤 PULSE CDC `303A:4001`；从完整 `tag.ndef_hex` 读取游戏牌 MIME。截断、损坏记录不出牌；合法玩家身份记录用于识别当前玩家 |
-| M5Dial 写卡 | 固件源码已有旧玩家身份写入路径并声明 `ndef_write`；当前游戏牌使用另一种 MIME，网页没有向它开放写入。不能称为已验收 |
-| 玩家身份初始化 | 已新增安卓入口：昵称 + 卡面 01–09 → 生成 UUID v4 → 刷空白卡 → 确认写入 → 同卡读回验证。只写空白卡；验证后保存本机当前玩家，后续安卓或 M5Dial 刷身份卡可重新识别。旧收藏、领取、备份和账号服务没有恢复 |
+| M5Dial 写卡 | `2026.11.14-player-write.1` 已编译，网页已接通空白 NTAG215 玩家身份写入与自动读回验证。只写玩家身份，不写游戏牌；实机验收待补 |
+| 玩家身份初始化 | 安卓和新版 M5Dial 已提供入口：昵称 + 卡面 01–09 → 生成 UUID v4 → 刷空白卡 → 确认写入 → 同卡读回验证。只写空白卡；验证后保存本机当前玩家，后续安卓或 M5Dial 刷身份卡可重新识别。旧收藏、领取、备份和账号服务没有恢复 |
 | 实机验证 | 最后保留的 2026-11-11 记录：固件烧录和镜像校验成功，但应用 CDC 没有枚举，未完成稳定握手、实体卡读写或读回；本轮没有连接设备、烧录或写实体卡 |
 
-使用方法：打开牌桌，点「刷卡」。电脑选「连接 M5Dial（USB）」；手机选「开始安卓 NFC 刷卡」。制作玩家身份卡选「创建玩家身份卡（安卓 NFC）」；制作出牌用的牌则选「初始化游戏牌（安卓 NFC）」。扫描已初始化的图册牌会使用手里对应的牌；需要目标时继续点选。初始化面板内不出牌；非己方回合、没有对应手牌或非法目标均不消耗资源。点「停止刷卡 / 断开」释放读卡器，离开页面也会断开。
+使用方法：打开牌桌，点「刷卡」。电脑选「连接 M5Dial（USB）」；手机选「开始安卓 NFC 刷卡」。制作玩家身份卡选「创建玩家身份卡」（连接 M5Dial 时显示 M5Dial，否则为安卓 NFC）；制作出牌用的牌则选「初始化游戏牌（安卓 NFC）」。扫描已初始化的图册牌会使用手里对应的牌；需要目标时继续点选。初始化面板内不出牌；非己方回合、没有对应手牌或非法目标均不消耗资源。点「停止刷卡 / 断开」释放读卡器，离开页面也会断开。
 
 玩家身份卡沿用旧的轻量身份格式，见下方协议；当前游戏牌为图册 96 张硬件牌，格式是 `application/vnd.pulse.card+json`，不是旧 `application/vnd.pcg.identity+json`。手机写成的简短游戏牌 NDEF 可以由现有 M5Dial 原始 NDEF 上报路径读取；固件可能把这种 MIME 标成 `foreign`，网页仍按完整原始数据判定。旧固件若不返回原始 NDEF，则不能用于本入口。
 
-验证命令：`node tools/check.cjs`、`node tests/nfc.browser.cjs`（需要 Playwright）、固件目录下 `bash tests/run_host_tests.sh`。浏览器测试注入模拟 NFC 和串口，验证真实 UI 的玩家身份生成、空白卡写入、同卡读回、刷新保留、M5Dial 读身份、游戏牌写入/覆写/出牌、去重、回合限制和断开；不代表硬件验收。
+验证命令：`node tools/check.cjs`、`node tests/nfc.browser.cjs`（需要 Playwright）、固件目录下 `IDF_PATH=/path/to/esp-idf bash tests/run_host_tests.sh`。浏览器测试注入模拟 NFC 和串口，验证真实 UI 的玩家身份生成、空白卡写入、同卡读回、刷新保留、M5Dial 读身份、空白玩家卡写入/锁卡与移卡拒绝、旧固件写入禁用、游戏牌写入/覆写/出牌、去重、回合限制和断开；不代表硬件验收。
 
 Chrome 官方说明：[安卓 Web NFC](https://developer.chrome.com/docs/capabilities/nfc) 支持 NDEF，不支持任意底层 NFC 指令；[Web Serial](https://developer.chrome.com/docs/capabilities/serial) 提供串口传输。浏览器接口存在并不能保证手机有 NFC 硬件或当前可用。
 
@@ -34,7 +36,7 @@ Chrome 官方说明：[安卓 Web NFC](https://developer.chrome.com/docs/capabil
 | 方式 | 能读什么 | 能写什么 | 使用条件 |
 |---|---|---|---|
 | 键盘 UID 读卡器 | NFC-A 卡的十六进制 UID | 不支持 | 将扫描结果输入页面的 UID 输入框；读卡器设为十六进制输出 |
-| M5Dial·USB NFC 桥 | NFC-A/NTAG215 的 UID、旧身份及原始 NDEF | 源码已有旧身份写入，未完成实机验收；当前牌桌只用读取 | `firmware/m5dial_nfc_bridge` 固件（原版与 v1.1 均为 8MB Flash、DIO，不启用 PSRAM）+ Web Serial；网页“串口”按钮直接连接 |
+| M5Dial·USB NFC 桥 | NFC-A/NTAG215 的 UID、旧身份及原始 NDEF | 新版已接通空白 NTAG215 玩家身份写入；未完成实机验收 | `firmware/m5dial_nfc_bridge` 固件（原版与 v1.1 均为 8MB Flash、DIO，不启用 PSRAM）+ Web Serial；网页“串口”按钮直接连接 |
 | WebUSB PCG bridge | UID，可选 PULSE NDEF 描述 | 桥同时声明读写能力时，写入并读回核对玩家身份 | 固件实现下述 `pcg.reader.v1`；vendor-specific 接口，bulk IN/OUT |
 | Web Serial PCG bridge | 与 WebUSB 相同 | 取决于桥声明的能力 | 串口固件实现同一 JSON 行协议；默认 115200 baud |
 | Android Web NFC | NDEF 标签内的 PULSE 身份；浏览器返回 UID 时也读取 UID | 小型玩家身份 NDEF | 支持 Web NFC 的 Android Chrome、设备带 NFC、网页处于前台 |
@@ -72,7 +74,7 @@ NTAG215 有 504 字节用户读写存储。32 位密码可以限制读写，但�
 
 ### 写卡流程
 
-网页必须由玩家明确按下写卡按钮。`writePlayer(descriptor)` 默认 `overwrite:false`，避免覆盖已有 NDEF；玩家明确同意覆盖后，调用 `writePlayer(descriptor,{overwrite:true})`。不要把已有其他用途的标签当作空白卡。
+网页必须由玩家明确按下写卡按钮。当前 M5Dial 玩家入口使用 `writePlayer(descriptor,{blankOnly:true,overwrite:false})`，强制新固件、空白 NTAG215 元数据与读回验证；已有内容一律拒绝。通用适配器保留的覆写能力不用于此入口。不要把已有其他用途的标签当作空白卡。
 
 Web NFC 写入成功返回 `{verified:false,uid:null,descriptor}`，表示浏览器已完成写入，页面应请玩家再次刷卡核对。Web NFC 是 NDEF API，不提供本项目所需的 NTAG 密码配置或任意底层 NFC 指令。[Chrome Web NFC 文档](https://developer.chrome.com/docs/capabilities/nfc)
 
@@ -93,7 +95,7 @@ WebUSB 固件须提供 class `0xFF` 的接口，至少一个 bulk IN 和一个 b
 ```
 
 ```json
-{"type":"hello","protocol":"pcg.reader.v1","device":"My PN532 bridge","capabilities":["uid","ndef_read","ndef_write"],"reset":"poweron"}
+{"type":"hello","protocol":"pcg.reader.v1","device":"PULSE M5Dial NFC","firmware":"2026.11.14-player-write.1","write_mode":"blank-player-v1","capabilities":["uid","ndef_read","ndef_write"],"reset":"poweron"}
 ```
 
 `reset` 是可选诊断字段，表示本次启动的复位原因（`poweron`、`panic`、`task_wdt`、`int_wdt`、`brownout`、`usb` 等）。旧网页忽略不认识的字段。握手完成前，已经放在读卡器上的卡会在这条应答之后补发一条 `card`，不需要先拿开再贴上，也不会因为卡一直放着而重复刷卡。
@@ -108,7 +110,7 @@ WebUSB 固件须提供 class `0xFF` 的接口，至少一个 bulk IN 和一个 b
 {"type":"diag","reset":"poweron","session":true,"nfc_ready":true,"card_present":true,"uid":"04AA1B2C3D4E5F","ndef":"foreign"}
 ```
 
-只会读 UID 的桥必须仅返回 `["uid"]`。`ndef_write` 必须与 `ndef_read` 同时提供才能启用网页写卡。不能通过虚报能力打开按钮。
+只会读 UID 的桥必须仅返回 `["uid"]`。`ndef_write` 必须与 `ndef_read` 同时提供；当前牌桌还要求 `write_mode:"blank-player-v1"` 才启用玩家卡初始化。不能通过虚报能力打开按钮。
 
 卡片进入感应区后发出：
 
@@ -129,13 +131,13 @@ WebUSB 固件须提供 class `0xFF` 的接口，至少一个 bulk IN 和一个 b
 写卡命令仅在玩家明确操作后发出：
 
 ```json
-{"type":"write","request_id":"request-unique-id","expected_uid":"04AA1B2C3D4E5F","mime":"application/vnd.pcg.identity+json","descriptor":{"game":"pcg","v":1,"type":"player","id":"12345678-1234-4123-8123-123456789abc","skin":"01"},"overwrite":false}
+{"type":"write","request_id":"request-unique-id","expected_uid":"04AA1B2C3D4E5F","mime":"application/vnd.pcg.identity+json","descriptor":{"game":"pcg","v":1,"type":"player","id":"12345678-1234-4123-8123-123456789abc","skin":"01"},"confirm":true,"overwrite":false}
 ```
 
-固件必须在写入前重新读取 UID；与 `expected_uid` 不同则拒绝（`card removed`）。`overwrite` 不是 `true` 时一律拒绝，包括空白卡；空白卡也要等主机明确确认后才写。未格式化（没有标准 CC）的卡拒绝写入，避免猜成 NTAG215 后改 CC。写入只编程 page 4–129 的用户区，不改 UID、静态锁、动态锁或 CC。写入后再读取同一用户区，不一致则 `readback failed`，不得报告成功：
+固件必须在写入前重新读取 UID；与 `expected_uid` 不同则拒绝（`card removed`）。本版必须收到 `confirm:true` 且 `overwrite:false`，只允许空白玩家卡；`overwrite:true` 会拒绝。型号须通过 GET_VERSION 确认为 NTAG215，静态/动态锁清零且无覆盖用户区的密码保护和镜像。每页写入前重新选卡核对 UID，先清空 NDEF 长度、写内容、最后提交头部。未格式化（没有标准 CC）的卡拒绝写入，避免猜成 NTAG215 后改 CC。写入只编程 page 4–129 的用户区，不改 UID、静态锁、动态锁或 CC。写入后再读取同一用户区，不一致则 `readback failed`，不得报告成功：
 
 ```json
-{"type":"write_result","request_id":"request-unique-id","ok":true,"uid":"04AA1B2C3D4E5F","descriptor":{"game":"pcg","v":1,"type":"player","id":"12345678-1234-4123-8123-123456789abc","skin":"01"}}
+{"type":"write_result","request_id":"request-unique-id","ok":true,"verified":true,"uid":"04AA1B2C3D4E5F","descriptor":{"game":"pcg","v":1,"type":"player","id":"12345678-1234-4123-8123-123456789abc","skin":"01"}}
 ```
 
 失败返回 `{"type":"write_result","request_id":"request-unique-id","ok":false,"error":"reason"}`。网页等待最多 20 秒，不自动重试写卡，不把超时当成功。桥自身异常可返回 `{"type":"error","message":"reason"}`。
