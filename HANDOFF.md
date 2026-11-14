@@ -13,7 +13,7 @@
 - `src/clash/scene/raster-v1/`：ImageGen 生成的 6 个界面组件和 12 张技能插画；manifest 保留提示词，source/ 保留 PNG 原稿。构建仅复制运行资产，不复制 source/。
 - `wiki/data/design-pack.json`：基线牌表加 balance 覆盖的生成结果；产品原图不改。
 - `dist/clash/`：生成页面；需要根目录下的 `wiki/`、`shared/` 配套资源。
-- `src/readers.js`、`firmware/`、`dist/flash.html`：硬件资产；`2026.11.14-player-write.1` 固件现支持空白 NTAG215 玩家身份写入并自动读回。网页按 hello.write_mode=blank-player-v1 启用按钮，旧固件仅能读。固件已编译、主机与模拟硬件浏览器测试通过；用户本轮不便接设备，实机烧录/读写待验收。
+- `src/readers.js`、`firmware/`、`dist/flash.html`：硬件资产；`2026.11.14-feedback.2` 固件现支持空白 NTAG215 玩家身份写入并自动读回。网页按 hello.write_mode=blank-player-v1 启用按钮，旧固件仅能读。固件已编译、主机与模拟硬件浏览器测试通过；用户本轮不便接设备，实机烧录/读写待验收。
 
 `content/clash/` 内原教学数据和规则副本属于 baseline 回归，不覆盖本版数值。`SOURCE.json` 区分历史来源和当前 profile。固定教学的当前短牌库在 app.js，不等于旧 fixture 的 20 生命教学局。
 
@@ -40,3 +40,5 @@ node tools/audit_clash.cjs > docs/review/clash-tactical-v1.json
 ## 发布边界
 
 构建不自动发布 GitHub Pages。发布需要更新 gh-pages 的完整站点文件并验证线上版本；不能只复制 dist/clash 而遗漏 wiki 数据。此次本地改版的交付状态以最终汇报为准，不把已构建称为已上线。
+
+2026-11-14 feedback.2：用户实测 NTAG215 无响应，定位生产驱动 Transceive=0x0E/CRC low=0x23 两个错误并改为官方 0x0C/0x22。新增 rc522_bus 隔离硬件传输，以虚拟寄存器执行生产驱动做回归；启动硬件 CRC 自检。image_gen 生成 round workbench 底图，中文字形及状态由 ui_render.c 实时绘制，声音由 sound_pattern.c 定义并在独立任务播放。网页协商 status_events 后接收进度/诊断/静音状态。见 docs/M5DIAL_FEEDBACK.md；实体设备升级需手动进 ROM 下载模式，不能把构建或模拟测试写成实机验收。

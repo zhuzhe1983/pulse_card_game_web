@@ -1,12 +1,14 @@
 {
-  "version": "2026.11.14-player-write.1",
+  "version": "2026.11.14-feedback.2",
   "file": "m5dial_nfc_bridge_merged_dio.bin",
-  "bytes": 440480,
-  "sha256": "8afb3badb3d73f1ebc7e2109a9e3d8c1d710b2b8c6d53731b8edf889cc475eb7",
+  "bytes": 583072,
+  "sha256": "039e51de3b0ef9c55455392faa523a5a0cbc54fc8c0fbf7b5f2ec6c8d0d0c522",
   "chip": "ESP32-S3",
   "flash_mode": "dio",
   "flash_frequency": "80m",
   "flash_size": "8MB",
   "write_mode": "blank-player-v1",
+  "feedback": true,
+  "reader_driver": "WS1850S-register-fix",
   "hardware_tested": false
 }

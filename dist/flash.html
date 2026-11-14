@@ -35,9 +35,10 @@
 <div class="card">
   <h1>PULSE · M5Dial 固件烧录器</h1>
   <span class="tag">m5dial_nfc_bridge · pcg.reader.v1 · ESP32-S3FN8 · 8MB · DIO · 80MHz · 无 PSRAM</span>
-  <p><b>空白 NTAG215 → 玩家身份卡</b>：写入玩家 ID、昵称和卡面编号，写后自动读回校验。新版固件已完成编译和自动测试，实机验收待补。</p>
+  <p><b>空白 NTAG215 → 玩家身份卡</b>：写入玩家 ID、昵称和卡面编号，写后自动读回校验。新版修复 NTAG215 无响应的收发命令与 CRC 寄存器错误，新增中文圆屏状态、读写进度和提示音。实机验收状态见版本说明。</p>
   <p>把 M5Dial（原版 Stamp-S3 或 v1.1 Stamp-S3A）通过 USB-C 连到电脑，在下方选择串口并烧录。两版都是 8MB Flash，官方未列 PSRAM。固件会在屏幕上显示指示灯状态，并通过 USB 串口对话 <b>pcg.reader.v1</b>。</p>
 
+  <p><a href="firmware/m5dial-ui-preview.png" target="_blank" rel="noopener">查看圆屏九种状态预览</a> · 等待短滴 / 读取长滴 / 读完双音 / 写卡成功三音；正面按键可静音。</p>
   <div class="row">
     <button id="btn-connect" class="secondary" disabled>连接设备</button>
     <button id="btn-disconnect" class="secondary" disabled>断开设备</button>

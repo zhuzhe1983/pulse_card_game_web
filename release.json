@@ -1,12 +1,12 @@
 {
-  "source_commit": "5e552861b0ae1f4651b31193cf92fd6b6f3b56f7",
+  "source_commit": "f8c10880d11e17d7ca4817c3d5e405cb52a217aa",
   "rules": "tactical-v1",
   "visual_theme": "electronics-workbench",
   "languages": [
     "zh-CN",
     "en"
   ],
-  "generated_at": "2026-11-14T09:10:24.607223+00:00",
+  "generated_at": "2026-11-14T09:53:35.743584+00:00",
   "source_repository": "https://github.com/zhuzhe1983/pulse_card_game_web",
   "spec_commit": "34173938be0995eaa1d818b0594ead7946dda4cc",
   "nfc": {
@@ -15,18 +15,21 @@
     "m5dial_game_card_write": "not_connected",
     "player_identity_setup": "android_and_m5dial_blank_tag_write_and_readback_implemented_hardware_acceptance_pending",
     "m5dial_player_identity_read": "implemented_hardware_acceptance_pending",
-    "m5dial_player_identity_write": "implemented_hardware_acceptance_pending"
+    "m5dial_player_identity_write": "implemented_hardware_acceptance_pending",
+    "m5dial_feedback": "implemented_hardware_acceptance_pending"
   },
   "m5dial_firmware": {
-    "version": "2026.11.14-player-write.1",
+    "version": "2026.11.14-feedback.2",
     "file": "m5dial_nfc_bridge_merged_dio.bin",
-    "bytes": 440480,
-    "sha256": "8afb3badb3d73f1ebc7e2109a9e3d8c1d710b2b8c6d53731b8edf889cc475eb7",
+    "bytes": 583072,
+    "sha256": "039e51de3b0ef9c55455392faa523a5a0cbc54fc8c0fbf7b5f2ec6c8d0d0c522",
     "chip": "ESP32-S3",
     "flash_mode": "dio",
     "flash_frequency": "80m",
     "flash_size": "8MB",
     "write_mode": "blank-player-v1",
+    "feedback": true,
+    "reader_driver": "WS1850S-register-fix",
     "hardware_tested": false
   }
 }
