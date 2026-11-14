@@ -1,9 +1,11 @@
 # M5Dial NFC·USB 读卡桥 (ESP-IDF)
 
+> 2026-11-14 状态更正：本文件早期「只读」说明已过期。`main.c` 声明 `uid/ndef_read/ndef_write`，`nfc_read.c` 已有旧玩家身份写入与读回代码，但这不等于通过实机验收。最后的 2026-11-11 烧录记录中，镜像验证成功，应用 CDC 未出现，实体卡读写未执行。当前网页通过 USB 读取游戏牌原始 NDEF，不向本固件发送游戏牌写入；用户初始化 UI 仍归档。详见 [读卡状态](../../docs/READERS.md)。
+
 把 **M5Dial**（ESP32-S3 + 内置 WS1850S NFC 前端 + GC9A01 圆屏）变成一个给 PULSE 网页游戏用的 **USB NFC 刷卡器**：
 
 - 刷到 NTAG215 卡 → 通过 USB 串口（TinyUSB CDC）输出 `pcg.reader.v1` JSON 行
-- 网页端用 **Web Serial**（`dist/` 里的“串口”按钮）连接，零改动读取卡号与 PULSE 身份 NDEF
+- 网页端用 **Web Serial**（`dist/clash/` 里的“刷卡 → 连接 M5Dial（USB）”按钮）连接，读取卡号、原始 NDEF 与旧 PULSE 身份
 - 圆屏显示 READY / 卡上有无身份
 
 > 出厂 M5Dial 的读卡器是 **WS1850S**（与 NXP MFRC522 寄存器/指令兼容），走内部 I2C：**SCL=G12, SDA=G11**，地址 `0x28`。详见 `main/rc522.c`。`docs/READERS.md` 有摄像头协议约定。
@@ -36,7 +38,7 @@ USB-Serial-JTAG 在这份配置里关掉。只打开串口、不发 `hello` 时�
 
 网页用 115200 打开，不用 1200。
 
-这次云端构建没有上板，也没有写过任何实体卡。
+历史云端构建说明不作为验收记录；已保存烧录记录的限制见文首。
 
 ## 硬件与 Flash
 
@@ -89,9 +91,9 @@ esptool.py --chip esp32s3 -p /dev/cu.usbmodemXXXX -b 460800 write_flash \
 
 ## 验证
 
-进入 `dist/` 起静态服务器，浏览器打开游戏，点“串口”连接 M5Dial，应看到握手 `hello … capabilities ["uid","ndef_read"]`。刷一张 NTAG215（如已写 PULSE 身份）→ 收到 `card` 事件；没写身份 → 收到 `card {descriptor:null}`，屏幕显示“Card (no NDEF)”。
+从仓库根目录启动静态服务器，打开 `/dist/clash/`，点“刷卡 → 连接 M5Dial（USB）”。当前源码的握手能力为 `hello … capabilities ["uid","ndef_read","ndef_write"]`；是否能稳定握手仍需设备验证。刷一张 NTAG215（如已写 PULSE 身份）→ 收到 `card` 事件；没写身份 → 收到 `card {descriptor:null}`，屏幕显示“Card (no NDEF)”。
 
-固件把完整进度存在浏览器，卡里只带身份 NDEF（与 `docs/READERS.md` 一致）；本固件**只读**，不写卡（`ndef_write` 未开放）。
+旧设计把完整进度存在浏览器，卡里只带身份 NDEF。当前固件的写卡路径仅针对旧身份格式，未完成实机验收；不能用它写当前游戏牌 MIME。网页目前只读取 M5Dial 返回的 UID 和完整原始 NDEF。
 
 ## 目录
 

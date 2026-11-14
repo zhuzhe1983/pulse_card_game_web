@@ -145,7 +145,7 @@
       const now = Date.now();
       if (signature === this._lastSignature && (continuous || now - this._lastAt < 900)) return null;
       this._lastSignature = signature; this._lastAt = now; this._lastUID = uid;
-      const card = { uid, source: event.source, descriptor, tech: 'nfc-a', ndef: event.ndef || (descriptor ? 'pulse' : 'unknown') };
+      const card = { uid, source: event.source, descriptor, tech: 'nfc-a', ndef: event.ndef || (descriptor ? 'pulse' : 'unknown'), tag: object(event.tag) ? event.tag : null };
       try {
         Promise.resolve(this.onCard(card)).catch(error => this._status('error', event.source, error.message || '处理刷卡结果失败。', this.state.canWrite));
       } catch (error) { this._status('error', event.source, error.message || '处理刷卡结果失败。', this.state.canWrite); }
@@ -178,7 +178,7 @@
       if (message.type === 'removed') { this._lastSignature = ''; this._lastUID = null; return; }
       if (message.type === 'card') {
         if (message.tech !== undefined && message.tech !== 'nfc-a') fail('CARD_TECH', '当前版本只接收 NFC-A 卡。');
-        this._emitCard({ uid: message.uid, source: this._source, descriptor: message.descriptor == null ? null : message.descriptor, ndef: typeof message.ndef === 'string' ? message.ndef : '' }, true);
+        this._emitCard({ uid: message.uid, source: this._source, descriptor: message.descriptor == null ? null : message.descriptor, ndef: typeof message.ndef === 'string' ? message.ndef : '', tag: message.tag }, true);
       } else if (message.type === 'write_result') {
         const pending = this._pending.get(message.request_id);
         if (!pending) return;
@@ -266,9 +266,11 @@
       if (!root.navigator || !root.navigator.serial) fail('SERIAL_UNAVAILABLE', '此浏览器不支持 Web Serial。');
       const plan = serialOpenPlan(baudRate);
       if (!plan.ok || ![9600, 19200, 38400, 57600, 115200, 230400].includes(baudRate)) fail('SERIAL_BAUD', '不支持这个串口速率。不会使用 1200bps。');
+      const requestEpoch = this._epoch;
       const port = filters
         ? await root.navigator.serial.requestPort({ filters })
         : await root.navigator.serial.requestPort();
+      if (requestEpoch !== this._epoch) fail('DISCONNECTED', '连接已取消。');
       const info = port.getInfo ? port.getInfo() : {};
       if (info.usbProductId === 0x1001) fail('SERIAL_WRONG_PORT', '这是另一台 USB JTAG（303A:1001，cu.usbmodem101），不是 M5Dial CDC。');
       await this.disconnect();

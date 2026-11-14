@@ -1,8 +1,25 @@
-# 保留的读卡器适配器与固件
+# NFC 与读卡器现状
 
-2026-11-13：以下是独立保留的历史读卡器协议资料。旧玩家身份、收藏、领取和备份 UI 已随昆特旧版归档，不是当前牌桌功能；文中“串口”“写入当前玩家”等旧页面按钮不再提供。`src/readers.js` 与 firmware 仍有各自测试，M5Dial 镜像保留于烧录页，但本轮未做硬件实测。
+2026-11-14：当前牌桌提供「刷卡」入口，可连接 M5Dial USB 串口，也可在支持 Web NFC 的安卓 Chrome 中读写游戏牌。下面明确区分软件实现和硬件验收。
 
-当前回合战只通过 `src/clash/nfc.js` 实现牌模板 NDEF 的扫描/写入，入口位于菜单，MIME 为 `application/vnd.pulse.card+json`。它不使用下面的玩家身份 MIME。后续接入串口桥应使用新牌模板映射，不恢复旧收藏契约。
+| 项目 | 当前状态 |
+|---|---|
+| 安卓网页读游戏牌 | 已修复真实入口缺少 `NDEFReader` 工厂的问题；需要 NFC 手机、开启 NFC、Chrome、HTTPS 和用户授权 |
+| 安卓初始化游戏牌 | 选图册牌 → 读卡 → 明确点击写入；空白卡使用 `overwrite:false`，已有内容需点「仍然覆写」；移开后重刷同一 UID 和内容验证；20 秒未验证则失败 |
+| M5Dial 网页刷卡 | 已接入 `pcg.reader.v1` 串口；默认 115200，过滤 PULSE CDC `303A:4001`；从完整 `tag.ndef_hex` 读取游戏牌 MIME。截断、损坏或旧玩家身份记录不出牌 |
+| M5Dial 写卡 | 固件源码已有旧玩家身份写入路径并声明 `ndef_write`；当前游戏牌使用另一种 MIME，网页没有向它开放写入。不能称为已验收 |
+| 玩家初始化 | 旧玩家身份、收藏、领取、备份 UI 随旧版归档；当前不提供账号或玩家身份卡初始化。游戏牌初始化不等于用户初始化 |
+| 实机验证 | 最后保留的 2026-11-11 记录：固件烧录和镜像校验成功，但应用 CDC 没有枚举，未完成稳定握手、实体卡读写或读回；本轮没有连接设备、烧录或写实体卡 |
+
+使用方法：打开牌桌，点「刷卡」。电脑选「连接 M5Dial（USB）」；手机选「开始安卓 NFC 刷卡」，制卡选「初始化游戏牌（安卓 NFC）」。扫描已初始化的图册牌会使用手里对应的牌；需要目标时继续点选。初始化面板内不出牌；非己方回合、没有对应手牌或非法目标均不消耗资源。点「停止刷卡 / 断开」释放读卡器，离开页面也会断开。
+
+当前游戏牌为图册 96 张硬件牌，格式是 `application/vnd.pulse.card+json`，不是旧 `application/vnd.pcg.identity+json`。手机写成的简短游戏牌 NDEF 可以由现有 M5Dial 原始 NDEF 上报路径读取；固件可能把这种 MIME 标成 `foreign`，网页仍按完整原始数据判定。旧固件若不返回原始 NDEF，则不能用于本入口。
+
+验证命令：`node tools/check.cjs`、`node tests/nfc.browser.cjs`（需要 Playwright）、固件目录下 `bash tests/run_host_tests.sh`。浏览器测试注入模拟 NFC 和串口，验证真实 UI 的扫描、写入、覆写、同卡读回、出牌、去重、回合限制和断开；不代表硬件验收。
+
+Chrome 官方说明：[安卓 Web NFC](https://developer.chrome.com/docs/capabilities/nfc) 支持 NDEF，不支持任意底层 NFC 指令；[Web Serial](https://developer.chrome.com/docs/capabilities/serial) 提供串口传输。浏览器接口存在并不能保证手机有 NFC 硬件或当前可用。
+
+以下保留旧身份协议资料供固件维护使用，表内历史 UI 不代表当前牌桌提供这些功能。
 
 ---
 
@@ -13,7 +30,7 @@
 | 方式 | 能读什么 | 能写什么 | 使用条件 |
 |---|---|---|---|
 | 键盘 UID 读卡器 | NFC-A 卡的十六进制 UID | 不支持 | 将扫描结果输入页面的 UID 输入框；读卡器设为十六进制输出 |
-| M5Dial·USB NFC 桥 | NFC-A/NTAG215 的 UID 与 PULSE 身份 NDEF | **只读**（本版不开写卡） | `firmware/m5dial_nfc_bridge` 固件（原版与 v1.1 均为 8MB Flash、DIO，不启用 PSRAM）+ Web Serial；网页“串口”按钮直接连接 |
+| M5Dial·USB NFC 桥 | NFC-A/NTAG215 的 UID、旧身份及原始 NDEF | 源码已有旧身份写入，未完成实机验收；当前牌桌只用读取 | `firmware/m5dial_nfc_bridge` 固件（原版与 v1.1 均为 8MB Flash、DIO，不启用 PSRAM）+ Web Serial；网页“串口”按钮直接连接 |
 | WebUSB PCG bridge | UID，可选 PULSE NDEF 描述 | 桥同时声明读写能力时，写入并读回核对玩家身份 | 固件实现下述 `pcg.reader.v1`；vendor-specific 接口，bulk IN/OUT |
 | Web Serial PCG bridge | 与 WebUSB 相同 | 取决于桥声明的能力 | 串口固件实现同一 JSON 行协议；默认 115200 baud |
 | Android Web NFC | NDEF 标签内的 PULSE 身份；浏览器返回 UID 时也读取 UID | 小型玩家身份 NDEF | 支持 Web NFC 的 Android Chrome、设备带 NFC、网页处于前台 |

@@ -29,8 +29,9 @@ class FakeReader {
     this.failWrite = null;
   }
   addEventListener(type, fn) { this.handlers[type].push(fn); }
-  async scan() { if (this.failScan) throw this.failScan; this.scanning = true; }
-  async write(message) {
+  async scan(options) { this.scanOptions = options; if (this.failScan) throw this.failScan; this.scanning = true; }
+  async write(message, options) {
+    this.writeOptions = options;
     if (this.failWrite) throw this.failWrite;
     this.writes.push(JSON.parse(JSON.stringify(message, (key, value) => value instanceof Uint8Array ? Buffer.from(value).toString('utf8') : value)));
   }
@@ -105,7 +106,7 @@ function check(name, fn) {
     assert.equal(fake.writes.length, before + 1);
     tap.handleReading(reading('uid-strange', [mime({ v: 1, cardId: 'H024' })]));
     assert.equal(tap.lastKind(), 'ready');
-    assert.equal(tap.status().includes('读到 新细条'), true);
+    assert.equal(tap.status(), '写入并读回校验成功');
   });
 
   await check('read errors and permission are not blank or unknown', async () => {
@@ -165,6 +166,82 @@ function check(name, fn) {
     const locked = N.decideTap({ canAct: false, hand: game.hands[0], needsTarget: false }, { kind: 'ready', templateId: 'xiao_yin', name: '小印' });
     assert.equal(locked.text, '现在不能替这一方操作');
     assert.equal(game.hands[0].includes('xiao_yin'), true);
+  });
+
+  await check('default browser reader factory, stop and repeated start have one live scan', async () => {
+    const previous = globalThis.NDEFReader;
+    globalThis.NDEFReader = FakeReader;
+    try {
+      const { tap } = session({ readerFactory: null });
+      await tap.start();
+      const reader = tap.reader();
+      assert.ok(reader instanceof FakeReader);
+      await tap.start();
+      assert.equal(tap.reader(), reader);
+      tap.stop();
+      assert.equal(reader.scanOptions.signal.aborted, true);
+      reader.emit(reading('ignored', [mime({ v: 1, cardId: 'H024' })]));
+      assert.equal(tap.lastKind(), '');
+      assert.equal(tap.active(), false);
+      await tap.start();
+      assert.notEqual(tap.reader(), reader);
+      tap.stop();
+    } finally { globalThis.NDEFReader = previous; }
+  });
+
+  await check('blank write refuses implicit overwrite, suppresses concurrent writes and verifies the same UID', async () => {
+    const { tap, fake, ready } = session();
+    await tap.start(); tap.select(h024);
+    tap.handleReading(reading('first', [{ recordType: 'empty' }]));
+    assert.equal((await tap.writeCard()).verified, false);
+    assert.equal(fake.writeOptions.overwrite, false);
+    assert.equal(tap.lastKind(), 'verifying');
+    assert.equal((await tap.writeCard()).reason, 'busy');
+    const payload = [mime(N.messageFor(h024).json ? JSON.parse(N.messageFor(h024).json) : {})];
+    assert.equal(tap.handleReading(reading('second', payload)).kind, 'wrong-card');
+    assert.equal(tap.lastKind(), 'verifying');
+    assert.equal(tap.handleReading(reading('first', payload)).kind, 'verified');
+    assert.equal(ready.length, 0, 'verification must not play a card');
+    assert.equal((await tap.writeCard()).reason, 'needs-overwrite');
+    assert.equal((await tap.overwrite()).wrote, true);
+    assert.equal(fake.writeOptions.overwrite, true);
+    tap.stop();
+  });
+
+  await check('write failure and verification timeout never report success', async () => {
+    const { tap, fake } = session({ timeoutMs: 10 });
+    await tap.start(); tap.select(h024);
+    tap.handleReading(reading('first', []));
+    fake.failWrite = new Error('locked');
+    assert.equal((await tap.writeCard()).reason, 'write-failed');
+    assert.equal(tap.lastKind(), 'write-failed');
+    fake.failWrite = null;
+    tap.handleReading(reading('second', []));
+    await tap.writeCard();
+    await new Promise(resolve => setTimeout(resolve, 25));
+    assert.equal(tap.lastKind(), 'verify-failed');
+    assert.equal(tap.busy(), false);
+    tap.stop();
+    const missingHardware = session();
+    missingHardware.fake.failScan = Object.assign(new Error('missing'), { name: 'NotSupportedError' });
+    assert.equal((await missingHardware.tap.start()).reason, 'failure');
+    assert.equal(missingHardware.tap.active(), false);
+  });
+
+  await check('M5Dial raw NDEF reads game cards and refuses partial, malformed and identity records', () => {
+    const type = Buffer.from(MIME), data = Buffer.from(N.messageFor(h024).json);
+    const raw = Buffer.concat([Buffer.from([0xd2, type.length, data.length]), type, data]);
+    const event = { ndef: 'foreign', tag: { ndef_hex: raw.toString('hex'), ndef_hex_truncated: false } };
+    assert.equal(N.classifyBridge(event, lookup).templateId, h024.template_id);
+    assert.equal(N.classifyBridge({ ...event, tag: { ...event.tag, ndef_hex_truncated: true } }, lookup).kind, 'unknown');
+    assert.equal(N.classifyBridge({ ...event, tag: { ndef_hex: raw.subarray(0, -1).toString('hex') } }, lookup).kind, 'unknown');
+    assert.equal(N.classifyBridge({ ...event, tag: { ndef_hex: '00' + event.tag.ndef_hex } }, lookup).kind, 'unknown');
+    assert.equal(N.classifyBridge({ descriptor: { type: 'player' } }, lookup).kind, 'identity');
+    assert.equal(N.classifyBridge({ ndef: 'error' }, lookup).kind, 'failure');
+    assert.equal(N.classifyBridge({ ndef: 'blank' }, lookup).kind, 'blank');
+    assert.equal(N.classifyBridge({ ndef: 'unformatted' }, lookup).kind, 'unknown');
+    assert.equal(N.classifyMessage({ records: [mime({ v: 1, cardId: 'H024' }), mime({ v: 1, cardId: 'H024' })] }, lookup).kind, 'unknown');
+    function lookup(rid) { return byRid[rid]; }
   });
 
   console.log('PASS', passed, 'nfc');

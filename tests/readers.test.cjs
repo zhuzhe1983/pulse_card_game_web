@@ -90,7 +90,8 @@ async function run() {
   try {
     await manager.connectUSB();
     assert.equal(manager.state.source,'webusb'); assert.equal(manager.state.canWrite,true);
-    fake.inject({type:'card',uid:'04AA1B2C3D4E5F',descriptor:player}); await waitTick();
+    fake.inject({type:'card',uid:'04AA1B2C3D4E5F',descriptor:player,tag:{ndef_hex:'D00000',ndef_hex_truncated:false}}); await waitTick();
+    assert.equal(cards.at(-1).tag.ndef_hex,'D00000');
     assert.deepEqual(cards.at(-1).descriptor,player);
     const count = cards.length;
     fake.inject({type:'card',uid:'04AA1B2C3D4E5F',descriptor:player}); await waitTick();

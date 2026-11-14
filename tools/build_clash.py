@@ -58,7 +58,7 @@ replacements = {
     '/*__CLASH_CAPABILITIES__*/': 'globalThis.PCGClashCapabilities=' + embed('content/clash/capabilities.json') + ';\n',
     '/*__CLASH_ROSTER__*/': 'globalThis.PCGClashRoster=' + embed('content/clash/clash_roster_96.json') + ';\n' + 'globalThis.PCGClashServices=' + embed('content/clash/clash_services.json') + ';\n' + 'globalThis.PCGClashArt=' + art_map() + ';\n' + 'globalThis.PCGClashScene=' + embed('content/clash/scene_assets.json') + ';\n',
     '/*__CLASH_ENGINE__*/': script((root / 'src/clash/engine.js').read_text()),
-    '/*__CLASH_APP__*/': script((root / 'src/clash/nfc.js').read_text() + '\n' + (root / 'src/clash/app.js').read_text()),
+    '/*__CLASH_APP__*/': script('\n'.join((root / path).read_text() for path in ['src/readers.js', 'src/clash/nfc.js', 'src/clash/app.js'])),
 }
 for marker, value in replacements.items():
     if marker not in html:

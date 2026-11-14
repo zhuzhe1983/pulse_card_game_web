@@ -53,9 +53,10 @@
 
   function classifyMessage(message, lookup) {
     const records = message && Array.isArray(message.records) ? message.records : [];
-    if (!records.length) return { kind: 'blank' };
-    const mime = records.find(record => record && record.recordType === 'mime' && String(record.mediaType || '').toLowerCase() === MIME);
-    if (!mime) return { kind: 'unknown' };
+    if (!records.length || records.every(record => record && record.recordType === 'empty')) return { kind: 'blank' };
+    const matches = records.filter(record => record && record.recordType === 'mime' && String(record.mediaType || '').toLowerCase() === MIME);
+    if (matches.length !== 1) return { kind: 'unknown' };
+    const mime = matches[0];
     let body;
     try { body = JSON.parse(bytesToText(mime.data)); }
     catch (error) { return { kind: 'unknown' }; }
@@ -96,6 +97,39 @@
     return 'card:' + (cardId || 'blank');
   }
 
+  // The existing M5Dial reports raw NDEF as hex, including game-card MIME
+  // records that its legacy identity parser classifies as "foreign".
+  function classifyBridge(event, lookup) {
+    if (!event || event.ndef === 'error') return { kind: 'failure' };
+    if (event.descriptor) return { kind: 'identity' };
+    if (event.ndef === 'blank') return { kind: 'blank' };
+    const tag = event.tag || {};
+    const hex = tag.ndef_hex;
+    if (tag.ndef_hex_truncated || typeof hex !== 'string' || !/^(?:[0-9a-f]{2})+$/i.test(hex) || hex.length > 8192) return { kind: 'unknown' };
+    const bytes = Uint8Array.from(hex.match(/../g), value => parseInt(value, 16));
+    const records = [];
+    let offset = 0, ended = false;
+    try {
+      const byte = () => { if (offset >= bytes.length) throw new Error('truncated'); return bytes[offset++]; };
+      while (offset < bytes.length && !ended) {
+        const flags = byte(), tnf = flags & 7, typeLength = byte();
+        if (Boolean(flags & 128) !== (records.length === 0) || flags & 32 || tnf >= 6) throw new Error('unsupported framing');
+        const length = flags & 16 ? byte() : byte() * 16777216 + byte() * 65536 + byte() * 256 + byte();
+        const idLength = flags & 8 ? byte() : 0;
+        if (offset + typeLength + idLength + length > bytes.length) throw new Error('truncated payload');
+        const type = bytesToText(bytes.subarray(offset, offset + typeLength));
+        offset += typeLength + idLength;
+        const data = bytes.slice(offset, offset + length);
+        offset += length;
+        if (tnf === 0 && (typeLength || idLength || length)) throw new Error('invalid empty record');
+        records.push({ recordType: tnf === 2 ? 'mime' : tnf === 0 ? 'empty' : 'unknown', mediaType: type, data });
+        ended = !!(flags & 64);
+      }
+      if (!ended || offset !== bytes.length) return { kind: 'unknown' };
+      return classifyMessage({ records }, lookup);
+    } catch (_) { return { kind: 'unknown' }; }
+  }
+
   function decideTap(state, found) {
     if (!state || !state.canAct) return { action: 'refuse', text: TEXT.notNow, code: 'not_your_turn' };
     if (!found || found.kind === 'blank') return { action: 'show', text: TEXT.blank };
@@ -109,107 +143,147 @@
   function createTapSession(options) {
     const opts = options || {};
     const lookup = opts.lookup || function () { return null; };
-    const now = opts.now || function () { return Date.now(); };
+    const now = opts.now || (() => Date.now());
     const support = scanSupport(opts.env || {});
     const seen = new Map();
-    let reader = null;
-    let selected = null;
-    let lastKind = '';
-    let expectJson = '';
+    let reader = null, scanAbort = null, writeAbort = null, verifyTimer = null;
+    let selected = null, lastKind = '', lastSerial = '', expected = null;
+    let active = false, starting = false, writing = false, epoch = 0;
     let status = support.enabled ? '' : support.text;
     const log = [];
 
     function emit(text, extra) {
       status = text;
       log.push(Object.assign({ text, at: now() }, extra || {}));
+      if (log.length > 100) log.shift();
       if (opts.onStatus) opts.onStatus(status, extra || {});
     }
-
-    function remember(key, at) {
-      const prev = seen.get(key);
-      if (prev != null && at - prev < DEBOUNCE_MS) return true;
-      seen.set(key, at);
-      return false;
+    function clearVerify() {
+      clearTimeout(verifyTimer);
+      verifyTimer = null;
+      expected = null;
     }
-
+    function verifyFailed() {
+      clearVerify();
+      lastKind = 'verify-failed';
+      emit(TEXT.verify, { kind: lastKind });
+    }
     function handleReading(event) {
+      if (writing) return { ignored: true, kind: 'writing' };
       const serial = event && typeof event.serialNumber === 'string' ? event.serialNumber : '';
       const found = classifyMessage(event && event.message, lookup);
       const key = debounceKey(serial, found.cardId);
-      if (expectJson) {
-        const note = serial ? [] : [TEXT.noUid, TEXT.noUidMore];
-        if (found.kind === 'ready' && found.json === expectJson) {
-          expectJson = '';
-          lastKind = 'ready';
-          seen.set(key, now());
-          emit(['读到 ' + found.name].concat(note).join('。'), { kind: 'ready', card: found });
-          return { kind: 'verified', card: found };
+      if (expected) {
+        if (expected.serial && serial !== expected.serial) {
+          emit('请刷回刚才写入的同一张卡', { kind: 'verifying' });
+          return { kind: 'wrong-card' };
         }
-        expectJson = '';
-        lastKind = 'verify-failed';
-        emit(TEXT.verify, { kind: 'verify-failed' });
-        return { kind: 'verify-failed' };
+        if (found.kind !== 'ready' || found.json !== expected.json) {
+          verifyFailed();
+          return { kind: 'verify-failed' };
+        }
+        clearVerify();
+        lastKind = 'ready';
+        lastSerial = serial;
+        seen.set(key, now());
+        emit('写入并读回校验成功', { kind: 'verified', card: found });
+        return { kind: 'verified', card: found };
       }
-      if (remember(key, now())) return { ignored: true, kind: found.kind };
-      const note = [];
-      if (!serial) note.push(TEXT.noUid, TEXT.noUidMore);
+      const previous = seen.get(key);
+      if (previous != null && now() - previous < DEBOUNCE_MS) return { ignored: true, kind: found.kind };
+      seen.set(key, now());
+      if (seen.size > 100) seen.delete(seen.keys().next().value);
       lastKind = found.kind;
-      if (found.kind === 'ready') emit(['读到 ' + found.name].concat(note).join('。'), { kind: 'ready', card: found });
-      else if (found.kind === 'blank') emit([TEXT.blank].concat(note).join('。'), { kind: 'blank' });
-      else emit([TEXT.unknown, TEXT.occupied].concat(note).join('。'), { kind: 'unknown' });
+      lastSerial = serial;
+      const note = serial ? [] : [TEXT.noUid, TEXT.noUidMore];
+      const text = found.kind === 'ready' ? '读到 ' + found.name : found.kind === 'blank' ? TEXT.blank : TEXT.unknown + '。' + TEXT.occupied;
+      emit([text].concat(note).join('。'), { kind: found.kind, card: found });
       if (found.kind === 'ready' && opts.onReady) opts.onReady(found, { serial });
       return found;
     }
 
+    function stop() {
+      epoch++;
+      if (scanAbort) scanAbort.abort();
+      if (writeAbort) writeAbort.abort();
+      clearVerify();
+      reader = null; scanAbort = null; writeAbort = null;
+      active = false; starting = false; writing = false;
+      lastKind = ''; lastSerial = ''; seen.clear();
+      emit('刷卡已停止', { kind: 'stopped' });
+    }
+
     async function start() {
-      if (!support.enabled) {
-        emit(support.text, { kind: support.reason });
-        return support;
-      }
-      reader = opts.readerFactory();
-      reader.addEventListener('reading', event => { handleReading(event); });
-      reader.addEventListener('readingerror', () => {
-        lastKind = 'failure';
-        emit(TEXT.readFail, { kind: 'failure' });
-      });
+      if (!support.enabled) { emit(support.text, { kind: support.reason }); return support; }
+      if (active || starting) return { enabled: true, reason: active ? 'scanning' : 'starting' };
+      const generation = ++epoch;
+      starting = true;
+      lastKind = ''; lastSerial = ''; seen.clear();
+      emit('正在请求 NFC 扫描权限…', { kind: 'starting' });
       try {
-        await reader.scan();
+        reader = opts.readerFactory ? opts.readerFactory() : new root.NDEFReader();
+        scanAbort = new AbortController();
+        reader.addEventListener('reading', event => { if (generation === epoch) handleReading(event); });
+        reader.addEventListener('readingerror', () => {
+          if (generation !== epoch) return;
+          if (expected) return verifyFailed();
+          lastKind = 'failure'; lastSerial = '';
+          emit(TEXT.readFail, { kind: 'failure' });
+        });
+        await reader.scan({ signal: scanAbort.signal });
+        if (generation !== epoch) return { enabled: false, reason: 'cancelled' };
+        active = true; starting = false;
+        emit('扫描已开启，请贴近卡片', { kind: 'scanning' });
+        return { enabled: true, reason: 'scanning' };
       } catch (error) {
-        lastKind = 'permission';
-        emit(TEXT.permission, { kind: 'permission' });
-        return { enabled: false, reason: 'permission', text: TEXT.permission };
+        if (generation !== epoch) return { enabled: false, reason: 'cancelled' };
+        if (scanAbort) scanAbort.abort();
+        epoch++;
+        reader = null; scanAbort = null; starting = false; active = false;
+        lastKind = ['NotAllowedError', 'SecurityError'].includes(error.name) ? 'permission' : 'failure';
+        emit(lastKind === 'permission' ? TEXT.permission : '无法开启 NFC，请检查手机 NFC 开关和设备支持', { kind: lastKind });
+        return { enabled: false, reason: lastKind, text: status };
       }
-      emit(TEXT.start, { kind: 'scanning' });
-      return { enabled: true, reason: 'scanning', text: TEXT.start };
     }
 
     async function writeSelected(force) {
       if (!selected) return { wrote: false, reason: 'no-selection' };
-      if (!reader) return { wrote: false, reason: 'not-started' };
-      if (lastKind === 'unknown' && !force) return { wrote: false, reason: 'needs-overwrite' };
-      if (lastKind !== 'blank' && !(lastKind === 'unknown' && force)) return { wrote: false, reason: 'not-writable' };
+      if (!active || !reader) return { wrote: false, reason: 'not-started' };
+      if (writing || expected) return { wrote: false, reason: 'busy' };
+      if (['unknown', 'ready'].includes(lastKind) && !force) return { wrote: false, reason: 'needs-overwrite' };
+      if (lastKind !== 'blank' && !(force && ['unknown', 'ready'].includes(lastKind))) return { wrote: false, reason: 'not-writable' };
       const message = messageFor(selected, opts.wikiBase || '');
+      const serial = lastSerial, generation = epoch;
+      const controller = new AbortController();
+      writeAbort = controller; writing = true; lastKind = 'writing';
+      emit('正在写入，请保持卡片贴近', { kind: 'writing' });
+      const timer = setTimeout(() => controller.abort(), opts.timeoutMs || 20000);
       try {
-        await reader.write({ records: message.records });
-      } catch (error) {
-        expectJson = '';
-        emit(TEXT.readFail, { kind: 'write-failed' });
+        // Never let the default overwrite:true replace a different occupied tag.
+        await reader.write({ records: message.records }, { overwrite: !!force, signal: controller.signal });
+        if (generation !== epoch) return { wrote: false, reason: 'cancelled' };
+        writing = false; writeAbort = null;
+        expected = { json: message.json, serial };
+        lastKind = 'verifying';
+        emit('写入完成，请移开再刷同一张卡以校验', { kind: 'verifying' });
+        verifyTimer = setTimeout(verifyFailed, opts.timeoutMs || 20000);
+        return { wrote: true, verified: false, json: message.json };
+      } catch (_) {
+        if (generation !== epoch) return { wrote: false, reason: 'cancelled' };
+        clearVerify(); writing = false; writeAbort = null; lastKind = 'write-failed';
+        emit('写入未确认，请重新刷卡检查', { kind: 'write-failed' });
         return { wrote: false, reason: 'write-failed' };
-      }
-      expectJson = message.json;
-      return { wrote: true, json: message.json };
+      } finally { clearTimeout(timer); }
     }
 
     return {
-      TEXT,
-      MIME,
-      support,
-      start,
-      handleReading,
+      TEXT, MIME, support, start, stop, handleReading,
       select(card) { selected = card || null; },
       selected() { return selected; },
       lastKind() { return lastKind; },
       status() { return status; },
+      active() { return active || starting; },
+      busy() { return writing || !!expected; },
       log() { return log.slice(); },
       writeCard() { return writeSelected(false); },
       overwrite() { return writeSelected(true); },
@@ -218,7 +292,7 @@
   }
 
   const api = Object.freeze({
-    MIME, DEBOUNCE_MS, TEXT, scanSupport, classifyMessage, messageFor, canonical, debounceKey, decideTap, createTapSession
+    MIME, DEBOUNCE_MS, TEXT, scanSupport, classifyMessage, messageFor, canonical, debounceKey, decideTap, createTapSession, classifyBridge
   });
   root.PCGClashNfc = api;
   if (typeof module === 'object' && module.exports) module.exports = api;

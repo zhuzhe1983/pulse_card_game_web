@@ -103,3 +103,14 @@ html:lang(en) .hand-heading small { letter-spacing:0; }
  .rail.tools {right:20px;}.hand-dock {height:auto;}
  .core-slot.mine .battery {top:20%;}
 }
+
+/* Reader entry remains visible when the match menu is closed. */
+.reader-toggle { position:absolute; z-index:61; right:calc(6% + 140px); top:6.5%; min-height:38px; padding:6px 12px; border:1px solid #6ca99b; border-radius:8px; background:#132631; color:#ecfff7; cursor:pointer; }
+.nfc-dock { padding-top:12px; border-top:1px solid #ffffff26; }
+.nfc-help { margin:2px 0; font-size:12px; line-height:1.5; color:#bfd0d5; }
+.nfc-panel p { margin:2px 0; font-size:13px; line-height:1.5; }
+.nfc-panel label { display:grid; gap:6px; }
+.nfc-panel select { width:100%; min-width:0; }
+.menu-pop .nfc-panel { max-height:none; overflow:visible; }
+.nfc-dock button:disabled { opacity:.5; cursor:default; }
+@media (max-width:700px), (max-height:550px) { .reader-toggle { top:24px; right:calc(6% + 110px); min-height:32px; font-size:12px; padding:5px 8px; } }
